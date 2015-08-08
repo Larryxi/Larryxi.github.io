@@ -3,6 +3,7 @@ title:  "基础级Google Hacking"
 date:   2015-03-28 00:38:00
 categories: dorks
 layout: default
+excerpt:  "学习Google Hacking的一次自我总结^  ^"
 ---
 
 ##0x00 引言 ##
