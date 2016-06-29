@@ -1,40 +1,94 @@
-title: "Gone with the code"
-author: "Larryxi"
-description: "Really cool blog about ... something"
-#subheading: "Really cool blog about ... something"
-more: "read more"
-#url: "http://niklabs.me"
-#baseurl: "/contrast" # comment out if in root directory
+# User Settings | Edit there as per required
+
+title: Larryxi's blog
+# url: "http://ankitsultana.me"
+# baseurl: "/accent"
+
+# This will show up at the top of index page
+site_heading: >
+    Larryxi <span class="faded">'s blog</span>
+
+email: larrycompress@gmail.com
+author: Larryxi
+# This description will show up in google search results
+# (for index page) etc.
+description: >
+    Larryxi's blog,learn security everyday.
+
+# This will what will show against &copy; in the footer
+copyright: accent
+# Toggle your short bio, which will displayed on your index page
+# Just toggle it and run jekyll again to see
+intro: false         # Tip: Remove the span from site_heading if intro is set to true
+# This will be displayed in your intro
+short_bio: >
+    Welcome! This is <span>accent</span>, a mobile friendly theme for Jekyll. The main feature of this
+    theme is that you can change the accent color. Refer the
+    <a class="underline different-highlight" href="http://ankitsultana.me/accent/documentation.html">
+        Documentation
+    </a>
+    to know how.
+
+permalink: /:title.html
+
+# Comments are powered by disqus
+comments: true
+
+# keep about_stub roughly 12 words long for best results
+# This will show up at the bottom of each post
+# Note that about_footer should be true if you want
+# to see author information at the bottom of each post
+about_stub: >
+    Jordon says,"JUST DO IT", so I learn IT.
+
+about_footer: true
+
+# twitter_username: AnkitSultana
+github_username: Larryxi
+# facebook_id: yourusername
+
+favicon: true
+favicon_location: "images/favicon.ico"
+
+profile_picture: images/lubang.jpg
+paginate: 5
+paginate_path: "/page/:num"
+tracking_id: UA-69243698-7 # GA Tracking ID
+
+# Social Stuff | open graph and twitter cards
+# og_image: "images/accent.png" # This will show in facebook thumbnails
+# twitter_image: "http://ankitsultana.me/images/accent.png?1234" # This will show in twitter cards
+
+####################################
+####################################
+####################################
+### Build Settings | Don't Touch ###
+####################################
+####################################
+####################################
 
 markdown: kramdown
-highlight: true
 
-comments:
-    disqus: "niklasbuschmann"
-#    isso: "comments.mysite.org"
+gems:
+    - jekyll-paginate
 
-style:
-#    body: "whitesmoke"
-    padding: 33%
-    anchor: "#46f"
-    serif-heading: true
-    nav: "#181818"
-#    headline: "#06f"
-    description: "white"
-    article:
-        odd: "#ffffff"
-        even: "#222222"
+sass:
+    style: compressed
+    sass_dir: _sass
 
-links:
-  - github: "https://github.com/me/"
-  - twitter: "https://twitter.com/me/"
-  - google-plus: "https://plus.google.com/+me"
-  - reddit: "https://www.reddit.com/user/me/"
-  - youtube: "https://www.youtube.com/user/me"
-  - steam: "http://steamcommunity.com/id/me/"
+# Scopes
+defaults:
+    -
+        scope:
+            path:   ""
+            type:   "pages"
+        values:
+            layout: "page"
+    -
+        scope:
+            path:   ""
+            type:   "posts"
+        values:
+            layout: "post"
 
-paginate: 5
-paginate_path: "page:num"  
-
-excerpt_separator: ""
-defaults: [{scope: {path: ""}, values: {layout: "default"}}, {scope: {path: "", type: "posts"}, values: {comments: true}}]
+exclude: [vendor] # For travis ci

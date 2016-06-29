@@ -1,77 +1,53 @@
-Contrast
-========
+# accent
 
-[Demo](http://niklasbuschmann.github.io/contrast)
+#### [Demo & Documentation](http://ankitsultana.me/accent)
 
-![screenshot](https://cloud.githubusercontent.com/assets/4943215/5601369/f7d36d6c-92fa-11e4-85e3-752c270a91d3.png)
+### Installation
+
+I'd strongly recommend you to fork [accent](http://github.com/bk2dcradle/accent) and use the "upstream" strategy described on [this page](https://help.github.com/articles/fork-a-repo/) to
+keep accent up to date.
+
+If you don't want to do that, just clone [accent](http://github.com/bk2dcradle/accent) and use
+
+```bash
+bundle exec jekyll serve
+```
+in the root of the accent directory, or, simply [download](https://github.com/bk2dcradle/accent/archive/gh-pages.zip) accent.
+
+### Customization
+
+You can edit the variables in `_config.yml` as per your needs. Edit only the variables under the section marked *User Settings*.
+
+Most of the variables are self explanatory. Notes about few of the non obvious ones:
+
+1. You can change the **hex value** of the variable `$accent-color` in `_sass/_style.scss` to any color value that you want. This will change the accent of the theme.
+
+2. Set `intro` to `true` to reveal a short bio section on the index page.
+
+3. Setting `about_footer` to *true* or *false* will turn the `about` section at the bottom of every post to *on* or *off* respectively.
+
+4. `description` is the summary that will show up in places like facebook thumbnails,
+twitter cards and google search results.
 
 
-## Features
+*Note:* Don't change any variable under *Build Settings*.
 
- - mobile first
- - syntax highlighting
- - [disqus](https://disqus.com/) / [isso](http://posativ.org/isso/) integration
- - customizable
- - valid HTML5
+---
 
-Please note: Create a *master*-branch if you want to use this theme with *.github.io.
+### Usage
 
-## Getting Started
-
-If you're completely new to Jekyll, I recommend checking out the documentation at <http://jekyllrb.com> or there's a tutorial by [Smashing Magazine](http://www.smashingmagazine.com/2014/08/01/build-blog-jekyll-github-pages/).
-
-### Installing Jekyll
-
-If you don't have Jekyll already installed, you will need to go ahead and do that.
+* To create a new post, simply save the `.markdown` file in the `_posts` directory in the format.
 
 ```
-$ gem install jekyll
+year-month-day-name-of-the-file.markdown
 ```
 
-#### Verify your Jekyll version
+* For Syntax highlighting, accent uses *Rouge* which is the default highlighter in Jekyll 3 and above. If you don't know how to highlight a code block, [refer](http://jekyllrb.com/docs/templates/).
 
-It's important to also check your version of Jekyll since this project uses Native Sass which
-is [only supported by 2.0+](http://jekyllrb.com/news/2014/05/06/jekyll-turns-2-0-0/).
+* To set up Google Analytics tracking id, just set the `tracking_id` variable in `_config.yml`.
 
-```
-$ jekyll -v
-# This should be jekyll 2.0.0 or later
-```
+---
 
-### Fork, then clone
+### License
 
-Fork the repo, and then clone it so you've got the code locally.
-
-### Modify the _config.yml
-
-The `_config.yml` located in the root of the Pixyll directory contains all of the configuration details
-for the Jekyll site.
-
-### Jekyll Serve
-
-Then, start the Jekyll Server. I always like to give the `--watch` option so it updates the generated HTML when I make changes.
-
-```
-$ jekyll serve --watch
-```
-
-Now you can navigate to `localhost:4000` in your browser to see the site.
-
-### Using Github Pages
-
-You can host your Jekyll site for free with Github Pages. [Click here](https://pages.github.com/) for more information.
-
-## License
-
-This project is licensed under the terms of the MIT license.
-
-## Thanks to the following:
-
-* [Jekyll](http://jekyllrb.com)
-* [Github Pages](https://pages.github.com/)
-* [Richard Leland: pygment](https://github.com/richleland/pygments-css)
-* [mrdoob: three.js](https://github.com/mrdoob/three.js/)
-* [Font Awesome](http://fortawesome.github.io/Font-Awesome/)
-* [Paul D. Hunt: Source Sans Pro](https://plus.google.com/108888178732927400671/about)
-* [Victor Gaultney: Gentium Basic](https://profiles.google.com/victorgaultneytype/about)
-* [John Otander: Pixyll](https://github.com/johnotander/pixyll/)
+[MIT](https://github.com/bk2dcradle/accent/blob/gh-pages/LICENSE). Copyright &copy; [Ankit Sultana](http://twitter.com/AnkitSultana)

