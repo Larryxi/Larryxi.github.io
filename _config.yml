@@ -53,7 +53,7 @@ favicon_location: "images/favicon.ico"
 profile_picture: images/lubang.jpg
 paginate: 5
 paginate_path: "/page/:num"
-tracking_id: UA-69243698-7 # GA Tracking ID
+tracking_id: UA-80180060-1# GA Tracking ID
 
 # Social Stuff | open graph and twitter cards
 # og_image: "images/accent.png" # This will show in facebook thumbnails
