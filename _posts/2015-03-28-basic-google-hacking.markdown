@@ -16,7 +16,7 @@ date:   2015-03-28 00:38:00
 ---
 
 1. 手气不错，自定义搜索结果，语言设置，高级设置大家都懂哈 
-![Example]({{http://ojyzyrhpd.bkt.clouddn.com/20150328/1.png)
+![Example](http://ojyzyrhpd.bkt.clouddn.com/20150328/1.png)
 2. 基本搜素：一个或一组单词(google hacker);双引号封装的词组("Google Hacking")
 3. Google搜索的黄金法则： 
     * Google查询不区分大小写：hack === HAck 但单词or作为布尔操作符时必须为大写就，即OR 
