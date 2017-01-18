@@ -1,64 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <title>TFTP反射放大攻击浅析</title>
-
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="keywords" content="blog, accent, Larryxi, Larryxi's blog, jekyll">
-    <meta name="author" content="Larryxi">
-    
-    
-        
-    
-    
-        
-    
-    <meta name="description" content="Larryxi's blog,learn security everyday.
-">
-    <link href='/css/font.css' rel='stylesheet' type='text/css'>
-    <link rel="alternate" type="application/rss+xml" title="Larryxi's blog RSS" href="/feed.xml" />
-    <link rel="stylesheet" href="/css/main.css">
-    
-        <link rel="icon" type="image/ico" href="/images/favicon.ico">
-        <link rel="shortcut-icon" type="image/ico" href="/images/favicon.ico">
-    
-    
-    <!-- Facebook Open Graph -->
-    <meta name="og:description" content="Larryxi's blog,learn security everyday.
-">
-    <meta name="og:title" content="Larryxi's blog">
-    <meta name="og:url" content="https://larryxi.github.io/tftp-reflection-and-amplification-attack.html">
-    <meta name="og:type" content="article">
-    
-    
-    <!-- Twitter -->
-    <meta name="twitter:card" content="summary">
-    <meta name="twitter:title" content="Larryxi's blog">
-    <meta name="twitter:description" content="Larryxi's blog,learn security everyday.
-">
-    <meta name="twitter:url" content="https://larryxi.github.io/tftp-reflection-and-amplification-attack.html">
-    
-        <meta name="twitter:image" content="images/lubang.jpg">
-    
-</head>
-<body>
-    <div class="wrapper">
-        <div class="main">
-            <nav class="navbar">
-                <a href="/">
-                    <span class="alignable pull-left back-outer">
-                        <span class="alignable pull-left back-inner">
-                        </span>
-                    </span>
-                </a>
-            </nav>
-            <div class="content container">
-    <div class="post-date">
-        <time>March 23, 2016 </time>
-    </div>
-    <h1 class="post-title">TFTP反射放大攻击浅析</h1>
-    <h1 id="x00-">0x00 前言</h1>
+<h1 id="x00-">0x00 前言</h1>
 
 <hr />
 
@@ -74,7 +14,7 @@
 
 <p>我们在<a href="http://jingyan.baidu.com/article/454316ab6fb11af7a7c03ae0.html?qq-pf-to=pcqq.group">更新源</a>了的Kali2上进行tftp的安装，详细过程可见<a href="http://askubuntu.com/questions/201505/how-do-i-install-and-run-a-tftp-server">这里</a>和<a href="https://doc.ubuntu-fr.org/tftpd">那里</a>。在Kali上自带的有tftp客户端，我们可以不用再进行安装。其中主要使用了使用<a href="http://www.cnblogs.com/itech/archive/2010/12/27/1914846.html">xinetd</a>超级守护进程更加方便安全地管理使用tftp服务。最后在服务都安装好后，测试图如下：</p>
 
-<p><img src="/images/20160323/1.png" alt="" /></p>
+<p><img src="http://ojyzyrhpd.bkt.clouddn.com/20160323/1.png" alt="" /></p>
 
 <p>在这里值得一提的是，客户端上键入<code>?</code>发现有<code>put</code>命令可以直接上传文件，但是会引发<code>Error code 2: Access violation</code>错误。究其原因查看<code>man</code>手册可知道，因为咱们之前在登录的时候没有经过认证就可以读取文件，所以处于安全的考虑，只有文件存在而且对于所有的用户都可写才能<code>put</code>相应文件，这一点也会成为之后攻击的一个限制。</p>
 
@@ -116,7 +56,7 @@
 
 <p>就拿A对S上的<code>RRQ (read request)</code>文件过程来演示一下，如下图：</p>
 
-<p><img src="/images/20160323/2.png" alt="" /></p>
+<p><img src="http://ojyzyrhpd.bkt.clouddn.com/20160323/2.png" alt="" /></p>
 
 <p>具体过程文字描述如下：</p>
 
@@ -129,7 +69,7 @@
 
 <p>实际测试的抓包图如下：</p>
 
-<p><img src="/images/20160323/3.png" alt="" /></p>
+<p><img src="http://ojyzyrhpd.bkt.clouddn.com/20160323/3.png" alt="" /></p>
 
 <h1 id="x03-">0x03 反射放大攻击</h1>
 
@@ -150,19 +90,19 @@
 
 <p>也还是有两点需要说明，我们这里伪造的源端口用的是XP SP3默认开启的UDP端口之一(123,137,138,445,500,1900)，当然你也可以用其他你在攻击目标上扫描出来的端口；另一点就是为了达到放大数据包大小的最佳效果，我们这里<code>RRQ</code>的已知文件的大小必须大于512字节为好。三个主机在同一个网段下的测试结果图如下：</p>
 
-<p><img src="/images/20160323/4.png" alt="" /></p>
+<p><img src="http://ojyzyrhpd.bkt.clouddn.com/20160323/4.png" alt="" /></p>
 
 <p>在搭建传统的LAN环境的时候，会要求TFTP服务器对所有客户端是可连接的，通常会将其拿来当做内部网络网关。如果这些TFTP服务器同时暴露在外的话，我们就可以利用其在网络当中的角色加上对源地址无验证的缺陷,对内网机器进行DOS攻击。当然鸡肋的会是我们不知道在内网当中有哪些机器，就算攻击成功了，由于没有回执响应，我们就不知道实际情况是如何而“盲打”一通了。在vbox当中创建一个<a href="https://www.youtube.com/watch?v=nsbxw_jx1wQ">内网环境</a>，同时给服务端设置<a href="http://gfrog.net/2008/01/config-file-in-debian-interfaces-1/">两个网卡</a>，测试结果如下：</p>
 
-<p><img src="/images/20160323/5.png" alt="" /></p>
+<p><img src="http://ojyzyrhpd.bkt.clouddn.com/20160323/5.png" alt="" /></p>
 
 <p>从以上的测试结果可以看出由于tftpd服务的特性，在服务端未接收到ACK数据包时，会默认进行5次重传，并且重传时间间隔（可设置）为5秒。对于不同的反射放大攻击，例如<a href="http://baike.baidu.com/link?url=S20WqQCEfXL7YDelSc2bVLw-veVfXFPpYdsy64mCQZ_kV66yFpq3fsDTVWT9rN2xU-hO6PIJAbSKjUzAU9j9XK">Smurf</a>，DNS，<a href="http://drops.wooyun.org/papers/926">NTP</a>，TCP-based，<a href="http://drops.wooyun.org/tips/2106">SNMP</a>等反射放大攻击，研究时通常会计算其中的反射因子/放大倍数作为相互比较的标准。在基于tftpd的TFTP反射放大攻击中，这里响应数据包大小总和比上请求数据包大小为：<code>558*5/60=46.5</code>。为了简单地对比一下，我还是在XP上下载了<a href="http://tftpd32.jounin.net/tftpd32_download.html">tftpd32</a>，然后再去<code>get</code>自带的文件<code>tftpd32.chm</code>（其实在默认状态下tftpd32是允许<code>put</code>文件的，但也可在<code>Setting</code>中设置为<code>Read Only</code>模式）。tftpd32的特性就是会重传6次，时间间隔依次为1,2,3,3,3秒，最后还会发送一个ERROR数据包。这里抛开ERROR数据包计算反射因子的话就是<code>558*6/62=54</code>。</p>
 
-<p><img src="/images/20160323/6.png" alt="" /></p>
+<p><img src="http://ojyzyrhpd.bkt.clouddn.com/20160323/6.png" alt="" /></p>
 
 <p>在论文中的tftpd32版本可能有所不同，反射因子为<code>59.78</code>，这个放大因子和其他反射放大攻击相比较还是很可观的：</p>
 
-<p><img src="/images/20160323/7.png" alt="" /></p>
+<p><img src="http://ojyzyrhpd.bkt.clouddn.com/20160323/7.png" alt="" /></p>
 
 <h1 id="x04-">0x04 限制及解决方案</h1>
 
@@ -178,11 +118,11 @@
 
 <p>如果未加<code>--script-args</code>的话，脚本会默认调用<a href="https://github.com/nmap/nmap/blob/master/nselib/data/tftplist.txt">tftplist.txt</a>文件去枚举可能存在的文件。当然，<code>tftp-enum.filelist</code>可以指定自定义的列表进行枚举扫描。测试结果示例如下：</p>
 
-<p><img src="/images/20160323/8.png" alt="" /></p>
+<p><img src="http://ojyzyrhpd.bkt.clouddn.com/20160323/8.png" alt="" /></p>
 
 <p>论文当中说是有<a href="http://internetcensus2012.bitbucket.org/serviceprobe_overview.html">599600</a>台（2012年扫描结果）对外开放的TFTP服务器可能会被用来进行发射放大攻击，但在<a href="https://www.shodan.io/search?query=tftp">shodan</a>上搜索<code>tftp</code>的结果也只有10w左右的样子，可能有待进一步的扫描发现。以下是我在<a href="https://shodanio.wordpress.com/2014/12/01/using-shodan-from-the-command-line/">shodan</a>中搜索出的999个IP进行测试，其中有47个服务器可以<code>get</code>到默认的文件：</p>
 
-<p><img src="/images/20160323/9.png" alt="" /></p>
+<p><img src="http://ojyzyrhpd.bkt.clouddn.com/20160323/9.png" alt="" /></p>
 
 <p><strong>2. TFTP服务器上已知文件的大小</strong></p>
 
@@ -285,214 +225,3 @@
   <li>简化自定义错误消息（有些tftp服务具有在重传无响应后还会发送ERROR数据包，间接将流量放大）；记录响应的日志；限制请求数据包的数量</li>
 </ol>
 
-
-</div>
-<div class="container">
-    <ul class="rrssb-buttons clearfix">
-    <li class="rrssb-email">
-    <!-- Replace subject with your message using URL Endocding: http://meyerweb.com/eric/tools/dencoder/ -->
-        <a href="mailto:?subject=TFTP反射放大攻击浅析&amp;body=Check out: https://larryxi.github.io/tftp-reflection-and-amplification-attack.html">
-            <span class="rrssb-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 28"><path d="M20.11 26.147c-2.335 1.05-4.36 1.4-7.124 1.4C6.524 27.548.84 22.916.84 15.284.84 7.343 6.602.45 15.4.45c6.854 0 11.8 4.7 11.8 11.252 0 5.684-3.193 9.265-7.398 9.3-1.83 0-3.153-.934-3.347-2.997h-.077c-1.208 1.986-2.96 2.997-5.023 2.997-2.532 0-4.36-1.868-4.36-5.062 0-4.75 3.503-9.07 9.11-9.07 1.713 0 3.7.4 4.6.972l-1.17 7.203c-.387 2.298-.115 3.3 1 3.4 1.674 0 3.774-2.102 3.774-6.58 0-5.06-3.27-8.994-9.304-8.994C9.05 2.87 3.83 7.545 3.83 14.97c0 6.5 4.2 10.2 10 10.202 1.987 0 4.09-.43 5.647-1.245l.634 2.22zM16.647 10.1c-.31-.078-.7-.155-1.207-.155-2.572 0-4.596 2.53-4.596 5.53 0 1.5.7 2.4 1.9 2.4 1.44 0 2.96-1.83 3.31-4.088l.592-3.72z"/></svg></span>
-            <span class="rrssb-text">email</span>
-        </a>
-    </li>
-    <li class="rrssb-facebook">
-<!--  Replace with your URL. For best results, make sure you page has the proper FB Open Graph tags in header: https://developers.facebook.com/docs/opengraph/howtos/maximizing-distribution-media-content/ -->
-        <a href="https://www.facebook.com/sharer/sharer.php?u=https://larryxi.github.io/tftp-reflection-and-amplification-attack.html" class="popup">
-            <span class="rrssb-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 29 29"><path d="M26.4 0H2.6C1.714 0 0 1.715 0 2.6v23.8c0 .884 1.715 2.6 2.6 2.6h12.393V17.988h-3.996v-3.98h3.997v-3.062c0-3.746 2.835-5.97 6.177-5.97 1.6 0 2.444.173 2.845.226v3.792H21.18c-1.817 0-2.156.9-2.156 2.168v2.847h5.045l-.66 3.978h-4.386V29H26.4c.884 0 2.6-1.716 2.6-2.6V2.6c0-.885-1.716-2.6-2.6-2.6z"/></svg></span>
-            <span class="rrssb-text">facebook</span>
-        </a>
-    </li>
-    <li class="rrssb-twitter">
-        <!-- Replace href with your Meta and URL information  -->
-        <a href="https://twitter.com/intent/tweet?text=TFTP反射放大攻击浅析&amp;url=https://larryxi.github.io/tftp-reflection-and-amplification-attack.html" class="popup">
-            <span class="rrssb-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 28"><path d="M24.253 8.756C24.69 17.08 18.297 24.182 9.97 24.62a15.093 15.093 0 0 1-8.86-2.32c2.702.18 5.375-.648 7.507-2.32a5.417 5.417 0 0 1-4.49-3.64c.802.13 1.62.077 2.4-.154a5.416 5.416 0 0 1-4.412-5.11 5.43 5.43 0 0 0 2.168.387A5.416 5.416 0 0 1 2.89 4.498a15.09 15.09 0 0 0 10.913 5.573 5.185 5.185 0 0 1 3.434-6.48 5.18 5.18 0 0 1 5.546 1.682 9.076 9.076 0 0 0 3.33-1.317 5.038 5.038 0 0 1-2.4 2.942 9.068 9.068 0 0 0 3.02-.85 5.05 5.05 0 0 1-2.48 2.71z"/></svg></span>
-            <span class="rrssb-text">twitter</span>
-        </a>
-    </li>
-    <li class="rrssb-linkedin">
-        <a href="http://www.linkedin.com/shareArticle?mini=true&amp;url=https://larryxi.github.io/tftp-reflection-and-amplification-attack.html&amp;title=TFTP反射放大攻击浅析&amp;summary=TFTP反射放大攻击浅析" class="popup">
-            <span class="rrssb-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewbox="0 0 28 28">
-                    <path d="M25.424 15.887v8.447h-4.896v-7.882c0-1.98-.71-3.33-2.48-3.33-1.354 0-2.158.91-2.514 1.802-.13.315-.162.753-.162 1.194v8.216h-4.9s.067-13.35 0-14.73h4.9v2.087c-.01.017-.023.033-.033.05h.032v-.05c.65-1.002 1.812-2.435 4.414-2.435 3.222 0 5.638 2.106 5.638 6.632zM5.348 2.5c-1.676 0-2.772 1.093-2.772 2.54 0 1.42 1.066 2.538 2.717 2.546h.032c1.71 0 2.77-1.132 2.77-2.546C8.056 3.593 7.02 2.5 5.344 2.5h.005zm-2.48 21.834h4.896V9.604H2.867v14.73z"></path>
-                </svg>
-            </span>
-            <span class="rrssb-text">linkedin</span>
-        </a>
-    </li>
-    <li class="rrssb-googleplus">
-        <a href="https://plus.google.com/share?url=https://larryxi.github.io/tftp-reflection-and-amplification-attack.html" class="popup">
-            <span class="rrssb-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewbox="0 0 24 24">
-                    <path d="M21 8.29h-1.95v2.6h-2.6v1.82h2.6v2.6H21v-2.6h2.6v-1.885H21V8.29zM7.614 10.306v2.925h3.9c-.26 1.69-1.755 2.925-3.9 2.925-2.34 0-4.29-2.016-4.29-4.354s1.885-4.353 4.29-4.353c1.104 0 2.014.326 2.794 1.105l2.08-2.08c-1.3-1.17-2.924-1.883-4.874-1.883C3.65 4.586.4 7.835.4 11.8s3.25 7.212 7.214 7.212c4.224 0 6.953-2.988 6.953-7.082 0-.52-.065-1.104-.13-1.624H7.614z"></path>
-                </svg>
-            </span>
-            <span class="rrssb-text">google+</span></a>
-    </li>
-    <li class="rrssb-pinterest">
-        <a href="http://pinterest.com/pin/create/button/?url=https://larryxi.github.io/tftp-reflection-and-amplification-attack.html&amp;description=TFTP反射放大攻击浅析"><span class="rrssb-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewbox="0 0 28 28">
-                <path d="M14.02 1.57c-7.06 0-12.784 5.723-12.784 12.785S6.96 27.14 14.02 27.14c7.062 0 12.786-5.725 12.786-12.785 0-7.06-5.724-12.785-12.785-12.785zm1.24 17.085c-1.16-.09-1.648-.666-2.558-1.22-.5 2.627-1.113 5.146-2.925 6.46-.56-3.972.822-6.952 1.462-10.117-1.094-1.84.13-5.545 2.437-4.632 2.837 1.123-2.458 6.842 1.1 7.557 3.71.744 5.226-6.44 2.924-8.775-3.324-3.374-9.677-.077-8.896 4.754.19 1.178 1.408 1.538.49 3.168-2.13-.472-2.764-2.15-2.683-4.388.132-3.662 3.292-6.227 6.46-6.582 4.008-.448 7.772 1.474 8.29 5.24.58 4.254-1.815 8.864-6.1 8.532v.003z"></path>
-            </svg></span><span class="rrssb-text">pinterest</span></a>
-    </li>
-</ul>
-
-</div>
-
-
-    <div class="container">
-    <hr />
-    
-        
-            
-        
-        
-            <div id="img-about">
-                <img class="about-img pull-left" src="images/lubang.jpg">
-            </div>
-        
-        <div class="about-stub">
-            
-                
-            
-            <a class="different-highlight" href="about">
-                <h2 style="font-family: Montserrat">
-                    
-                        Larryxi
-                    
-                </h2>
-            </a>
-            
-                <p id="about-description" style="margin-top: 4px;">
-                    Jordon says,"JUST DO IT", so I learn IT.
-
-                </p>
-            
-        </div>
-    
-</div>
-<div style="clear:both"></div>
-
-
-
-
-
-
-    <aside id="comments" class="disqus">
-    	<div class="container">
-    		<h3 class="alignable pull-left"></h3> <h3 class="alignable pull-right"> <i class="icon-disqus"></i></h3>
-    		<!--
-    	  		Copy the universal code from Disqus. In particular, the div with id #disqus_thread and the following Javascript
-    			As an Example see below.
-    			Start here
-    	   	-->
-            <div id="disqus_thread"></div>
-                <script>
-                    /**
-                     *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
-                     *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables
-                     */
-                    /*
-                    var disqus_config = function () {
-                        this.page.url = PAGE_URL;  // Replace PAGE_URL with your page's canonical URL variable
-                        this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
-                    };
-                    */
-                    (function() {  // DON'T EDIT BELOW THIS LINE
-                        var d = document, s = d.createElement('script');
-                        
-                        s.src = '//larryxi.disqus.com/embed.js';
-                        
-                        s.setAttribute('data-timestamp', +new Date());
-                        (d.head || d.body).appendChild(s);
-                    })();
-                </script>
-                <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
-    		<!--
-    	  		End here
-    	  	-->
-    </aside>
-
-
-
-        </div>
-    </div>
-    <footer>
-    
-
-    
-    <div class="container page-suggestion">
-        
-            <a class="button alignable pull-left" href="https://larryxi.github.io/wooyun-pluzze-3-write-up.html">
-                &larr; 不插电 · WooYun Puzzle#3...
-            </a>
-        
-        
-            <a class="button alignable pull-right" href="https://larryxi.github.io/pupy-first-touch-101.html">
-                Python远控Pupy使用帮助 &rarr;
-            </a>
-        
-    </div>
-    <div style="clear:both"></div>
-
-
-    
-    <hr />
-    <div class="user-footer">
-        <!--more<div class="copyright alignable pull-left">
-            
-                <h2> &copy;accent</h2>
-            
-        </div>-->
-        <div class="alignable pull-left">
-            <p class="faded"><!-- class="alignable pull-left" style="display: inline-block">-->
-            Built with <a href="http://jekyllrb.com/" class="different-highlight underline">Jekyll</a> and <a href="http://ankitsultana.me/accent/" class="different-highlight underline">accent</a>
-            </p>
-        </div>
-        <div class="alignable pull-right">
-            <a target="_blank" href="http://weibo.com/u/3996118191" class="button">
-                @Larryxi
-            </a>
-            <a href="mailto:larrycompress@gmail.com" class="button">
-                mail
-            </a>
-            <a target="_blank" href="https://larryxi.github.io/feed.xml" class="button">
-                rss
-            </a>
-        </div>
-    </div>
-    <!--<div style="clear:both"></div>
-    <hr />
-    <div class="theme-footer">
-        <p class="alignable pull-left" style="display: inline-block">
-            Built with <a href="http://jekyllrb.com/" class="different-highlight underline">Jekyll</a> and <a href="http://ankitsultana.me/accent/" class="different-highlight underline">accent</a>
-        </p>
-    </div>-->
-</footer>
-
-    <script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
-    <script src="/js/rrssb.min.js"></script>
-
-    
-        <script src="js/anchor.min.js"></script>
-        <script>
-        anchors.options.placement = 'right'
-        anchors.options.class = 'hide'
-        anchors.add()
-        anchors.remove('.post-title')
-        </script>
-    
-    
-        <script>
-  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-
-  ga('create', 'UA-80180060-1# GA Tracking ID', 'auto');
-  ga('send', 'pageview');
-
-</script>
-
-    
-</body>
