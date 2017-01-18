@@ -571,9 +571,9 @@ $ python get-2.py new-2.py fg_safebox read
 
 看来还是要有点渗透思维去读读配置文件什么的，看看flag到底藏在哪，参考[Linux渗透与提权：技巧总结篇](https://www.91ri.org/7911.html)与[Linux提权后获取敏感信息的方法与途径](https://www.91ri.org/7459.html)，把里面cat的文件全部集中一起，写个脚本跑一遍及可发现flag，代码与之前的类似，详见[github](https://github.com/Larryxi/My_tools/tree/master/puzzle2016)
 
-[1]: /images/20160628/1.png
-[2]: /images/20160628/2.png
-[3]: /images/20160628/3.png
-[4]: /images/20160628/4.png
-[5]: /images/20160628/5.png
+[1]: http://ojyzyrhpd.bkt.clouddn.com/20160628/1.png
+[2]: http://ojyzyrhpd.bkt.clouddn.com/20160628/2.png
+[3]: http://ojyzyrhpd.bkt.clouddn.com/20160628/3.png
+[4]: http://ojyzyrhpd.bkt.clouddn.com/20160628/4.png
+[5]: http://ojyzyrhpd.bkt.clouddn.com/20160628/5.png
 

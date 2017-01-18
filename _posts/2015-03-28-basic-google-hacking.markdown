@@ -16,7 +16,7 @@ date:   2015-03-28 00:38:00
 ---
 
 1. 手气不错，自定义搜索结果，语言设置，高级设置大家都懂哈 
-![Example]({{site.baseurl}}/images/20150328/1.png)
+![Example]({{http://ojyzyrhpd.bkt.clouddn.com/20150328/1.png)
 2. 基本搜素：一个或一组单词(google hacker);双引号封装的词组("Google Hacking")
 3. Google搜索的黄金法则： 
     * Google查询不区分大小写：hack === HAck 但单词or作为布尔操作符时必须为大写就，即OR 
@@ -52,7 +52,7 @@ date:   2015-03-28 00:38:00
   * filetype: 根据文件扩展名查找特定类型的 文件，等同于ext，也需要附加搜索关键字
   * site: 限定在某个特定的网站或者域搜索，也可以单独使用
   * cache: 现实页面的缓存版本，但不能很好地与其他操作符或者关键字混合使用   
-    ![example]({{site.baseurl}}/images/20150328/2.png)
+    ![example](http://ojyzyrhpd.bkt.clouddn.com/20150328/2.png)
 
 # 0x03 Google Hacking Wooyun案例： #
 

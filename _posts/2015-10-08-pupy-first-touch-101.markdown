@@ -9,11 +9,11 @@ date:   2015-10-08 19:00:00
 
 菜鸡我总结一下一个python远控——pupy的使用帮助，github地址为：[https://github.com/n1nj4sec/pupy](https://github.com/n1nj4sec/pupy)，作者对其能够实现的功能写得很清除。其主要依赖rpyc来实现远程控制，并且使用Python作为脚本语言从而实现跨平台操作，再使用PupyServer和PupyCmd的继承，实现控制端的主要功能，各个模块均继承自PupyModules来通过run命令实现对应模块功能。
 
-![](/images/20151008/dir1.png)
+![](http://ojyzyrhpd.bkt.clouddn.com/20151008/dir1.png)
 
 client目录存放客户端（受控端）脚本以及一些源文件，docs则是说明文档相关，pupy则是服务端（控制端）相关脚本
 
-![](/images/20151008/dir2.png)
+![](http://ojyzyrhpd.bkt.clouddn.com/20151008/dir2.png)
 
 cypto中是一些方向ssl连接需要的证书文件，modules中是一些run命令运行的模块脚本，packages中是不同平台上实现模块功能的根本脚本，payload_templates则是生成客户端exe及dll的模板，pupylib中是服务端核心功能中几个重要的类文件，pupy.conf是配置文件设置服务地址端口，颜色显示及命令别名，pupygen.py生成Windows平台上的exe或dll客户端，pupysh.py则是pypushell主程序
 
@@ -27,7 +27,7 @@ github的ReadMe里面都写得很清楚，这里我开了3个虚拟机，服务�
 
 对于Windows主要是通过pupy文件夹下的pupygen.py生成对应x86或x64平台的exe或dll（用于反向注射）
 
-![](/images/20151008/1.png)
+![](http://ojyzyrhpd.bkt.clouddn.com/20151008/1.png)
 
 host为回连主机地址，-p指定回连端口，-t指定生成文件类型，-o指定生成文件名,然后生成对应二进制文件
 
@@ -41,13 +41,13 @@ binary=binary[0:offsets[0]]+new_host+binary[offsets[0]+len(new_host):]
 
 找到二进制文件中对应的标志位，再将host及ip写入
 
-![](/images/20151008/2.png)
+![](http://ojyzyrhpd.bkt.clouddn.com/20151008/2.png)
 
 ## 2.生成Kali上的客户端
 
 Windows平台下如果有Python，rpyc，pupy也是类似的
 
-![](/images/20151008/3.png)
+![](http://ojyzyrhpd.bkt.clouddn.com/20151008/3.png)
 
 {% highlight python %}
 rhost,rport=None,None
@@ -69,7 +69,7 @@ rhost,rport=None,None
 
 直接运行pupy/pupy/pupysh.py便可以启用客户端（pupyshell），自然使用help或?查看帮助
 
-![](/images/20151008/4.png)
+![](http://ojyzyrhpd.bkt.clouddn.com/20151008/4.png)
 
 在pupysh.py中主要是导入pupylib.PupyServer和pupylib.PupyCmd，分别实例化，并使用PupyCmd继承cmd.Cmd中的cmdloop()方法，来解析并执行命令
 
@@ -86,7 +86,7 @@ pupyServer.start()
 
 有趣的是在有中文版xp的受控端进入后，使用clients或sessions命令时均会出现如下错误
 
-![](/images/20151008/error.png)
+![](http://ojyzyrhpd.bkt.clouddn.com/20151008/error.png)
 
 看是解码错误，便在pupylib/PupyCmd.py中在导入模块后再添加以下代码就okay啦
 
@@ -108,7 +108,7 @@ def do_clients(self, arg):
 
 ## sessions ##
 
-![](/images/20151008/5.png)
+![](http://ojyzyrhpd.bkt.clouddn.com/20151008/5.png)
 
 -i是设置过滤器（也可用于其他命令），-g重置过滤器，-l列出所有存活会话，-k杀死选择会话
 
@@ -126,19 +126,19 @@ def do_exit(self, arg):
 
 ## jobs ##
 
-![](/images/20151008/6.png)
+![](http://ojyzyrhpd.bkt.clouddn.com/20151008/6.png)
 
 -h帮助，-l列举出所有任务，-k后接job_id杀死该job，-p后接job_id打印出该job输出
 
 ## python ##
 
-![](/images/20151008/7.png)
+![](http://ojyzyrhpd.bkt.clouddn.com/20151008/7.png)
 
 运行本地的Python环境，用于调试
 
 ## read ##
 
-![](/images/20151008/8.png)
+![](http://ojyzyrhpd.bkt.clouddn.com/20151008/8.png)
 
 {% highlight python %}
 def do_read(self, arg):
@@ -181,7 +181,7 @@ def list_modules(self):
 
 将modules包中脚本所包含的modules都列举出来，并附加简要说明
 
-![](/images/20151008/9.png)
+![](http://ojyzyrhpd.bkt.clouddn.com/20151008/9.png)
 
 各模块支持的平台如下
 
@@ -204,7 +204,7 @@ def list_modules(self):
 
 run命令则是直接运行这些模块
 
-![](/images/20151008/10.png)
+![](http://ojyzyrhpd.bkt.clouddn.com/20151008/10.png)
 
 -h帮助，-f设置客户端过滤条件，--bg后台运行，后接模块及其参数
 
@@ -218,7 +218,7 @@ run命令则是直接运行这些模块
 
 交互shell所有平台均支持，这里我把显示Windows的编码换成了cp936，可以良好显示中文啦
 
-![](/images/20151008/11.png)
+![](http://ojyzyrhpd.bkt.clouddn.com/20151008/11.png)
 
 ### shell_exec
 
@@ -232,25 +232,25 @@ if self.client.is_windows():
         res=res.decode('cp936')#437')
 {% endhighlight %}
 
-![](/images/20151008/16.png)
+![](http://ojyzyrhpd.bkt.clouddn.com/20151008/16.png)
 
 ### pyshell
 
 开启远程Python交互shell
 
-![](/images/20151008/17.png)
+![](http://ojyzyrhpd.bkt.clouddn.com/20151008/17.png)
 
 ### pyexec
 
 直接在远程系统上执行Python代码，--file接文件或-c接代码
 
-![](/images/20151008/18.png)
+![](http://ojyzyrhpd.bkt.clouddn.com/20151008/18.png)
 
 ### download
 
 通过使用`from rpyc.utils.classic import download`，实现从远程系统上下载文件
 
-![](/images/20151008/12.png)
+![](http://ojyzyrhpd.bkt.clouddn.com/20151008/12.png)
 
 {% highlight python %}
 remote_file=self.client.conn.modules['os.path'].expandvars(args.remote_file)
@@ -266,33 +266,33 @@ if not args.local_file:
 
 通过使用`from rpyc.utils.classic import upload`实现上传，功能与download相仿
 
-![](/images/20151008/13.png)
+![](http://ojyzyrhpd.bkt.clouddn.com/20151008/13.png)
 
 ### search
 
 在指定path中搜索string
 
-![](/images/20151008/search.png)
+![](http://ojyzyrhpd.bkt.clouddn.com/20151008/search.png)
 
 ### get_info
 
 获取受控端平台信息
 
-![](/images/20151008/14.png)
+![](http://ojyzyrhpd.bkt.clouddn.com/20151008/14.png)
 
 ###  exit
 
 退出受控端并确认
 
-![](/images/20151008/15.png)
+![](http://ojyzyrhpd.bkt.clouddn.com/20151008/15.png)
 
 ### ps
 
 列出进程，默认给出'username', 'pid', 'arch', 'exe'的信息，-a则给出'username', 'pid', 'arch', 'name', 'exe', 'cmdline', 'status'
 
-![](/images/20151008/19.png)
+![](http://ojyzyrhpd.bkt.clouddn.com/20151008/19.png)
 
-![](/images/20151008/20.png)
+![](http://ojyzyrhpd.bkt.clouddn.com/20151008/20.png)
 
 ### getprivs
 
@@ -302,37 +302,37 @@ if not args.local_file:
 
 杀死pid进程
 
-![](/images/20151008/21.png)
+![](http://ojyzyrhpd.bkt.clouddn.com/20151008/21.png)
 
 ### socks5proxy
 
 开启socks5代理，-p指定端口
 
-![](/images/20151008/22.png)
+![](http://ojyzyrhpd.bkt.clouddn.com/20151008/22.png)
 
 ### portfwd
 
 本地或远程端口转发，远程端口转发还未开发，本地端口转发则是`-L [<LOCAL_ADDR>]:<LOCAL_PORT>:<REMOTE_ADDR>:<REMOTE_PORT>`，-k则kill掉对应的id转发（id依次增一）
 
-![](/images/20151008/portfwd.png)
+![](http://ojyzyrhpd.bkt.clouddn.com/20151008/portfwd.png)
 
 ### shell_exec
 
 直接执行shellcode
 
-![](/images/20151008/shellcode_exec.png)
+![](http://ojyzyrhpd.bkt.clouddn.com/20151008/shellcode_exec.png)
 
 ### keylogger
 
 键盘记录
 
-![](/images/20151008/23.png)
+![](http://ojyzyrhpd.bkt.clouddn.com/20151008/23.png)
 
 ### screenshot
 
 截屏，-e遍历屏幕，-s SCREEN指定特定的屏幕（穷吊没验证），-v截屏后直接预览
 
-![](/images/20151008/24.png)
+![](http://ojyzyrhpd.bkt.clouddn.com/20151008/24.png)
 
 ### webcamsnap
 
@@ -342,7 +342,7 @@ if not args.local_file:
 
 迁移至其他进程（由pid指定）
 
-![](/images/20151008/migrate.png)
+![](http://ojyzyrhpd.bkt.clouddn.com/20151008/migrate.png)
 
 ### persistence
 
@@ -354,7 +354,7 @@ remote_path=self.client.conn.modules['os.path'].expandvars("%TEMP%\\{}.exe".form
 
 权限维持，写入到注册表中（对应临时目录下的随机命令exe），并开机启动
 
-![](/images/20151008/persistence.png)
+![](http://ojyzyrhpd.bkt.clouddn.com/20151008/persistence.png)
 
 ### msgbox
 
@@ -395,7 +395,7 @@ class MsgBoxPopup(PupyModule):
 
 title指定标题，再接内容
 
-![](/images/20151008/msg.png)
+![](http://ojyzyrhpd.bkt.clouddn.com/20151008/msg.png)
 
 
 
