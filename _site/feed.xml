@@ -9,6 +9,51 @@
     
       
       <item>
+        <title>EyeWitness工具小记</title>
+        
+          <description>&lt;h1 id=&quot;x00-&quot;&gt;0x00 前言&lt;/h1&gt;
+
+&lt;p&gt;还是在看《黑客秘笈》的时候，比较认同一个观点就是在渗透测试的过程中时间是很重要的，当我们在扫描过一个C段或者是有上百个Web服务需要面对的时候，找到水桶的短板是很最重要的，如果我们人工去一个一个访问判断它是不是武大郎的话就很耗费时间和人力。&lt;/p&gt;
+
+&lt;p&gt;所以书里面就使用Peeping Tom（&lt;a href=&quot;https://bitbucket.org/LaNMaSteR53/peepingtom/&quot;&gt;https://bitbucket.org/LaNMaSteR53/peepingtom/&lt;/a&gt;）这个工具来调用浏览器访问指定的IP和端口，对Web服务进行截图，最后统一汇总到一个页面中，我们就可以挑一些柿子开捏了（Tomcat，JBoss，CMS等一些公开漏洞比较多的框架或软件）。&lt;/p&gt;
+
+&lt;p&gt;实际上当我来准备下载工具试用了时候，看到了作者已停止更新该软件了，并且向大家推荐了另一个更好的孪生兄弟，EyeWitness（&lt;a href=&quot;https://github.com/ChrisTruncer/EyeWitness&quot;&gt;https://github.com/ChrisTruncer/EyeWitness&lt;/a&gt;）。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20161228/1.jpg&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;x01-&quot;&gt;0x01 安装&lt;/h1&gt;
+
+&lt;p&gt;EyeWitness的安装比较简单，看github上的README就可以知道，要求系统是Kali2或者Debian 7+，切换到setup目录直接运行setup.sh脚本就行了。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20161228/2.jpg&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;x02-&quot;&gt;0x02 使用&lt;/h1&gt;
+
+&lt;p&gt;帮助选线则是如下所示：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20161228/3.jpg&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;虽然从选项中都能知道其具体的功能，但官方也专门写了篇文章（&lt;a href=&quot;https://www.christophertruncer.com/eyewitness-2-0-release-and-user-guide/&quot;&gt;https://www.christophertruncer.com/eyewitness-2-0-release-and-user-guide/&lt;/a&gt;）进行介绍，就不赘述了。&lt;/p&gt;
+
+&lt;p&gt;但是当我在Kali2上安装好之后直接运行却出现如下的报错：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20161228/4.jpg&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;一查原因（&lt;a href=&quot;http://ju.outofmemory.cn/entry/290716&quot;&gt;http://ju.outofmemory.cn/entry/290716&lt;/a&gt;）应该是firefox的版本太低了，Kali2自带的Iceweasel版本只有38，所以果断卸载装上最新的Firefox（&lt;a href=&quot;https://krasnek-andreas.blogspot.com/2014/02/kali-linux-tutorial-ii-remove-iceweasel.html&quot;&gt;https://krasnek-andreas.blogspot.com/2014/02/kali-linux-tutorial-ii-remove-iceweasel.html&lt;/a&gt;），最后就可以愉快地玩耍了。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20161228/5.jpg&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+</description>
+        
+        <pubDate>Wed, 28 Dec 2016 00:00:00 -0500</pubDate>
+        <link>
+        https://larryxi.github.io/eyewitness-tool-note.html</link>
+        <guid isPermaLink="true">https://larryxi.github.io/eyewitness-tool-note.html</guid>
+      </item>
+      
+    
+      
+      <item>
         <title>Windows 2008 GPP漏洞学习</title>
         
           <description>&lt;h1 id=&quot;x00-&quot;&gt;0x00 背景&lt;/h1&gt;

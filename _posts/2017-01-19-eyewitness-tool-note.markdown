@@ -1,6 +1,6 @@
 ---
 title: "EyeWitness工具小记"
-date: 2017-01-19
+date: 2016-12-28
 ---
 
 # 0x00 前言
@@ -35,8 +35,8 @@ EyeWitness的安装比较简单，看github上的README就可以知道，要求�
  
 ![][5]
 
-[1]: http://ojyzyrhpd.bkt.clouddn.com/20170119/1.jpg
-[2]: http://ojyzyrhpd.bkt.clouddn.com/20170119/2.jpg
-[3]: http://ojyzyrhpd.bkt.clouddn.com/20170119/3.jpg
-[4]: http://ojyzyrhpd.bkt.clouddn.com/20170119/4.jpg
-[5]: http://ojyzyrhpd.bkt.clouddn.com/20170119/5.jpg
+[1]: http://ojyzyrhpd.bkt.clouddn.com/20161228/1.jpg
+[2]: http://ojyzyrhpd.bkt.clouddn.com/20161228/2.jpg
+[3]: http://ojyzyrhpd.bkt.clouddn.com/20161228/3.jpg
+[4]: http://ojyzyrhpd.bkt.clouddn.com/20161228/4.jpg
+[5]: http://ojyzyrhpd.bkt.clouddn.com/20161228/5.jpg
