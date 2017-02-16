@@ -9,6 +9,75 @@
     
       
       <item>
+        <title>php-cgi 默认配置解析漏洞实践</title>
+        
+          <description>&lt;h1 id=&quot;x00-&quot;&gt;0x00 背景&lt;/h1&gt;
+
+&lt;p&gt;中午看到&lt;a href=&quot;https://www.leavesongs.com/&quot;&gt;P牛&lt;/a&gt;20分钟拿下WebShell很是崇拜，大家问其究竟得知是&lt;code&gt;xxx.jpg/.php&lt;/code&gt;被解析成php脚本轻松拿下，抱着自愧不如的心理来学习一下。&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;http://www.80sec.com/nginx-securit.html&quot;&gt;http://www.80sec.com/nginx-securit.html&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;http://www.laruence.com/2009/11/13/1138.html&quot;&gt;Nginx(PHP/fastcgi)的PATH_INFO问题&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;http://www.laruence.com/2010/05/20/1495.html&quot;&gt;Nginx + PHP CGI的一个可能的安全漏洞&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://nealpoole.com/blog/2011/04/setting-up-php-fastcgi-and-nginx-dont-trust-the-tutorials-check-your-configuration/&quot;&gt;Setting up PHP-FastCGI and nginx? Don’t trust the tutorials: check your configuration!&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;上面的链接主要阐述的是，在Nginx服务器上由于PHP的cgi.fix_pathinfo默认为开启状态，加上Web服务器上没有对应地安全处理最终导致解析漏洞的发生。&lt;/p&gt;
+
+&lt;h1 id=&quot;x01-&quot;&gt;0x01 实践&lt;/h1&gt;
+
+&lt;p&gt;这个漏洞从10年被发现，而如今我测试的php-5.6.25版本中cgi.fix_pathinfo仍为默认开启状态，由于Web安全是个贯穿性的整体，下面就从不同平台上的Web服务器进行测试实践。&lt;/p&gt;
+
+&lt;h2 id=&quot;windows-&quot;&gt;Windows 平台&lt;/h2&gt;
+
+&lt;p&gt;在Windows平台上，运维者如果在搭建好环境后在实际环境中使用默认配置，将请求未做处理就传入php的fastcgi，解析问题就随之而来了。&lt;/p&gt;
+
+&lt;h3 id=&quot;nginx&quot;&gt;Nginx&lt;/h3&gt;
+
+&lt;p&gt;参考&lt;a href=&quot;http://blog.qiji.tech/archives/3092&quot;&gt;这里&lt;/a&gt;搭建好环境，测试漏洞存在：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/2017/02/16/1.jpg&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;iis&quot;&gt;IIS&lt;/h3&gt;
+
+&lt;p&gt;IIS服务器在&lt;a href=&quot;http://www.cnblogs.com/haocool/archive/2012/10/14/windows-8-iis-to-configure-php-runtime-environment.html&quot;&gt;搭建&lt;/a&gt;好后，使用fastcgi模块处理php脚本，同样存在问题：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/2017/02/16/2.jpg&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;linux-&quot;&gt;Linux 平台&lt;/h2&gt;
+
+&lt;p&gt;在Linux平台下我直接是Ubuntu apt-get 安装的nginx、php和php5-fpm，首先是随便请求一个php文件，浏览器中响应如下：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/2017/02/16/3.jpg&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;像这种只是响应很简单的body而不是nginx的404页面，很有可能说明是直接将请求传递到了fastcgi中。（Widnwos平台上也是类似的道理）&lt;/p&gt;
+
+&lt;p&gt;可是在访问&lt;code&gt;http://192.168.1.124/larry.txt/.php&lt;/code&gt;页面时出现了&lt;code&gt;Access denied.&lt;/code&gt;信息拒绝访问，查看error日志和Google一番之后得知php在5.3.9版本中对php-fpm添加了&lt;a href=&quot;https://bugs.php.net/bug.php?id=55181&quot;&gt;security.limit_extensions&lt;/a&gt;选项，防止Web服务的错误配置而带来的php代码执行。所以我在&lt;code&gt;/etc/php5/fpm/pool.d/www.conf&lt;/code&gt;中添加&lt;code&gt;security.limit_extensions = .php .txt&lt;/code&gt;，再重启php5-fpm就能复现解析漏洞了：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/2017/02/16/4.jpg&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;x02-&quot;&gt;0x02 感悟&lt;/h1&gt;
+
+&lt;p&gt;探究这个漏洞久了总感觉似曾相识，最后才恍然大悟是看过的&lt;a href=&quot;http://172.16.24.178/www.owasp.org.cn/OWASP_Training/Upload_Attack_Framework.pdf&quot;&gt;Upload_Attack_Framework&lt;/a&gt;中的内容，当初理解实践地不够深入现在只能再慢慢还了。对比之下我这个探究也“自愧不如”了。&lt;/p&gt;
+
+&lt;p&gt;在Google过程中发现orange大牛在hitcon大会演讲的ppt中也有提到过该问题的相关思考，其中针对某种防御形式的绕过也是蛮有意思的，有兴趣的同学可以&lt;a href=&quot;https://hitcon.org/2015/CMT/download/day1-c-r0.pdf&quot;&gt;瞅瞅&lt;/a&gt;。&lt;/p&gt;
+
+&lt;p&gt;比较有意思的是发现在国内某个比较火的php环境集成软件中，也有一键化部署nginx+php的环境，而其中的默认配置不可避免地会被拿下，结合浏览器的关键字
+搜索和对应存在上传图片的网站，这样我也能够“20分钟”轻松拿下了：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/2017/02/16/5.jpg&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+</description>
+        
+        <pubDate>Thu, 16 Feb 2017 00:00:00 -0500</pubDate>
+        <link>
+        https://larryxi.github.io/php-cgi-vuln-practice.html</link>
+        <guid isPermaLink="true">https://larryxi.github.io/php-cgi-vuln-practice.html</guid>
+      </item>
+      
+    
+      
+      <item>
         <title>EyeWitness工具小记</title>
         
           <description>&lt;h1 id=&quot;x00-&quot;&gt;0x00 前言&lt;/h1&gt;
