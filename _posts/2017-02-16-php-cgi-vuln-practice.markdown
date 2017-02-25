@@ -46,6 +46,12 @@ IIS服务器在[搭建](http://www.cnblogs.com/haocool/archive/2012/10/14/window
 
 ![][4]
 
+## 关于Apache
+
+一般都说是Apache通过mod_php模块来加载php是不会出现这样的解析问题的，就在想Apache会不会也有fastcgi模块，没想到还真有：[mod_php VS mod_fastcgi](http://wenku.baidu.com/view/887de969561252d380eb6e92.html)。所以就在想如果换成mod_fastcgi来配合php会不会出问题，但我从前面的文章中理解到是两个模块都有把请求传递给php-cgi。
+
+那么“安全”的根源可能在于Apache本身？细翻了一下Apache的官方文档发现[AcceptPathInfo](https://httpd.apache.org/docs/2.4/mod/core.html#acceptpathinfo)这个指令，其默认值是Off的，当我们传入`/test/here.html/more`的请求时，由于把`/more`作为了`PATH_INFO`，Apache则会返回404 NOT FOUND error；如果设置为On，则会对之前的请求用`/test/here.html`映射有效文件。Apache就这样把我们堵在了寻找PHP的门外。
+
 # 0x02 感悟
 
 探究这个漏洞久了总感觉似曾相识，最后才恍然大悟是看过的[Upload_Attack_Framework](http://172.16.24.178/www.owasp.org.cn/OWASP_Training/Upload_Attack_Framework.pdf)中的内容，当初理解实践地不够深入现在只能再慢慢还了。对比之下我这个探究也“自愧不如”了。
