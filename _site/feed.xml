@@ -9,6 +9,89 @@
     
       
       <item>
+        <title>XerCMS文件名注入与垂直越权漏洞</title>
+        
+          <description>&lt;h1 id=&quot;x00-&quot;&gt;0x00 背景&lt;/h1&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;版本：1.0.3&lt;/li&gt;
+  &lt;li&gt;下载地址：&lt;a href=&quot;http://www.xercms.com/?p=analysis&amp;amp;e=down&amp;amp;file=2015%2fXerCMS-1.0.3[Release].rar&quot;&gt;http://www.xercms.com/?p=analysis&amp;amp;e=down&amp;amp;file=2015%2fXerCMS-1.0.3[Release].rar&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h1 id=&quot;x01-&quot;&gt;0x01 前台用户上传文件名注入&lt;/h1&gt;
+
+&lt;p&gt;这个CMS也是自己实现的一种MVC框架，在主文件index.php中可以看出，主要是由XerCMS/Kernel.php来负责将请求路由到对应的Model进行action的处理。&lt;/p&gt;
+
+&lt;p&gt;全局代码看下来在用户操作的文件中，即XerCMS/Modules/member/index.php中有一个upfiles函数，如下：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20170420/1.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;该函数在页面中并没有展示出来，还是一个文件上传的操作，可以看到其在111行实例化upload class并调用files方法进行文件的上传。&lt;/p&gt;
+
+&lt;p&gt;跟进其中的逻辑在XerCMS/Library/XerCMS_upload.php中，如下：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20170420/2.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;具体在file方法中，首先获取上传文件的后缀，进行黑名单&lt;code&gt;array(&#39;php&#39;,&#39;asp&#39;,&#39;aspx&#39;,&#39;vbs&#39;,&#39;bat&#39;,&#39;asa&#39;)&lt;/code&gt;的检测，这里很明显的黑名单不完全，配合一些服务器的解析漏洞是可以直接拿shell的，也就不细说了。然后80行对文件进行记录后就进行上传的操作。&lt;/p&gt;
+
+&lt;p&gt;跟进record方法，如下：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20170420/3.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;在第145行，把文件名未经过滤就插入到数据库当中，而在数据库中insert的逻辑如下（XerCMS/Library/XerCMS_db.php）：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20170420/4.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20170420/5.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;可以看出其中的insert的值是未经过滤就插入，这里就可以使用报错注入来获取相关数据了。&lt;/p&gt;
+
+&lt;p&gt;简单写个本地post file的html，如下：&lt;/p&gt;
+
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-html&quot; data-lang=&quot;html&quot;&gt;&lt;span class=&quot;cp&quot;&gt;&amp;lt;!DOCTYPE html&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;&amp;lt;html&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;&amp;lt;head&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;title&amp;gt;&lt;/span&gt;test&lt;span class=&quot;nt&quot;&gt;&amp;lt;/title&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;&amp;lt;/head&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;&amp;lt;body&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;&amp;lt;form&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;action=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;quot;http://demo.xercms.com/index.php?m=member&amp;amp;a=upfiles&amp;amp;id=1&amp;quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;method=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;quot;post&amp;quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;enctype=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;quot;multipart/form-data&amp;quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;input&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;type=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;quot;file&amp;quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;quot;larry&amp;quot;&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;/&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;input&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;type=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;quot;submit&amp;quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;quot;submit&amp;quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;value=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;quot;Submit&amp;quot;&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;/&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;&amp;lt;/form&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;&amp;lt;/body&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;&amp;lt;/html&amp;gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;然后burp抓包修改文件名即可进行注入，demo演示如下：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20170420/6.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;x02-group&quot;&gt;0x02 用户垂直越权更改group&lt;/h1&gt;
+
+&lt;p&gt;这个问题是出现在用户操作中的profilePost函数，旨在是用户更新自己的profile，如下：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20170420/7.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;在这里对传入参数的值有过滤，在数据库脚本中对键也有验证，sql注入的可能性就不大了，但是我们可以使用正常的字段来更改用户所属的group，演示如下：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20170420/8.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;更改group字段后，用户所属组就会从“路人甲”变成“内部组”，个人感觉具体利用起来可能还是有些鸡肋的。&lt;/p&gt;
+
+&lt;h1 id=&quot;x03-&quot;&gt;0x03 后记&lt;/h1&gt;
+
+&lt;p&gt;一开始在补天看到是这个cms又出来一个SQL注入，想也去找一找有没有其他的注入漏洞，但是自己看了半天还是前人已经挖过的漏洞(&lt;a href=&quot;https://www.ihonker.org/thread-9279-1-1.html&quot;&gt;https://www.ihonker.org/thread-9279-1-1.html&lt;/a&gt;)。道行不够还是得多补补==&lt;/p&gt;
+
+</description>
+        
+        <pubDate>Thu, 20 Apr 2017 00:00:00 -0400</pubDate>
+        <link>
+        https://larryxi.github.io/xercms-vuls.html</link>
+        <guid isPermaLink="true">https://larryxi.github.io/xercms-vuls.html</guid>
+      </item>
+      
+    
+      
+      <item>
         <title>Catfish CMS漏洞集合</title>
         
           <description>&lt;h1 id=&quot;x00-&quot;&gt;0x00 背景&lt;/h1&gt;
