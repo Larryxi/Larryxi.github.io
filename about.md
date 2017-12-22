@@ -1,16 +1,14 @@
-# whiteglass
+---
+layout: page
+title: "About"
+permalink: /about/
+---
 
-[![Gem Version](https://badge.fury.io/rb/jekyll-whiteglass.svg)](https://badge.fury.io/rb/jekyll-whiteglass)
-[![Build Status](https://travis-ci.org/yous/whiteglass.svg?branch=master)](https://travis-ci.org/yous/whiteglass)
-[![Dependency Status](https://gemnasium.com/badges/github.com/yous/whiteglass.svg)](https://gemnasium.com/github.com/yous/whiteglass)
-
-Minimal, responsive Jekyll theme for hackers.
-
-![whiteglass theme](screenshot.png)
+whiteglass is a minimal, responsive Jekyll theme for hackers.
 
 ## Installation
 
-Add this line to your Jekyll site's Gemfile:
+Add this link to your Jekyll site's Gemfile:
 
 ``` ruby
 gem "jekyll-whiteglass"
@@ -99,21 +97,10 @@ gem install jekyll-whiteglass
 To override the default structure and style of whiteglass, simply create the
 concerned directory at the root of your site, copy the file you wish to
 customize to that directory, and then edit the file. e.g., to override the
-[`_includes/footer_content.html`](_includes/footer_content.html) file to add
-contents to footer, create an `_includes` directory, copy
-`_includes/footer_content.html` from jekyll-whiteglass gem folder to
+[`_includes/head_custom.html`](_includes/head_custom.html) file to specify a
+custom style path, create an `_includes` directory, copy
+`_includes/head_custom.html` from jekyll-whiteglass gem folder to
 `<your-site>/_includes` and start editing that file.
-
-For example, you can add favicons to `_includes/head_custom.html`:
-
-``` html
-<link rel="icon" type="image/x-icon" href="{{ "/favicon.ico" | relative_url }}">
-<link rel="apple-touch-icon" href="{{ "/apple-touch-icon.png" | relative_url }}">
-<link rel="apple-touch-icon" sizes="76x76" href="{{ "/apple-touch-icon-76x76.png" | relative_url }}">
-<link rel="apple-touch-icon" sizes="120x120" href="{{ "/apple-touch-icon-120x120.png" | relative_url }}">
-<link rel="apple-touch-icon" sizes="152x152" href="{{ "/apple-touch-icon-152x152.png" | relative_url }}">
-<link rel="apple-touch-icon" sizes="180x180" href="{{ "/apple-touch-icon-180x180.png" | relative_url }}">
-```
 
 The site's default CSS is in the gem itself,
 [`assets/main.scss`](assets/main.scss). To override the default CSS, the file
@@ -160,23 +147,6 @@ title: Awesome Post
 description: This is an awesome post.
 ```
 
-If you don't specify `post.description`, then `post.excerpt` will be used if it
-exist.
-
-### External URL
-
-`external-url` turns the title of your post to a link. Specify a URL which you
-want to link to.
-
-``` yaml
-layout: post
-title: Jekyll whiteglass theme
-external-url: https://github.com/yous/whiteglass
-```
-
-Then the title of your post would look like a link with text
-`Jekyll whiteglass theme →`. This also applies to your blog feed.
-
 ### Category
 
 Each post can have `categories` attribute. It can be a string or an array. This
@@ -196,26 +166,6 @@ categories:
   - Misc
   - Idea
 ```
-
-### Feed
-
-Create `<your-site>/feed.xml` with:
-
-``` yaml
----
-layout: feed
----
-```
-
-If you want to use another path for feed, you can specify a non-default path via
-your site's config.
-
-``` yaml
-feed:
-  path: atom.xml
-```
-
-Then create `<your-site>/atom.xml` with the same content of `feed.xml` above.
 
 ### Comments
 
@@ -288,27 +238,3 @@ To enable Google Analytics, add the following lines to your Jekyll site:
 ``` yaml
 google_analytics: UA-NNNNNNNN-N
 ```
-
-## Contributing
-
-Bug reports and pull requests are welcome on GitHub at
-<https://github.com/yous/whiteglass>. This project is intended to be a safe,
-welcoming space for collaboration, and contributors are expected to adhere to
-the [Contributor Covenant](http://contributor-covenant.org) code of conduct.
-
-## Development
-
-To set up your environment to develop this theme, run `bundle install`.
-
-Your theme is setup just like a normal Jekyll site! To test your theme, run
-`bundle exec jekyll serve` and open your browser at
-`http://localhost:4000/whiteglass/`. This starts a Jekyll server using your
-theme. Add pages, documents, data, etc. like normal to test your theme's
-contents. As you make modifications to your theme and to your content, your site
-will regenerate and you should see the changes in the browser after a refresh,
-just like normal.
-
-## License
-
-The theme is available as open source under the terms of the
-[MIT License](http://opensource.org/licenses/MIT).

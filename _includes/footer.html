@@ -1,44 +1,11 @@
-<footer>
-    {% include paginate.html %}
-    {% include suggestion.html %}
-    {% if page.url == "/about" or paginator.total_pages == 1 or page.url == "/404" %}
-        <div class="container" style="text-align: center; margin-bottom: 20px">
-            <a target="_blank" class="button" href="https://twitter.com/{{ site.twitter_username }}">
-                Follow me on twitter
-            </a>
-        </div>
-    {% endif %}
-    <hr />
-    <div class="user-footer">
-        <!--more<div class="copyright alignable pull-left">
-            {% if site.copyright %}
-                <h2> &copy;{{ site.copyright }}</h2>
-            {% else %}
-                <h2> &copy;{{ site.title }}</h2>
-            {% endif %}
-        </div>-->
-        <div class="alignable pull-left">
-            <p class="faded"><!-- class="alignable pull-left" style="display: inline-block">-->
-            Built with <a href="http://jekyllrb.com/" class="different-highlight underline">Jekyll</a> and <a href="http://ankitsultana.me/accent/" class="different-highlight underline">accent</a>
-            </p>
-        </div>
-        <div class="alignable pull-right">
-            <a target="_blank" href="http://weibo.com/u/3996118191" class="button">
-                @Larryxi
-            </a>
-            <a href="mailto:{{ site.email }}" class="button">
-                mail
-            </a>
-            <a target="_blank" href="{{ site.url }}{{ site.baseurl }}/feed.xml" class="button">
-                rss
-            </a>
-        </div>
-    </div>
-    <!--<div style="clear:both"></div>
-    <hr />
-    <div class="theme-footer">
-        <p class="alignable pull-left" style="display: inline-block">
-            Built with <a href="http://jekyllrb.com/" class="different-highlight underline">Jekyll</a> and <a href="http://ankitsultana.me/accent/" class="different-highlight underline">accent</a>
-        </p>
-    </div>-->
+<footer class="site-footer">
+
+  <div class="wrapper">
+
+    <p>
+      {% include footer_content.html %}
+    </p>
+
+  </div>
+
 </footer>

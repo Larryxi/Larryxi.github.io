@@ -1,94 +1,72 @@
-# User Settings | Edit there as per required
+# Welcome to Jekyll!
+#
+# This config file is meant for settings that affect your whole blog, values
+# which you are expected to set up once and rarely edit after that. If you find
+# yourself editing this file very often, consider using Jekyll's data files
+# feature for the data you need to update frequently.
+#
+# For technical reasons, this file is *NOT* reloaded automatically when you use
+# 'jekyll serve'. If you change this file, please restart the server process.
 
-title: Larryxi's blog
-url: "https://larryxi.github.io"
-# baseurl: "/accent"
-
-# This will show up at the top of index page
-site_heading: >
-    Larryxi <span class="faded">'s blog</span>
-
-email: larrycompress@gmail.com
+# Site settings
+# These are used to personalize your new site. If you look in the HTML files,
+# you will see them accessed via {{ site.title }}, {{ site.author }}, and so on.
+# You can create any custom variable you would like, and they will be accessible
+# in the templates via {{ site.myvariable }}.
+title: Larryxi's Blog
 author: Larryxi
-# This description will show up in google search results
-# (for index page) etc.
-description: >
-    Larryxi's blog,learn security everyday.
+description: Larryxi's Blog, the script kid in binary world.
+baseurl: "/" # the subpath of your site, e.g. /blog
+url: "https://larryxi.github.io" # the base hostname & protocol for your site, e.g. http://example.com
+lang: zh-CN
+timezone: UTC
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - Rakefile
+  - README.md
+  - LICENSE.txt
+  - CHANGELOG.md
+  - jekyll-whiteglass.gemspec
+  - screenshot.png
+  - vendor
 
-# This will what will show against &copy; in the footer
-copyright: accent
-# Toggle your short bio, which will displayed on your index page
-# Just toggle it and run jekyll again to see
-intro: false         # Tip: Remove the span from site_heading if intro is set to true
-# This will be displayed in your intro
-short_bio: >
-    Welcome! This is <span>accent</span>, a mobile friendly theme for Jekyll. The main feature of this
-    theme is that you can change the accent color. Refer the
-    <a class="underline different-highlight" href="http://ankitsultana.me/accent/documentation.html">
-        Documentation
-    </a>
-    to know how.
+# Social media
+twitter_username:
+twitter_image:
+facebook_app_id:
+facebook_image:
+google_analytics:
+comments: false
 
-permalink: /:title.html
-
-# Comments are powered by disqus
-comments: true
-
-# keep about_stub roughly 12 words long for best results
-# This will show up at the bottom of each post
-# Note that about_footer should be true if you want
-# to see author information at the bottom of each post
-about_stub: >
-    Jordon says,"JUST DO IT", so I learn IT.
-
-about_footer: true
-
-# twitter_username: AnkitSultana
-github_username: Larryxi
-# facebook_id: yourusername
-
-favicon: true
-favicon_location: "images/favicon.ico"
-
-profile_picture: images/lubang.jpg
-paginate: 5
-paginate_path: "/page/:num"
-tracking_id: UA-80180060-1# GA Tracking ID
-
-# Social Stuff | open graph and twitter cards
-# og_image: "images/accent.png" # This will show in facebook thumbnails
-# twitter_image: "http://ankitsultana.me/images/accent.png?1234" # This will show in twitter cards
-
-####################################
-####################################
-####################################
-### Build Settings | Don't Touch ###
-####################################
-####################################
-####################################
-
-markdown: kramdown
-
+# Plugins
 gems:
-    - jekyll-paginate
+  - jekyll-archives
+  - jekyll-paginate
+  - jekyll-sitemap
 
-sass:
-    style: compressed
-    sass_dir: _sass
+# Build settings
+markdown: kramdown
+excerpt_separator: "<!-- more -->"
 
-# Scopes
-defaults:
-    -
-        scope:
-            path:   ""
-            type:   "pages"
-        values:
-            layout: "page"
-    -
-        scope:
-            path:   ""
-            type:   "posts"
-        values:
-            layout: "post"
+# Outputting
+permalink: /:year/:month/:day/:title/
+paginate_path: /posts/:num/
+paginate: 5
 
-exclude: [vendor] # For travis ci
+# Markdown settings
+kramdown:
+  auto_ids: false
+  enable_coderay: false
+  entity_output: as_char
+  footnote_nr: 1
+  smart_quotes: lsquo,rsquo,ldquo,rdquo
+  toc_levels: 1..6
+
+# jekyll-archives
+jekyll-archives:
+  enabled:
+    - categories
+  layout: category_archives
+  permalinks:
+    category: /categories/:name/
