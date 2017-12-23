@@ -58,7 +58,7 @@ paginate: 5
 kramdown:
   auto_ids: false
   enable_coderay: false
-  entity_output: as_char
+  entity_output: as_input
   footnote_nr: 1
   smart_quotes: lsquo,rsquo,ldquo,rdquo
   toc_levels: 1..6
