@@ -4,7 +4,7 @@ title: "About"
 permalink: /about/
 ---
 
-Larryxi's Blog, the script kid in binary world.
+Larryxi's Blog, Run Fay Run.
 
 ## socket
 
