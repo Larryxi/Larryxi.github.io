@@ -18,7 +18,7 @@ author: Larryxi
 description: Larryxi's Blog, the script kid in binary world.
 baseurl: "/" # the subpath of your site, e.g. /blog
 url: "https://larryxi.github.io" # the base hostname & protocol for your site, e.g. http://example.com
-lang: zh-CN
+lang: en
 timezone: UTC
 exclude:
   - Gemfile
