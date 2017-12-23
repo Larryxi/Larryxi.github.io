@@ -31,6 +31,8 @@ exclude:
   - screenshot.png
   - vendor
 
+encoding: utf-8
+
 # Social media
 twitter_username:
 twitter_image:
@@ -58,7 +60,7 @@ paginate: 5
 kramdown:
   auto_ids: false
   enable_coderay: false
-  entity_output: as_input
+  entity_output: as_char
   footnote_nr: 1
   smart_quotes: lsquo,rsquo,ldquo,rdquo
   toc_levels: 1..6
