@@ -31,8 +31,6 @@ exclude:
   - screenshot.png
   - vendor
 
-encoding: utf-8
-
 # Social media
 twitter_username:
 twitter_image:
