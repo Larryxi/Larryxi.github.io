@@ -6,7 +6,8 @@ title: "YXCMS任意用户密码重置漏洞"
 # 0x00 背景
 
 系统版本：2017-03-26 YXcmsApp 1.4.3
-下载地址：http://www.yxcms.net/log/54.html
+
+下载地址：<http://www.yxcms.net/log/54.html>
 
 <!-- more -->
 
