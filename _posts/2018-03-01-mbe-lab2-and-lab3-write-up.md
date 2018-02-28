@@ -245,14 +245,14 @@ $ exit
 
 下来想想如果直接搭建官方提供的虚拟机去做lab题目，环境相关的问题应该比另起炉灶少很多，另外在64位系统上使用pwntools exploit 32位程序也是可以[试试的](https://www.anquanke.com/post/id/85138)。
 
-[1]: https://wx2.sinaimg.cn/thumb50/ee2fecafly1fown1sqkxsj20k3054aao.jpg
-[2]: https://wx2.sinaimg.cn/thumb50/ee2fecafly1fown1tewd6j20k103274i.jpg
-[3]: https://wx4.sinaimg.cn/thumb50/ee2fecafly1fown1u64qqj20k404yjrw.jpg
-[4]: https://wx4.sinaimg.cn/thumb50/ee2fecafly1fown1utbtbj20jz032glt.jpg
-[5]: https://wx4.sinaimg.cn/thumb50/ee2fecafly1fown1w7uo1j20jz031jrr.jpg
-[6]: https://wx4.sinaimg.cn/thumb50/ee2fecafly1fown1wyv1aj20k0042dga.jpg
-[7]: https://wx3.sinaimg.cn/thumb50/ee2fecafly1fown1y6sylj20k1087gmv.jpg
-[8]: https://wx1.sinaimg.cn/thumb50/ee2fecafly1fown1z5w0nj20k40623z9.jpg
-[9]: https://wx1.sinaimg.cn/thumb50/ee2fecafly1fown2000xuj20k007ggm7.jpg
-[10]: https://wx3.sinaimg.cn/thumb50/ee2fecafly1fown20tsxlj20k203jmxj.jpg
-[11]: https://wx1.sinaimg.cn/thumb50/ee2fecafly1fown21yps7j20k5042q3i.jpg
+[1]: https://wx2.sinaimg.cn/large/ee2fecafly1fown1sqkxsj20k3054aao.jpg
+[2]: https://wx2.sinaimg.cn/large/ee2fecafly1fown1tewd6j20k103274i.jpg
+[3]: https://wx4.sinaimg.cn/large/ee2fecafly1fown1u64qqj20k404yjrw.jpg
+[4]: https://wx4.sinaimg.cn/large/ee2fecafly1fown1utbtbj20jz032glt.jpg
+[5]: https://wx4.sinaimg.cn/large/ee2fecafly1fown1w7uo1j20jz031jrr.jpg
+[6]: https://wx4.sinaimg.cn/large/ee2fecafly1fown1wyv1aj20k0042dga.jpg
+[7]: https://wx3.sinaimg.cn/large/ee2fecafly1fown1y6sylj20k1087gmv.jpg
+[8]: https://wx1.sinaimg.cn/large/ee2fecafly1fown1z5w0nj20k40623z9.jpg
+[9]: https://wx1.sinaimg.cn/large/ee2fecafly1fown2000xuj20k007ggm7.jpg
+[10]: https://wx3.sinaimg.cn/large/ee2fecafly1fown20tsxlj20k203jmxj.jpg
+[11]: https://wx1.sinaimg.cn/large/ee2fecafly1fown21yps7j20k5042q3i.jpg
