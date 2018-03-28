@@ -9,7 +9,7 @@ title: "MBE Lab6 ASLR and PIE Write Up"
 
 <!-- more -->
 
-# 0x01
+# 0x01 Lab6
 
 ## Lab6C
 
