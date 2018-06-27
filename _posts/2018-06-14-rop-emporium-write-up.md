@@ -3,7 +3,7 @@ layout: post
 title: "ROP Emporium Write Up"
 ---
 
-# 0x00 Abstartc
+# 0x00 Abstract
 
 It has been a long time since I stopped doing pwn exercises. I solved some basic challenges of [ROP Emporium](https://ropemporium.com) this time, which is a good place to practice your ability constructing write4, xor or pivot ROP chain. I believe that you should know the usage of [ROPgadget](https://github.com/JonathanSalwan/ROPgadget) before reading this write up.
 
