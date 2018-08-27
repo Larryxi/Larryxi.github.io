@@ -48,7 +48,7 @@ int _tmain(int argc, _TCHAR* argv[])
 
 ![][2]
 
-#0x02 利用未启用SafeSEH模块绕过
+# 0x02 利用未启用SafeSEH模块绕过
 
 实验代码和书中类似：
 
