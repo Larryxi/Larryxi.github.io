@@ -11,7 +11,7 @@ title: "BLE安全初探之HACKMELOCK"
 
 环境主从设备的选取是参考[BLUETOOTH SMART HACKMELOCK](https://smartlockpicking.com/hackmelock/)提供的仿真环境，其在树莓派中用nodejs搭建了一个虚拟的BLE门锁，专门写了一个Android app来对这个门锁进行操作，两端都遗留了一些安全问题供我们后续探索学习。
 
-[UnicornTeam](https://weibo.com/unicornteam)曾经讲过无线通信的攻击手段可以分为监听、重放、欺骗和劫持攻击。个人感觉先要嗅探相关流量进行理解分析才能知己知彼有所突破，厚着脸皮向大佬团队借了一个[nRF51422](https://www.nordicsemi.com/eng/Products/ANT/nRF51422)来对BLE进行嗅探，其文档[nRF-Sniffer-UG-v2](https://www.nordicsemi.com/eng/nordic/download_resource/65244/3/23454585/136165)也写得很清楚，所以最终构建的环境如图所示：
+[UnicornTeam](https://weibo.com/unicornteam)曾经讲过无线通信的攻击手段可以分为监听、重放、欺骗和劫持攻击。个人感觉先要嗅探相关流量进行理解分析才能知己知彼有所突破，厚着脸皮向大佬团队借了一个[nRF51422](https://www.nordicsemi.com/eng/Products/ANT/nRF51422)来对BLE进行嗅探，其文档[nRF-Sniffer-UG-v2](https://www.nordicsemi.com/eng/nordic/download_resource/65244/3/23454585/136165)也写得很清楚，所以最终构建的环境如图所示（同时也感谢[Tesi1a](https://weibo.com/u/5306621349)同学友情赞助的树莓派）：
 
 ![][1]
 
