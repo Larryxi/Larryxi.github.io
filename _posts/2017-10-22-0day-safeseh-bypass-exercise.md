@@ -166,13 +166,13 @@ Next指针处就和书中的一样填充为一个短跳的指令\xeb\xf6\x90\x90
 
 这里就是借助未开启SafeSEH的Flash Player ActiveX控件，在具有溢出漏洞中的AxtiveX控件中，覆盖SE handler地址，利用未启用SafeSEH来模块中的跳板地址来绕过。实验中也是因为程序会对栈中数据有些破坏，所以就用短跳指令去执行payload，思路大体都是类似的，详见他人的实践：<http://www.freebuf.com/articles/web/149886.html>，我就不赘述啦。
 
-[1]:http://ojyzyrhpd.bkt.clouddn.com/20171022/1.png
-[2]:http://ojyzyrhpd.bkt.clouddn.com/20171022/2.png
-[3]:http://ojyzyrhpd.bkt.clouddn.com/20171022/3.png
-[4]:http://ojyzyrhpd.bkt.clouddn.com/20171022/4.png
-[5]:http://ojyzyrhpd.bkt.clouddn.com/20171022/5.png
-[6]:http://ojyzyrhpd.bkt.clouddn.com/20171022/6.png
-[7]:http://ojyzyrhpd.bkt.clouddn.com/20171022/7.png
-[8]:http://ojyzyrhpd.bkt.clouddn.com/20171022/8.png
-[9]:http://ojyzyrhpd.bkt.clouddn.com/20171022/9.png
-[10]:http://ojyzyrhpd.bkt.clouddn.com/20171022/10.png
+[1]: https://wx3.sinaimg.cn/large/ee2fecafly1g3qoycvn29j20eq03s3yd.jpg
+[2]: https://wx2.sinaimg.cn/large/ee2fecafly1g3qoydcsjlj20m20bi75b.jpg
+[3]: https://wx3.sinaimg.cn/large/ee2fecafly1g3qoydrpjkj20l005jt8x.jpg
+[4]: https://wx1.sinaimg.cn/large/ee2fecafly1g3qoyea5eqj20cz06g749.jpg
+[5]: https://wx3.sinaimg.cn/large/ee2fecafly1g3qoyfib31j20ip02x3yf.jpg
+[6]: https://wx2.sinaimg.cn/large/ee2fecafly1g3qoygurauj219d098jsi.jpg
+[7]: https://wx2.sinaimg.cn/large/ee2fecafly1g3qoygan5qj20ni0b5q3u.jpg
+[8]: https://wx3.sinaimg.cn/large/ee2fecafly1g3qoyhcy1qj219d09wab8.jpg
+[9]: https://wx1.sinaimg.cn/large/ee2fecafly1g3qoyhp146j20om03st8p.jpg
+[10]: https://wx2.sinaimg.cn/large/ee2fecafly1g3qoyi65scj20o209tab3.jpg

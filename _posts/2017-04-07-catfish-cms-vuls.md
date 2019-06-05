@@ -80,15 +80,15 @@ Install.lock文件被删除，所以导致了重装：
 
 虽说这个CMS是用THINKPHP5框架写的，但是开发者还是没有考虑太多的安全问题，在掌握了框架的一些应用规则后，代码审计的思路都是相通的，多实践才能多知晓。
 
-[1]: http://ojyzyrhpd.bkt.clouddn.com/20170407/1.png
-[2]: http://ojyzyrhpd.bkt.clouddn.com/20170407/2.png
-[3]: http://ojyzyrhpd.bkt.clouddn.com/20170407/3.png
-[4]: http://ojyzyrhpd.bkt.clouddn.com/20170407/4.png
-[5]: http://ojyzyrhpd.bkt.clouddn.com/20170407/5.png
-[6]: http://ojyzyrhpd.bkt.clouddn.com/20170407/6.png
-[7]: http://ojyzyrhpd.bkt.clouddn.com/20170407/7.png
-[8]: http://ojyzyrhpd.bkt.clouddn.com/20170407/8.png
-[9]: http://ojyzyrhpd.bkt.clouddn.com/20170407/9.png
-[10]: http://ojyzyrhpd.bkt.clouddn.com/20170407/10.png
-[11]: http://ojyzyrhpd.bkt.clouddn.com/20170407/11.png
-[12]: http://ojyzyrhpd.bkt.clouddn.com/20170407/12.png
+[1]: https://wx2.sinaimg.cn/large/ee2fecafly1g3qph0uxxuj20gq031jr9.jpg
+[2]: https://wx1.sinaimg.cn/large/ee2fecafly1g3qph1tavfj20mn0hkdgq.jpg
+[3]: https://wx3.sinaimg.cn/large/ee2fecafly1g3qph2kroxj20re0eq40m.jpg
+[4]: https://wx4.sinaimg.cn/large/ee2fecafly1g3qph34czxj20oi0ejdgp.jpg
+[5]: https://wx1.sinaimg.cn/large/ee2fecafly1g3qph4eac4j20re0eidhy.jpg
+[6]: https://wx3.sinaimg.cn/large/ee2fecafly1g3qph5a8r6j21040himz2.jpg
+[7]: https://wx2.sinaimg.cn/large/ee2fecafly1g3qph5nj8qj20ga03haa1.jpg
+[8]: https://wx2.sinaimg.cn/large/ee2fecafly1g3qph62wm3j20oz0c63z4.jpg
+[9]: https://wx4.sinaimg.cn/large/ee2fecafly1g3qph6m2bgj20o709zjs7.jpg
+[10]: https://wx2.sinaimg.cn/large/ee2fecafly1g3qph7nndij20jf0bfaai.jpg
+[11]: https://wx1.sinaimg.cn/large/ee2fecafly1g3qph72jtzj20pw0hnt9i.jpg
+[12]: https://wx1.sinaimg.cn/large/ee2fecafly1g3qph84pccj20rb08lmxv.jpg

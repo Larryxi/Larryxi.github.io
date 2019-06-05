@@ -41,8 +41,9 @@ asp和php在本质上还是有区别的，所以在开发过程中遇到了一�
 
 虽然这个系统是属于练习的弱点系统，但真正有价值的地方还是在于练习的过程，也要抽空好好学习一下。
 
-[1]: http://ojyzyrhpd.bkt.clouddn.com/20170111/1.png
-[2]: http://ojyzyrhpd.bkt.clouddn.com/20170111/2.png
-[3]: http://ojyzyrhpd.bkt.clouddn.com/20170111/3.png
-[4]: http://ojyzyrhpd.bkt.clouddn.com/20170111/4.png
-[5]: http://ojyzyrhpd.bkt.clouddn.com/20170111/5.jpg
+
+[1]: https://wx3.sinaimg.cn/large/ee2fecafly1g3qpox056vj211k0ja75z.jpg
+[2]: https://wx3.sinaimg.cn/large/ee2fecafly1g3qpoxjexfj211y0db3zf.jpg
+[3]: https://wx3.sinaimg.cn/large/ee2fecafly1g3qpoyma4aj211y0i775y.jpg
+[4]: https://wx3.sinaimg.cn/large/ee2fecafly1g3qpoyyf3lj20iy0ahdfx.jpg
+[5]: https://wx1.sinaimg.cn/large/ee2fecafly1g3qpozff58j20na01hweo.jpg

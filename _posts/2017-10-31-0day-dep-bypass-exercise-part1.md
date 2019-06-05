@@ -148,22 +148,22 @@ push esp后加上jmp eax 即pop pop pop rent指令来越过硬编码的ebp+c和e
 
 ![][19]
 
-[1]: http://ojyzyrhpd.bkt.clouddn.com/20171031/1.png
-[2]: http://ojyzyrhpd.bkt.clouddn.com/20171031/2.png
-[3]: http://ojyzyrhpd.bkt.clouddn.com/20171031/3.png
-[4]: http://ojyzyrhpd.bkt.clouddn.com/20171031/4.png
-[5]: http://ojyzyrhpd.bkt.clouddn.com/20171031/5.png
-[6]: http://ojyzyrhpd.bkt.clouddn.com/20171031/6.png
-[7]: http://ojyzyrhpd.bkt.clouddn.com/20171031/7.png
-[8]: http://ojyzyrhpd.bkt.clouddn.com/20171031/8.png
-[9]: http://ojyzyrhpd.bkt.clouddn.com/20171031/9.png
-[10]: http://ojyzyrhpd.bkt.clouddn.com/20171031/10.png
-[11]: http://ojyzyrhpd.bkt.clouddn.com/20171031/11.png
-[12]: http://ojyzyrhpd.bkt.clouddn.com/20171031/12.png
-[13]: http://ojyzyrhpd.bkt.clouddn.com/20171031/13.png
-[14]: http://ojyzyrhpd.bkt.clouddn.com/20171031/14.png
-[15]: http://ojyzyrhpd.bkt.clouddn.com/20171031/15.png
-[16]: http://ojyzyrhpd.bkt.clouddn.com/20171031/16.png
-[17]: http://ojyzyrhpd.bkt.clouddn.com/20171031/17.png
-[18]: http://ojyzyrhpd.bkt.clouddn.com/20171031/18.png
-[19]: http://ojyzyrhpd.bkt.clouddn.com/20171031/19.png
+[1]: https://wx4.sinaimg.cn/large/ee2fecafly1g3qnmyhl2lj20mm0ca795.jpg
+[2]: https://wx1.sinaimg.cn/large/ee2fecafly1g3qnmz0jm3j20ig025747.jpg
+[3]: https://wx3.sinaimg.cn/large/ee2fecafly1g3qnmzhxi0j20t7034t8p.jpg
+[4]: https://wx1.sinaimg.cn/large/ee2fecafly1g3qnn0c7rvj20ie04uglo.jpg
+[5]: https://wx4.sinaimg.cn/large/ee2fecafly1g3qnn116cej20t302mq2x.jpg
+[6]: https://wx3.sinaimg.cn/large/ee2fecafly1g3qnn22s46j210q080gmi.jpg
+[7]: https://wx3.sinaimg.cn/large/ee2fecafly1g3qnn2k5d1j215k07b3za.jpg
+[8]: https://wx4.sinaimg.cn/large/ee2fecafly1g3qnn31xj4j20yq02jt8q.jpg
+[9]: https://wx4.sinaimg.cn/large/ee2fecafly1g3qnn48dtij216f05ljry.jpg
+[10]: https://wx3.sinaimg.cn/large/ee2fecafly1g3qnn4pi1gj216205kaal.jpg
+[11]: https://wx1.sinaimg.cn/large/ee2fecafly1g3qnn5879nj214i02rglp.jpg
+[12]: https://wx2.sinaimg.cn/large/ee2fecafly1g3qnn5nwtvj219p05jglx.jpg
+[13]: https://wx1.sinaimg.cn/large/ee2fecafly1g3qnn6cmm1j20k60b5755.jpg
+[14]: https://wx1.sinaimg.cn/large/ee2fecafly1g3qnn7jbjrj20f903wglk.jpg
+[15]: https://wx1.sinaimg.cn/large/ee2fecafly1g3qnn85d1nj20ej03qt8o.jpg
+[16]: https://wx3.sinaimg.cn/large/ee2fecafly1g3qnn8n64lj20xt089wf7.jpg
+[17]: https://wx2.sinaimg.cn/large/ee2fecafly1g3qnn9515kj20yx07a74w.jpg
+[18]: https://wx1.sinaimg.cn/large/ee2fecafly1g3qnn9nw0hj213n08yq3w.jpg
+[19]: https://wx4.sinaimg.cn/large/ee2fecafly1g3qnna6pd2j20kf0c3wf7.jpg

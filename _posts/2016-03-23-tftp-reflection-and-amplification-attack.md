@@ -233,12 +233,12 @@ if __name__ == '__main__':
 4. 简化自定义错误消息（有些tftp服务具有在重传无响应后还会发送ERROR数据包，间接将流量放大）；记录响应的日志；限制请求数据包的数量
 
 
- [1]: http://ojyzyrhpd.bkt.clouddn.com/20160323/1.png
- [2]: http://ojyzyrhpd.bkt.clouddn.com/20160323/2.png
- [3]: http://ojyzyrhpd.bkt.clouddn.com/20160323/3.png
- [4]: http://ojyzyrhpd.bkt.clouddn.com/20160323/4.png
- [5]: http://ojyzyrhpd.bkt.clouddn.com/20160323/5.png
- [6]: http://ojyzyrhpd.bkt.clouddn.com/20160323/6.png
- [7]: http://ojyzyrhpd.bkt.clouddn.com/20160323/7.png
- [8]: http://ojyzyrhpd.bkt.clouddn.com/20160323/8.png
- [9]: http://ojyzyrhpd.bkt.clouddn.com/20160323/9.png
+[1]: https://wx4.sinaimg.cn/large/ee2fecafly1g3qq0xwq4mj20jv07cwie.jpg
+[2]: https://wx1.sinaimg.cn/large/ee2fecafly1g3qq0ya7f7j20jf046dfx.jpg
+[3]: https://wx3.sinaimg.cn/large/ee2fecafly1g3qq0z9cynj20ku0ddgpm.jpg
+[4]: https://wx1.sinaimg.cn/large/ee2fecafly1g3qq0zva2uj20kt0aymy7.jpg
+[5]: https://wx3.sinaimg.cn/large/ee2fecafly1g3qq11kk0zj20lm0dwtba.jpg
+[6]: https://wx1.sinaimg.cn/large/ee2fecafly1g3qq12bak6j20m90epwh4.jpg
+[7]: https://wx4.sinaimg.cn/large/ee2fecafly1g3qq12wh61j20et08ymym.jpg
+[8]: https://wx1.sinaimg.cn/large/ee2fecafly1g3qq13d2t9j209i05rdgp.jpg
+[9]: https://wx3.sinaimg.cn/large/ee2fecafly1g3qq13z4vpj20m702dglx.jpg

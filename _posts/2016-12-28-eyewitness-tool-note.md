@@ -37,8 +37,8 @@ EyeWitness的安装比较简单，看github上的README就可以知道，要求�
  
 ![][5]
 
-[1]: http://ojyzyrhpd.bkt.clouddn.com/20161228/1.jpg
-[2]: http://ojyzyrhpd.bkt.clouddn.com/20161228/2.jpg
-[3]: http://ojyzyrhpd.bkt.clouddn.com/20161228/3.jpg
-[4]: http://ojyzyrhpd.bkt.clouddn.com/20161228/4.jpg
-[5]: http://ojyzyrhpd.bkt.clouddn.com/20161228/5.jpg
+[1]: https://wx3.sinaimg.cn/large/ee2fecafly1g3qpqf1efdj20rn0br75i.jpg
+[2]: https://wx1.sinaimg.cn/large/ee2fecafly1g3qpqffoc8j20k206075a.jpg
+[3]: https://wx4.sinaimg.cn/large/ee2fecafly1g3qpqhxfnij211u0he798.jpg
+[4]: https://wx3.sinaimg.cn/large/ee2fecafly1g3qpqije7ej20k10dgdhp.jpg
+[5]: https://wx2.sinaimg.cn/large/ee2fecafly1g3qpqjyfdaj211t0iejwv.jpg

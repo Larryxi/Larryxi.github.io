@@ -16,7 +16,9 @@ title: "基础级Google Hacking"
 ---
 
 1. 手气不错，自定义搜索结果，语言设置，高级设置大家都懂哈 
-![Example](http://ojyzyrhpd.bkt.clouddn.com/20150328/1.png)
+
+    ![Example][1]
+
 2. 基本搜素：一个或一组单词(google hacker);双引号封装的词组("Google Hacking")
 3. Google搜索的黄金法则： 
     * Google查询不区分大小写：hack === HAck 但单词or作为布尔操作符时必须为大写就，即OR 
@@ -52,7 +54,8 @@ title: "基础级Google Hacking"
   * filetype: 根据文件扩展名查找特定类型的 文件，等同于ext，也需要附加搜索关键字
   * site: 限定在某个特定的网站或者域搜索，也可以单独使用
   * cache: 现实页面的缓存版本，但不能很好地与其他操作符或者关键字混合使用   
-    ![example](http://ojyzyrhpd.bkt.clouddn.com/20150328/2.png)
+    
+    ![example][2]
 
 # 0x03 Google Hacking Wooyun案例： #
 
@@ -108,3 +111,6 @@ title: "基础级Google Hacking"
   [tool1]:  http://www.mcafee.com/uk/downloads/free-tools/sitedigger.aspx
   [tool2]:  http://yehg.net/lab/pr0js/files.php/googlehacker.zip
   [tool3]:  http://punkspider.hyperiongray.com/
+
+[1]: https://wx2.sinaimg.cn/large/ee2fecafly1g3qqwzx3wwj20oi09rjrm.jpg
+[2]: https://wx4.sinaimg.cn/large/ee2fecafly1g3qqx0ca04j2116036glj.jpg

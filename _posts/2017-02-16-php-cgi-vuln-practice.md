@@ -65,8 +65,8 @@ IIS服务器在[搭建](http://www.cnblogs.com/haocool/archive/2012/10/14/window
 
 ![][5]
 
-[1]: http://ojyzyrhpd.bkt.clouddn.com/2017/02/16/1.jpg
-[2]: http://ojyzyrhpd.bkt.clouddn.com/2017/02/16/2.jpg
-[3]: http://ojyzyrhpd.bkt.clouddn.com/2017/02/16/3.jpg
-[4]: http://ojyzyrhpd.bkt.clouddn.com/2017/02/16/4.jpg
-[5]: http://ojyzyrhpd.bkt.clouddn.com/2017/02/16/5.jpg
+[1]: https://wx4.sinaimg.cn/large/ee2fecafly1g3qpne6mojj20m80db768.jpg
+[2]: https://wx3.sinaimg.cn/large/ee2fecafly1g3qpnfw1maj20av03fq30.jpg
+[3]: https://wx1.sinaimg.cn/large/ee2fecafly1g3qpnfem71j20m80e5dhy.jpg
+[4]: https://wx1.sinaimg.cn/large/ee2fecafly1g3qpngjvihj20q90dndhz.jpg
+[5]: https://wx4.sinaimg.cn/large/ee2fecafly1g3qpniqoq5j20sr0dxgo9.jpg

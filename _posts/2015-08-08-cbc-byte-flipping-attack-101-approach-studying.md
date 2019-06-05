@@ -24,7 +24,9 @@ drops里的相关主题文章：[使用CBC比特反转攻击绕过加密的会�
 在这里只是解释一下关于攻击必须要理解的部分。（即：一图胜千言）
 
 **加密过程**
-![Encryption](http://ojyzyrhpd.bkt.clouddn.com/20150808/Encryption.png)
+
+![Encryption][1]
+
 **Plaintext**：待加密的数据。
 **IV**：用于随机化加密的比特块，保证即使对相同明文多次加密，也可以得到不同的密文。
 **Key**：被一些如AES的对称加密算法使用。
@@ -40,13 +42,15 @@ drops里的相关主题文章：[使用CBC比特反转攻击绕过加密的会�
 注意：正如你所见，**前一块的密文用来产生后一块的密文**。
 
 **Decryption Process**
-![Decryption](http://ojyzyrhpd.bkt.clouddn.com/20150808/Decryption.png)
+
+![Decryption][2]
 
 * *Plaintext-0 = Decrypt(Ciphertext) XOR IV*—只用于第一个组块
 * *Plaintext-N= Decrypt(Ciphertext) XOR Ciphertext-N-1*—用于第二及剩下的组块
 
 注意：***Ciphertext-N-1*（密文-N-1）是用来产生下一块明文**；这就是字节翻转攻击开始发挥作用的地方。如果我们改变*Ciphertext-N-1*（密文-N-1）的一个字节，然后与下一个解密后的组块异或，我们就可以得到一个不同的明文了！**You got it?**别担心，下面我们将看到一个详细的例子。与此同时，下面的这张图也可以很好地说明这种攻击：
-![attack](http://ojyzyrhpd.bkt.clouddn.com/20150808/attack.jpg)
+
+![attack][3]
 
 ##0x02 一个例子（CBC Blocks of 16 bytes）##
 
@@ -79,7 +83,8 @@ drops里的相关主题文章：[使用CBC比特反转攻击绕过加密的会�
 4. `$b = @decrypt($enc);`
 
 运行这段代码后，我们可以将数字6变为7：
-![pic1](http://ojyzyrhpd.bkt.clouddn.com/20150808/pic1.png)
+
+![pic1][4]
 
 但是我们在第3行中，是如何改变字节成为我们想要的值呢？
 
@@ -132,7 +137,8 @@ echo "Plaintext AFTER attack : $b\n";
 光说不练假把式，接下来作者举了一个他参加过的CTF中的一道题目的例子（更多详情可以参阅最后的相关参考链接），然后阐述了他是怎样在最后几步中打破CBC的。
 
 下面提供了这个练习当中很重要的一部分源码：
-![pic2](http://ojyzyrhpd.bkt.clouddn.com/20150808/pic2.png)
+
+![pic2][5]
 
 其中，你在POST提交参数"name"的任何文本值之后，应用程序则会对应输出"Hello"加上最后提交的文本。但是有两件事情发生在消息打印之前：
 
@@ -157,7 +163,8 @@ exploit = cookie[0:pos] + val + cookie[pos + 1:]
 {% endhighlight %}
 
 然后作者通过改变cookie（因为其具有全部的密文），得到以下结果：
-![pic3](http://ojyzyrhpd.bkt.clouddn.com/20150808/pic3.png)
+
+![pic3][6]
 
 首先，因为我们改变了第一块，所以在第二块中，黄色标记的"X"被成功替换为单引号，它被认为是多余插入（绿色），导致在unserialize()处理数据时产生一个错误（红色），因此应用程序甚至都没有去尝试执行注入了。
 
@@ -329,4 +336,9 @@ Pwn(exploit)
 {%  endhighlight  %}
 
 
-        
+[1]: https://wx4.sinaimg.cn/large/ee2fecafly1g3qquj94euj20gp06qglh.jpg
+[2]: https://wx2.sinaimg.cn/large/ee2fecafly1g3qqujql6lj20gp06qglh.jpg
+[3]: https://wx2.sinaimg.cn/large/ee2fecafly1g3qquk1y90j20lo09lt97.jpg
+[4]: https://wx3.sinaimg.cn/large/ee2fecafly1g3qqukivxnj20hc00xwf3.jpg
+[5]: https://wx2.sinaimg.cn/large/ee2fecafly1g3qqumouu7j20hc09u79h.jpg
+[6]: https://wx2.sinaimg.cn/large/ee2fecafly1g3qquo6mdsj20hc03ldi2.jpg     

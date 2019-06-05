@@ -43,10 +43,11 @@ admin/index.php处，直接将POST数据带入sql语句，无任何过滤，导�
 
 ![][7]
 
-[1]: http://ojyzyrhpd.bkt.clouddn.com/20161101/1.png
-[2]: http://ojyzyrhpd.bkt.clouddn.com/20161101/2.png
-[3]: http://ojyzyrhpd.bkt.clouddn.com/20161101/3.png
-[4]: http://ojyzyrhpd.bkt.clouddn.com/20161101/4.png
-[5]: http://ojyzyrhpd.bkt.clouddn.com/20161101/5.png
-[6]: http://ojyzyrhpd.bkt.clouddn.com/20161101/6.png
-[7]: http://ojyzyrhpd.bkt.clouddn.com/20161101/7.png
+
+[1]: https://wx3.sinaimg.cn/large/ee2fecafly1g3qptd89ycj20tv0i2413.jpg
+[2]: https://wx3.sinaimg.cn/large/ee2fecafly1g3qptdxstxj211j08fjtg.jpg
+[3]: https://wx1.sinaimg.cn/large/ee2fecafly1g3qptfcpcjj20qn0bejtx.jpg
+[4]: https://wx3.sinaimg.cn/large/ee2fecafly1g3qptfpc7pj210n08ajrp.jpg
+[5]: https://wx2.sinaimg.cn/large/ee2fecafly1g3qptgjfijj20tu0f576v.jpg
+[6]: https://wx3.sinaimg.cn/large/ee2fecafly1g3qpth50asj20qw0ctgn1.jpg
+[7]: https://wx4.sinaimg.cn/large/ee2fecafly1g3qpthkiq7j20hl05haag.jpg

@@ -75,11 +75,11 @@ title: "XerCMS文件名注入与垂直越权漏洞"
 
 一开始在补天看到是这个cms又出来一个SQL注入，想也去找一找有没有其他的注入漏洞，但是自己看了半天还是前人已经挖过的漏洞(<https://www.ihonker.org/thread-9279-1-1.html>)。道行不够还是得多补补==
 
-[1]: http://ojyzyrhpd.bkt.clouddn.com/20170420/1.png
-[2]: http://ojyzyrhpd.bkt.clouddn.com/20170420/2.png
-[3]: http://ojyzyrhpd.bkt.clouddn.com/20170420/3.png
-[4]: http://ojyzyrhpd.bkt.clouddn.com/20170420/4.png
-[5]: http://ojyzyrhpd.bkt.clouddn.com/20170420/5.png
-[6]: http://ojyzyrhpd.bkt.clouddn.com/20170420/6.png
-[7]: http://ojyzyrhpd.bkt.clouddn.com/20170420/7.png
-[8]: http://ojyzyrhpd.bkt.clouddn.com/20170420/8.png
+[1]: https://wx4.sinaimg.cn/large/ee2fecafly1g3qpcalrq9j20ou0a4mxk.jpg
+[2]: https://wx3.sinaimg.cn/large/ee2fecafly1g3qpcb2fysj20nm0cnaaq.jpg
+[3]: https://wx3.sinaimg.cn/large/ee2fecafly1g3qpcbhw5zj20nz06bq31.jpg
+[4]: https://wx3.sinaimg.cn/large/ee2fecafly1g3qpcbve84j20p003waa2.jpg
+[5]: https://wx2.sinaimg.cn/large/ee2fecafly1g3qpcce9bnj20ln04qaa0.jpg
+[6]: https://wx2.sinaimg.cn/large/ee2fecafly1g3qpccz0y6j211d0bi3zp.jpg
+[7]: https://wx2.sinaimg.cn/large/ee2fecafly1g3qpcdmrjfj20lg03wwei.jpg
+[8]: https://wx2.sinaimg.cn/large/ee2fecafly1g3qpcezijwj210a0dbacd.jpg
