@@ -3,13 +3,13 @@ layout: post
 title: "WCTF 2019 Online Android Crackme Write Up"
 ---
 
-# 参赛初衷
+# 0x00 参赛初衷
 
 懂的人会问你打过什么CTF或者挖过什么洞，仔细一想两者都会是对自己能力的突破，多参加点高质量的赛事终究是有益无害的，如果能学到新姿势或者入个门那更是赚到了。作为老油条只能被gd师傅带着打打线上赛，个人也就会做两个签到的安卓逆向题，新鲜接触青涩记录。
 
 <!-- more -->
 
-# Crackme1
+# 0x01 Crackme1
 
 JEB打开Crackme1.apk，搜索字符串`Welcome`定位至MainActivity，其调用native方法`doSomeThing`处理账号密码，这就[意味着](http://www.tasfa.cn/index.php/2018/12/19/android-sty-native/)我们要分析apk中的.so文件了：
 
@@ -29,7 +29,7 @@ JEB打开Crackme1.apk，搜索字符串`Welcome`定位至MainActivity，其调�
 
 ![][4]
 
-# Crackme2_Jessie
+# 0x02 Crackme2_Jessie
 
 Android Emulator模拟打开Crackme2_Jessie.apk，输入账号密码报错为`Name or Password Error!`，对应在Main2Activity中根本没有任何的处理操作：
 
@@ -117,7 +117,7 @@ print base64.b64encode(r)
 print r.encode('hex')
 ```
 
-# 赛后感想
+# 0x03 赛后感想
 
 1. 最简单的题目有点脑洞，但更希望能接触到代码混淆和反调试的更接地气的对抗题目。
 2. 高大上的安全方向没有想象中的难，肯花时间有动力，越过门槛剩下就是轻车熟路了。
