@@ -5,7 +5,7 @@ title: "Learn Android Application Debuggable"
 
 # 0x00 漏洞原理
 
-如果对于已经发布的Android应用，在AndroidManifest.xml中设置了`android:debuggable`为true，[意味着](https://developer.android.com/guide/topics/manifest/application-element#debug)应用程序可以被调试，因此会引入安全风险。后文通过搭建环境调试应用程序，实现漏洞的简单利用。
+如果对于已经发布的Android应用，在AndroidManifest.xml中设置了`android:debuggable`为`true`，[意味着](https://developer.android.com/guide/topics/manifest/application-element#debug)应用程序可以被调试，因此会引入安全风险。后文通过搭建环境调试应用程序，实现漏洞的简单利用。
 
 <!-- more -->
 
@@ -230,7 +230,7 @@ The application has been disconnected
 
 二是此问题就相当于可以调试java进程进而利用，但测试下来需要命中断点才能有效执行表达式，msf上有专门针对JDWP的攻击脚本，是切换到sleeping的线程再执行，具体可参看[这里](https://xz.aliyun.com/t/7303)。
 
-三是执行java表达式的过程就相当于是[java命令注入](https://b1ngz.github.io/java-os-command-injection-note/)的过程。因为不会构造字符串数组，所以直接使用`Runtime.getRuntime().exec(String command)`就需要考虑对token字符的[绕过]，因为是在安卓系统环境`base64`命令不存在，所以直接`${IFS}`编码即可绕过：
+三是执行java表达式的过程就相当于是[java命令注入](https://b1ngz.github.io/java-os-command-injection-note/)的过程。因为不会构造字符串数组，所以直接使用`Runtime.getRuntime().exec(String command)`就需要考虑对token字符的[绕过](https://mp.weixin.qq.com/s/zCe_O37rdRqgN-Yvlq1FDg)，因为是在安卓系统环境`base64`命令不存在，所以直接`${IFS}`编码即可绕过：
 
 ```
 ➜  platform-tools jdb -attach 127.0.0.1:7777       
