@@ -1,13 +1,18 @@
-# RWCTF 5th ShellFind Write-up
+---
+layout: post
+title: "RWCTF 5th ShellFind Write-up"
+---
 
-## Background
+# Background
 
 IoT security has attracted the attention of the security industry and security competitions in recent years. When the vulnerabilities we discover are fixed or hit by the official ahead of time, it may make us feel uncomfortable. Therefore, we must start from the unique attack surface to find vulnerabilities and attack paths. This challenge is to use a certain IoT device that the public is more concerned about to map out a certain non-Web network service as the overall background. Because mapping port is a relatively common vulnerability scenario for debugging vulnerabilities or remote configuration services, it is easy to be exploited by malicious attackers, resulting in the formation of botnets. Related references are as follows:
+
+<!-- more -->
 
 * [从最近披露的Pink僵尸网络想到的](https://zu1k.com/posts/events/pinkbot/)
 * [一个藏在我们身边的巨型僵尸网络 Pink](https://blog.netlab.360.com/pinkbot/)
 
-## Description
+# Description
 
 The challenge type is `Pwn`, and the difficulty description is `difficulty:Normal`. The specific description is as follows:
 
@@ -35,7 +40,7 @@ sudo docker run --name shellfind -d --privileged -p 4444/udp --rm 1arry/shellfin
 
 For the challenge attachment, the original docker environment and the final exploit script, see: <https://github.com/Larryxi/rwctf-5th-shellfind>. Before going deep into the idea of solving the problem, interested ctfers can reverse the firmware to find the target binary, try to exploit the vulnerability within 3 minutes (including 1 minute of environment startup), and obtain an interactive shell.
 
-## Environment setup
+# Environment setup
 
 The challenge only gives the relevant firmware, which can be easily unpacked by using binwalk. To attack a certain network service, you must know which services the device will start by default. The one-and-done solution is to emulate the firmware. You can search and refer to the more common firmware emulation method: 
 
@@ -97,7 +102,7 @@ sudo tunctl -d ${TAPDEV_0}
 echo "Done!"
 ```
 
-## Root cause
+# Root cause
 
 The challenge does not specify which port corresponds to the target service, but after emulating the firmware, we could exclude the 80 tcp service firstly, and the rest work is reverse engineering and positioning.
 
@@ -202,7 +207,7 @@ int __fastcall sub_400F50(int a1, int a2)
 }
 ```
 
-## Exploit
+# Exploit
 
 After `checksec`, the program found that the security compilation options were not enabled, but [mipsrop](https://github.com/tacnetsol/ida/tree/master/plugins/mipsrop) did not give a valid output, which means we have to construct rop by yourself. At the same time, ASLR in the qemu system is also one of the limitations of the challenge.
 
@@ -218,7 +223,7 @@ $ checksec /mnt/hgfs/rwctf/iot/firmware/ipfind
     RWX:      Has RWX segments
 ```
 
-### Write GOT
+## Write GOT
 
 If PIE is not enabled, we should check to see if there are any gadgets that can be used in the .text section, we cloud notice a gadget written in 4 bytes:
 
@@ -302,7 +307,7 @@ But restarting the vulnerable service multiple times will cause it to inherit mu
 .text:0040220C 27 BD 00 A0                 addiu   $sp, 0xA0
 ```
 
-### ret2shellcode
+## ret2shellcode
 
 If you don’t want to execute so many commands, and the stack is executable, the quickest way is `ret2shellcode`, you can find such gadget in the .text section:
 
