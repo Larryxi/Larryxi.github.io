@@ -1,3 +1,8 @@
+---
+layout: post
+title: "RWCTF 6th RIPTC Write-up"
+---
+
 # 0x00 Background
 
 One day, I came across the article [Breaking the Code - Exploiting and Examining CVE-2023-1829 in cls_tcindex Classifier Vulnerability](https://starlabs.sg/blog/2023/06-breaking-the-code-exploiting-and-examining-cve-2023-1829-in-cls_tcindex-classifier-vulnerability/), which discusses the cause and exploitation of the [CVE-2023-1829](https://nvd.nist.gov/vuln/detail/CVE-2023-1829). The corresponding [remediation](https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=8c710f75256bb3cf05ac7b1672c82b92c43f3d28) is to remove the entire `cls_tcindex.c` file. The `net/sched` attack surface has been a hot topic on `kctf/kernelCTF` since last year, sparking widespread attention from the security community towards the security of the Linux kernel. Therefore, using the historical artifact `tcindex` as a starting point, I am looking for other potential security issues that may exist in this file. I dedicate this close-quarters combat experience to the ctfers of RWCTF, and hope you enjoy it.
